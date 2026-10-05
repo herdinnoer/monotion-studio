@@ -2,8 +2,9 @@
 
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useSyncExternalStore } from "react";
 import { CoveyCharacter } from "@/components/Characters/Covey/CoveyCharacter";
+import { MochiMaster } from "@/components/Characters/MochiMaster";
 import { coveyMoods } from "@/components/Characters/Covey/coveyMoods";
 import { useCharacterTemplates } from "@/hooks/useCharacterTemplates";
 import { useTheme } from "next-themes";
@@ -157,6 +158,14 @@ const LeftSidebar = ({ selectedCharacterId, onSelectCharacter, characters }) => 
   );
 };
 
+const MOCHI_STATES = [
+  "idle", "working", "thinking", "searching", "approval", "question",
+  "error", "finished", "rate_limit", "sleeping", "dizzy", "greeting",
+  "love", "surprised", "proud", "wink", "yawn", "annoyed",
+  "dancing", "beanie", "santa_hat", "party_hat", "crown",
+  "witch_hat", "sunglasses", "glasses"
+];
+
 // ===== CENTER WORKSPACE - PREVIEW =====
 const CenterWorkspace = ({ character, config }) => {
   return (
@@ -165,13 +174,22 @@ const CenterWorkspace = ({ character, config }) => {
         className="w-full h-full flex items-center justify-center rounded-xl transition-colors duration-200"
         style={{ backgroundColor: config.backgroundColor }}
       >
-        <CoveyCharacter
-          mood={config.mood}
-          color={config.color}
-          text={config.text}
-          size={350}
-          showText={true}
-        />
+        {character === "mochi" ? (
+          <MochiMaster
+            state={config.mood || "idle"}
+            shapePreset={config.shapePreset || "mochi"}
+            color={config.color !== "#ffffff" && config.color !== "#FFFFFF" ? config.color : null}
+            size={360}
+          />
+        ) : (
+          <CoveyCharacter
+            mood={config.mood}
+            color={config.color}
+            text={config.text}
+            size={350}
+            showText={true}
+          />
+        )}
       </div>
     </main>
   );
@@ -180,17 +198,18 @@ const CenterWorkspace = ({ character, config }) => {
 // ===== RIGHT SIDEBAR - CUSTOMIZER =====
 const RightSidebar = ({ character, config, onConfigChange }) => {
   const moods = coveyMoods;
+  const isMochi = character === "mochi";
 
   const handleMoodChange = (mood) => {
     onConfigChange({ ...config, mood });
   };
 
-  const handleColorChange = (color) => {
-    onConfigChange({ ...config, color });
+  const handleShapePresetChange = (shapePreset) => {
+    onConfigChange({ ...config, shapePreset });
   };
 
-  const handleTextChange = (text) => {
-    onConfigChange({ ...config, text });
+  const handleColorChange = (color) => {
+    onConfigChange({ ...config, color });
   };
 
   const handleBgChange = (bgColor) => {
@@ -209,26 +228,61 @@ const RightSidebar = ({ character, config, onConfigChange }) => {
       </div>
 
       <div className="p-4 flex-1 space-y-6">
-        {/* Mood Section */}
+        {/* Shape Preset Section (For Mochi) */}
+        {isMochi && (
+          <div className="space-y-3">
+            <h3 className="text-[12px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+              Shape Preset (Superellipse)
+            </h3>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { id: "round", label: "Round (n=2)" },
+                { id: "mochi", label: "Mochi (n=2.7)" },
+                { id: "boxy", label: "Boxy (n=4.5)" },
+              ].map((preset) => (
+                <button
+                  key={preset.id}
+                  onClick={() => handleShapePresetChange(preset.id)}
+                  className={cn(
+                    "px-2 py-2 text-xs font-medium rounded-lg border transition-all text-center",
+                    (config.shapePreset || "mochi") === preset.id
+                      ? "bg-blue-500 text-white border-blue-600 shadow-sm"
+                      : "bg-[#ECECEF] dark:bg-[#212025] border-divider text-foreground hover:border-gray-400"
+                  )}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Mood / Expression Section */}
         <div className="space-y-3">
           <h3 className="text-[12px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
-            Mood
+            {isMochi ? "Expression / State (26)" : "Mood"}
           </h3>
           <select
             value={config.mood}
             onChange={(e) => handleMoodChange(e.target.value)}
             className={cn(
-              "w-full px-3 py-2.5 rounded-lg border border-divider",
+              "w-full px-3 py-2.5 rounded-lg border border-divider capitalize",
               "bg-[#ECECEF] dark:bg-[#212025] text-[#111113] dark:text-gray-200",
               "text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[#0E89F8]",
               "transition-all cursor-pointer",
             )}
           >
-            {Object.entries(moods).map(([key, mood]) => (
-              <option key={key} value={key}>
-                {mood.name} • {mood.description}
-              </option>
-            ))}
+            {isMochi
+              ? MOCHI_STATES.map((st) => (
+                  <option key={st} value={st}>
+                    {st.replace(/_/g, " ")}
+                  </option>
+                ))
+              : Object.entries(moods).map(([key, mood]) => (
+                  <option key={key} value={key}>
+                    {mood.name} • {mood.description}
+                  </option>
+                ))}
           </select>
         </div>
 
@@ -238,29 +292,6 @@ const RightSidebar = ({ character, config, onConfigChange }) => {
             Color
           </h3>
           <ColorInput value={config.color} onChange={handleColorChange} />
-        </div>
-
-        {/* Text Section */}
-        <div className="space-y-3">
-          <h3 className="text-[12px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
-            Text
-          </h3>
-          <input
-            type="text"
-            value={config.text}
-            onChange={(e) => handleTextChange(e.target.value)}
-            maxLength={40}
-            placeholder="Enter text..."
-            className={cn(
-              "w-full px-3 py-2.5 rounded-lg border border-divider",
-              "bg-[#ECECEF] dark:bg-[#212025] text-[#111113] dark:text-gray-200",
-              "text-xs focus:outline-none focus:ring-2 focus:ring-[#0E89F8]",
-              "transition-all",
-            )}
-          />
-          <small className="text-gray-500 dark:text-gray-400 text-[11px]">
-            {config.text.length}/40 characters
-          </small>
         </div>
 
         {/* Background Section */}
@@ -291,24 +322,42 @@ const RightSidebar = ({ character, config, onConfigChange }) => {
   );
 };
 
+const emptySubscribe = () => () => {};
+function useMounted() {
+  return useSyncExternalStore(emptySubscribe, () => true, () => false);
+}
+
 // ===== MAIN PAGE =====
 export default function EditorPage() {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
   const { characters } = useCharacterTemplates();
-  const [selectedCharacterId, setSelectedCharacterId] = useState(
-    characters[0]?.id || "covey",
-  );
+  const [selectedCharacterId, setSelectedCharacterId] = useState("mochi");
 
   const [config, setConfig] = useState({
     mood: "idle",
+    shapePreset: "mochi",
     color: "#ffffff",
     text: "Hello!",
     backgroundColor: "#f5f5f7",
   });
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const handleSelectCharacter = (id) => {
+    setSelectedCharacterId(id);
+    if (id === "mochi") {
+      setConfig((prev) => ({
+        ...prev,
+        mood: "idle",
+        shapePreset: "mochi",
+        color: "#ffffff",
+      }));
+    } else {
+      setConfig((prev) => ({
+        ...prev,
+        mood: "idle",
+        color: "#3B82F6",
+      }));
+    }
+  };
 
   if (!mounted) {
     return <div className="h-screen w-screen bg-[#F5F5F7] dark:bg-[#1C1C1E]" />;
@@ -326,7 +375,7 @@ export default function EditorPage() {
       <div className="flex-1 flex gap-2 overflow-hidden">
         <LeftSidebar
           selectedCharacterId={selectedCharacterId}
-          onSelectCharacter={setSelectedCharacterId}
+          onSelectCharacter={handleSelectCharacter}
           characters={characters}
         />
 

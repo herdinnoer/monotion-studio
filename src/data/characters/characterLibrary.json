@@ -12,6 +12,19 @@
         "backgroundColor": true,
         "text": true
       }
+    },
+    {
+      "id": "mochi",
+      "name": "Mochi",
+      "description": "Superellipse 3D cute character with 30 expressions",
+      "component": "MochiMaster",
+      "thumbnail": "⚪",
+      "moods": 30,
+      "customizable": {
+        "color": true,
+        "backgroundColor": true,
+        "text": false
+      }
     }
   ]
 }

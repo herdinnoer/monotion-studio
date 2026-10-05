@@ -1,4 +1,5 @@
 export { CoveyCharacter } from "./Covey/CoveyCharacter";
+export { MochiMaster } from "./MochiMaster";
 export * from "./Covey/index";
 
 // Character metadata untuk library
