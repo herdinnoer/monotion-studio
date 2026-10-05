@@ -1,0 +1,65 @@
+
+{
+  "templates": [
+    {
+      "id": "covey-idle",
+      "characterId": "covey",
+      "name": "Idle",
+      "config": {
+        "mood": "idle",
+        "color": "#FFFFFF",
+        "text": "Hello!",
+        "backgroundColor": "#F5F5F7"
+      },
+      "category": "default"
+    },
+    {
+      "id": "covey-working",
+      "characterId": "covey",
+      "name": "Working",
+      "config": {
+        "mood": "working",
+        "color": "#00D9FF",
+        "text": "Working...",
+        "backgroundColor": "#F5F5F7"
+      },
+      "category": "productivity"
+    },
+    {
+      "id": "covey-error",
+      "characterId": "covey",
+      "name": "Error",
+      "config": {
+        "mood": "error",
+        "color": "#FF6B6B",
+        "text": "Error!",
+        "backgroundColor": "#FFE5E5"
+      },
+      "category": "alert"
+    },
+    {
+      "id": "covey-success",
+      "characterId": "covey",
+      "name": "Success",
+      "config": {
+        "mood": "finished",
+        "color": "#52C41A",
+        "text": "Done!",
+        "backgroundColor": "#F6FFED"
+      },
+      "category": "success"
+    },
+    {
+      "id": "covey-thinking",
+      "characterId": "covey",
+      "name": "Thinking",
+      "config": {
+        "mood": "thinking",
+        "color": "#722ED1",
+        "text": "Thinking...",
+        "backgroundColor": "#F9F0FF"
+      },
+      "category": "processing"
+    }
+  ]
+}

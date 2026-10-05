@@ -1,26 +1,29 @@
 @import "tailwindcss";
+@import "@heroui/styles";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Custom Scrollbar untuk Editor Monotion Studio */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  :root, [data-theme="light"] {
+    --heroui-foreground: 17 17 19; /* #111113 untuk warna teks light mode */
+    --heroui-divider: 0 0 0 / 0.12; /* Garis border tegas di light mode */
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  .dark, [data-theme="dark"] {
+    --heroui-foreground: 255 255 255; /* Putih di dark mode */
+    --heroui-divider: 255 255 255 / 0.08; /* Border transparan halus di dark mode */
+  }
 }
