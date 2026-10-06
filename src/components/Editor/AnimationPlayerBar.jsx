@@ -1,0 +1,241 @@
+"use client";
+
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Play, Pause, RotateCcw, Repeat, Gauge } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export function AnimationPlayerBar({
+  elementId = "character-workspace",
+  currentState = "idle",
+  durationMs: initialDurationMs = 1600,
+  totalFrames = 48,
+  onDurationChange,
+}) {
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [isLooping, setIsLooping] = useState(true);
+  const [speed, setSpeed] = useState(1);
+  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
+
+    // ✅ ADD: State untuk actual duration
+  const [durationMs, setDurationMs] = useState(initialDurationMs);
+
+  const requestRef = useRef(null);
+  const lastTimeRef = useRef(null);
+  const progressRef = useRef(0);
+
+  // ✅ ADD: Listen state change & get actual duration dari MochiMaster
+  useEffect(() => {
+    const actualDuration = typeof window !== "undefined" 
+      ? window.getMochiAnimationDuration?.(currentState) || initialDurationMs
+      : initialDurationMs;
+
+      console.log("🎬 State:", currentState, "Duration:", actualDuration);
+
+      setDurationMs(actualDuration);
+
+      // ✅ Notify parent tentang duration baru
+    onDurationChange?.(actualDuration);
+  }, [currentState, initialDurationMs, onDurationChange]);
+
+  // Sync progressRef dengan state progress
+  useEffect(() => {
+    progressRef.current = progress;
+  }, [progress]);
+
+  // Broadcast sinyal kontrol ke MochiMaster (CSS & Framer Motion)
+  const broadcastTimelineState = useCallback((prog, playing) => {
+    // Gunakan queueMicrotask agar dispatchEvent dipanggil di luar render cycle React
+    queueMicrotask(() => {
+      window.dispatchEvent(
+        new CustomEvent("mochi-timeline-update", {
+          detail: { progress: prog, isPlaying: playing, durationMs },
+        })
+      );
+    });
+
+    const element = document.getElementById(elementId);
+    if (element) {
+      const targetTimeMs = Math.round(prog * durationMs);
+      element.style.setProperty("--seek-time", `-${targetTimeMs}ms`);
+
+      let styleEl = document.getElementById("timeline-player-style");
+      if (!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.id = "timeline-player-style";
+        document.head.appendChild(styleEl);
+      }
+
+      if (!playing) {
+        styleEl.innerHTML = `
+          #${elementId}, #${elementId} * {
+            animation-play-state: paused !important;
+            animation-delay: -${targetTimeMs}ms !important;
+            transition: none !important;
+          }
+        `;
+      } else if (styleEl.parentNode) {
+        styleEl.parentNode.removeChild(styleEl);
+      }
+    }
+  }, [elementId, durationMs]);
+
+  const animate = useCallback((currentTime) => {
+    if (!lastTimeRef.current) lastTimeRef.current = currentTime;
+    const deltaTime = currentTime - lastTimeRef.current;
+    lastTimeRef.current = currentTime;
+
+    const prevProgress = progressRef.current;
+    let nextProgress = prevProgress + (deltaTime * speed) / durationMs;
+    let playing = true;
+
+    if (nextProgress >= 1) {
+      if (isLooping) {
+        nextProgress = nextProgress % 1;
+      } else {
+        nextProgress = 1;
+        playing = false;
+      }
+    }
+
+    progressRef.current = nextProgress;
+    setProgress(nextProgress);
+
+    if (!playing) {
+      setIsPlaying(false);
+    }
+
+    broadcastTimelineState(nextProgress, playing);
+
+    if (playing) {
+      requestRef.current = requestAnimationFrame(animate);
+    }
+  }, [speed, durationMs, isLooping, broadcastTimelineState]);
+
+  useEffect(() => {
+    if (isPlaying) {
+      lastTimeRef.current = performance.now();
+      requestRef.current = requestAnimationFrame(animate);
+    } else {
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+      broadcastTimelineState(progressRef.current, false);
+    }
+
+    return () => {
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
+    };
+  }, [isPlaying, animate, broadcastTimelineState]);
+
+  // Keyboard shortcut (Space bar)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (
+        e.code === "Space" &&
+        !["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName)
+      ) {
+        e.preventDefault();
+        setIsPlaying((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const handleSliderChange = (e) => {
+    const newProgress = parseFloat(e.target.value);
+    setIsPlaying(false);
+    progressRef.current = newProgress;
+    setProgress(newProgress);
+    broadcastTimelineState(newProgress, false);
+  };
+
+  const handleReset = () => {
+    progressRef.current = 0;
+    setProgress(0);
+    broadcastTimelineState(0, isPlaying);
+  };
+
+  const currentFrame = Math.min(Math.floor(progress * totalFrames) + 1, totalFrames);
+  const currentTimeSec = (progress * (durationMs / 1000)).toFixed(1);
+  const totalTimeSec = (durationMs / 1000).toFixed(1);
+
+  return (
+    <div className="w-full bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-2.5 shadow-sm flex items-center gap-3 select-none">
+      <button
+        type="button"
+        onClick={() => setIsPlaying(!isPlaying)}
+        className="p-2 rounded-xl bg-gray-100 dark:bg-[#232328] hover:bg-gray-200 dark:hover:bg-[#2c2c32] text-foreground dark:text-white transition-all cursor-pointer shrink-0"
+      >
+        {isPlaying ? <Pause size={16} /> : <Play size={16} className="ml-0.5" />}
+      </button>
+
+      <button
+        type="button"
+        onClick={handleReset}
+        className="p-2 rounded-xl text-gray-500 hover:text-foreground dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#232328] transition-colors cursor-pointer shrink-0"
+      >
+        <RotateCcw size={15} />
+      </button>
+
+      <div className="text-[11px] font-mono text-gray-500 dark:text-gray-400 shrink-0 min-w-[70px] text-center">
+        <span>{currentTimeSec}s</span> / <span>{totalTimeSec}s</span>
+        <span className="text-[10px] opacity-60 block">{currentFrame}/{totalFrames}f</span>
+      </div>
+
+      <div className="flex-1 flex items-center relative">
+        <input
+          type="range"
+          min="0"
+          max="1"
+          step="0.001"
+          value={progress}
+          onChange={handleSliderChange}
+          className="w-full h-1.5 bg-gray-200 dark:bg-[#232328] rounded-lg appearance-none cursor-pointer accent-blue-500 focus:outline-none"
+        />
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setIsLooping(!isLooping)}
+        className={cn(
+          "p-2 rounded-xl transition-colors cursor-pointer shrink-0",
+          isLooping ? "text-blue-500 bg-blue-500/10 dark:bg-blue-500/20" : "text-gray-400 hover:text-foreground dark:hover:text-white"
+        )}
+      >
+        <Repeat size={15} />
+      </button>
+
+      <div className="relative shrink-0">
+        <button
+          type="button"
+          onClick={() => setShowSpeedMenu(!showSpeedMenu)}
+          className="p-2 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#232328] flex items-center gap-1 cursor-pointer"
+        >
+          <Gauge size={14} />
+          <span>{speed}x</span>
+        </button>
+
+        {showSpeedMenu && (
+          <div className="absolute bottom-full mb-2 right-0 bg-white dark:bg-[#232328] border border-gray-200 dark:border-white/10 rounded-xl p-1 shadow-lg flex flex-col gap-0.5 z-20 min-w-[70px]">
+            {[0.5, 1, 1.5, 2].map((sp) => (
+              <button
+                key={sp}
+                type="button"
+                onClick={() => {
+                  setSpeed(sp);
+                  setShowSpeedMenu(false);
+                }}
+                className={cn(
+                  "px-3 py-1 text-xs text-left rounded-lg transition-colors cursor-pointer",
+                  speed === sp ? "bg-blue-500 text-white font-bold" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2b2b30]"
+                )}
+              >
+                {sp}x
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

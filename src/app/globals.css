@@ -27,3 +27,19 @@
     --heroui-divider: 255 255 255 / 0.08; /* Border transparan halus di dark mode */
   }
 }
+
+/* Custom Dot Grid Background */
+.bg-dot-pattern {
+  /* Mode Light: Titik-titik gelap transparan dengan background terang */
+  background-color: #f8fafc;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.15) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.dark .bg-dot-pattern,
+.bg-dot-pattern-dark {
+  /* Mode Dark (Persis Animos): Background charcoal/hitam gelap dengan titik putih halus */
+  background-color: #0c0d0e;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
