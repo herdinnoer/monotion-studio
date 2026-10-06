@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 // Filter false-positive warning React 19 khusus untuk script tag next-themes
@@ -16,12 +16,10 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   };
 }
 
-export function Providers({ children }) {
-  const [mounted, setMounted] = useState(false);
+const emptySubscribe = () => () => {};
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+export function Providers({ children }) {
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   // Sebelum client hydration selesai, render children biasa tanpa Provider
   if (!mounted) {

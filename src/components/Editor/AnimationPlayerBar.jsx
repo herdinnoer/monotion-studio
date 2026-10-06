@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Play, Pause, RotateCcw, Repeat, Gauge } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,38 +18,56 @@ export function AnimationPlayerBar({
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
 
     // ✅ ADD: State untuk actual duration
-  const [durationMs, setDurationMs] = useState(initialDurationMs);
+  const durationMs = useMemo(() => {
+    return typeof window !== "undefined"
+      ? window.getMochiAnimationDuration?.(currentState) || initialDurationMs
+      : initialDurationMs;
+  }, [currentState, initialDurationMs]);
+
+  useEffect(() => {
+    onDurationChange?.(durationMs);
+  }, [durationMs, onDurationChange]);
 
   const requestRef = useRef(null);
   const lastTimeRef = useRef(null);
   const progressRef = useRef(0);
-
-  // ✅ ADD: Listen state change & get actual duration dari MochiMaster
-  useEffect(() => {
-    const actualDuration = typeof window !== "undefined" 
-      ? window.getMochiAnimationDuration?.(currentState) || initialDurationMs
-      : initialDurationMs;
-
-      console.log("🎬 State:", currentState, "Duration:", actualDuration);
-
-      setDurationMs(actualDuration);
-
-      // ✅ Notify parent tentang duration baru
-    onDurationChange?.(actualDuration);
-  }, [currentState, initialDurationMs, onDurationChange]);
+  const animateRef = useRef(null);
+  const isExportingRef = useRef(false);
 
   // Sync progressRef dengan state progress
   useEffect(() => {
     progressRef.current = progress;
   }, [progress]);
 
+  // Listen external export events to pause the player immediately
+  useEffect(() => {
+    const handleExternalTimeline = (e) => {
+      if (e.detail?.isExporting) {
+        isExportingRef.current = true;
+        setIsPlaying(false);
+        if (requestRef.current) {
+          cancelAnimationFrame(requestRef.current);
+          requestRef.current = null;
+        }
+      } else if (e.detail && !e.detail.isExporting && isExportingRef.current) {
+        isExportingRef.current = false;
+      }
+    };
+    window.addEventListener("mochi-timeline-update", handleExternalTimeline);
+    return () => window.removeEventListener("mochi-timeline-update", handleExternalTimeline);
+  }, []);
+
   // Broadcast sinyal kontrol ke MochiMaster (CSS & Framer Motion)
   const broadcastTimelineState = useCallback((prog, playing) => {
+    // Jangan broadcast jika sedang dalam proses export
+    if (isExportingRef.current) return;
+
     // Gunakan queueMicrotask agar dispatchEvent dipanggil di luar render cycle React
     queueMicrotask(() => {
+      if (isExportingRef.current) return;
       window.dispatchEvent(
         new CustomEvent("mochi-timeline-update", {
-          detail: { progress: prog, isPlaying: playing, durationMs },
+          detail: { progress: prog, isPlaying: playing, durationMs, isExporting: false },
         })
       );
     });
@@ -81,6 +99,16 @@ export function AnimationPlayerBar({
   }, [elementId, durationMs]);
 
   const animate = useCallback((currentTime) => {
+    // Jika sedang export, batalkan animation loop
+    if (isExportingRef.current) {
+      setIsPlaying(false);
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+        requestRef.current = null;
+      }
+      return;
+    }
+
     if (!lastTimeRef.current) lastTimeRef.current = currentTime;
     const deltaTime = currentTime - lastTimeRef.current;
     lastTimeRef.current = currentTime;
@@ -107,24 +135,30 @@ export function AnimationPlayerBar({
 
     broadcastTimelineState(nextProgress, playing);
 
-    if (playing) {
-      requestRef.current = requestAnimationFrame(animate);
+    if (playing && !isExportingRef.current) {
+      requestRef.current = requestAnimationFrame((t) => animateRef.current?.(t));
     }
   }, [speed, durationMs, isLooping, broadcastTimelineState]);
 
   useEffect(() => {
-    if (isPlaying) {
+    animateRef.current = animate;
+  }, [animate]);
+
+  useEffect(() => {
+    if (isPlaying && !isExportingRef.current) {
       lastTimeRef.current = performance.now();
-      requestRef.current = requestAnimationFrame(animate);
+      requestRef.current = requestAnimationFrame((t) => animateRef.current?.(t));
     } else {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
-      broadcastTimelineState(progressRef.current, false);
+      if (!isExportingRef.current) {
+        broadcastTimelineState(progressRef.current, false);
+      }
     }
 
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-  }, [isPlaying, animate, broadcastTimelineState]);
+  }, [isPlaying, broadcastTimelineState]);
 
   // Keyboard shortcut (Space bar)
   useEffect(() => {

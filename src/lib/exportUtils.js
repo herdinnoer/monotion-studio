@@ -392,6 +392,19 @@ export const exportAsWebm = async ({
   // Siapkan penampung frame
   const frames = [];
 
+  // Pause player and lock export mode
+  window.dispatchEvent(
+    new CustomEvent("mochi-timeline-update", {
+      detail: {
+        progress: 0,
+        isPlaying: false,
+        isExporting: true,
+        durationMs,
+      },
+    }),
+  );
+  await new Promise((resolve) => setTimeout(resolve, 80));
+
   try {
     // Phase 1: Capture semua frame canvas
     for (let i = 0; i < totalFrames; i++) {
@@ -581,616 +594,164 @@ export default MochiCharacter;`;
 };
 
 // =========================================================================
-// 6. EKSPOR LOTTIE JSON (FULL ANIMATED: BODY + EYES + BADGE + ACCESSORIES)
+// 6. EKSPOR LOTTIE JSON (100% PIXEL-PERFECT EXACT FRAME-BY-FRAME)
 // =========================================================================
 export const exportAsLottieJson = async ({
   elementId = "character-workspace",
   character = "mochi",
   config = {},
-  animationDuration = 1600,
-  frameRate = 30,
+  resolution = "480p",
+  frameRate = "30 fps",
   filename = "character-lottie.json",
+  animationDuration,
+  onProgress,
 }) => {
   const element = document.getElementById(elementId);
   if (!element) {
-    throw new Error("Elemen workspace tidak ditemukan!");
+    throw new Error(`Elemen dengan ID "${elementId}" tidak ditemukan!`);
   }
+
+  const mood = config?.mood || "idle";
+  const durationMs = animationDuration || getAnimationDurationByMood(mood);
+
+  const resolutionMap = {
+    "240p": { width: 240, height: 240 },
+    "360p": { width: 360, height: 360 },
+    "480p": { width: 480, height: 480 },
+    "720p": { width: 720, height: 720 },
+    "1080p": { width: 1080, height: 1080 },
+  };
+
+  const targetSize = resolutionMap[resolution] || { width: 480, height: 480 };
+  const fpsNumber = parseInt(String(frameRate), 10) || 30;
+  const totalFrames = Math.max(12, Math.round((durationMs / 1000) * fpsNumber));
+
+  // 1. Pause player IMMEDIATELY before starting export to avoid race condition
+  window.dispatchEvent(
+    new CustomEvent("mochi-timeline-update", {
+      detail: {
+        progress: 0,
+        isPlaying: false,
+        isExporting: true,
+        durationMs,
+      },
+    }),
+  );
+
+  // Wait for pause to take effect
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  const assets = [];
+  const layers = [];
 
   try {
-    const mood = config?.mood || "idle";
-    const durationMs = animationDuration || getAnimationDurationByMood(mood);
-    const fpsNumber = parseInt(String(frameRate), 10) || 30;
-    const totalFrames = Math.round((durationMs / 1000) * fpsNumber);
+    for (let i = 0; i < totalFrames; i++) {
+      if (onProgress) {
+        onProgress(Math.round(((i + 1) / totalFrames) * 95));
+      }
 
-    console.log("🎬 Lottie Export Starting:", {
-      mood,
-      durationMs,
-      totalFrames,
-      fpsNumber,
-    });
+      const progress = i / totalFrames;
+      broadcastSeekProgress(progress, durationMs);
 
-    // 1. Generate animation keyframes untuk semua element
-    const bodyKeyframes = generateBodyKeyframes(mood, totalFrames, durationMs);
-    const eyesKeyframes = generateEyesKeyframes(mood, totalFrames, durationMs);
-    const badgeKeyframes = generateBadgeKeyframes(
-      mood,
-      totalFrames,
-      durationMs,
-    );
-    const accessoriesKeyframes = generateAccessoriesKeyframes(
-      mood,
-      totalFrames,
-      durationMs,
-    );
+      await new Promise((resolve) => {
+        requestAnimationFrame(() => {
+          setTimeout(resolve, 16);
+        });
+      });
 
-    // 2. Get mood color untuk body
-    const svgElement = element.querySelector("svg");
-    const bodyPathEl = svgElement?.querySelector("path[fill*='Grad']");
-    const bodyFillGradId =
-      bodyPathEl?.getAttribute("fill") || "url(#mochi3dGrad)";
-    const bodyStrokeColor = bodyPathEl?.getAttribute("stroke") || "#CBD5E1";
-
-    // Extract gradient color (simplified)
-    let bodyColor = [1, 1, 1, 1]; // default white
-    const gradId = bodyFillGradId.includes("working")
-      ? [0.23, 0.51, 0.96, 1]
-      : bodyFillGradId.includes("thinking")
-        ? [0.55, 0.33, 0.96, 1]
-        : bodyFillGradId.includes("searching")
-          ? [0.31, 0.27, 0.9, 1]
-          : bodyFillGradId.includes("approval")
-            ? [0.99, 0.83, 0.33, 1]
-            : bodyFillGradId.includes("question")
-              ? [0.02, 0.71, 0.82, 1]
-              : bodyFillGradId.includes("error")
-                ? [0.94, 0.27, 0.27, 1]
-                : bodyFillGradId.includes("finished")
-                  ? [0.06, 0.73, 0.51, 1]
-                  : bodyFillGradId.includes("sleeping")
-                    ? [0.55, 0.33, 0.96, 1]
-                    : bodyFillGradId.includes("dizzy")
-                      ? [0.96, 0.25, 0.37, 1]
-                      : [0.98, 0.98, 0.98, 1]; // default light gray
-    bodyColor = gradId;
-
-    // 3. Build Lottie JSON dengan multiple layers
-    const lottieData = {
-      v: "5.7.4",
-      fr: fpsNumber,
-      ip: 0,
-      op: totalFrames,
-      w: 400,
-      h: 400,
-      nm: `${character}-${mood}`,
-      ddd: 0,
-      assets: [],
-      layers: [
-        // ✅ LAYER 1: Body (Ellipse with animation keyframes)
-        buildBodyLayer(bodyKeyframes, bodyColor, bodyStrokeColor),
-
-        // ✅ LAYER 2: Eyes Group (Position + Opacity Blink + Scale)
-        {
-          ddd: 0,
-          ind: 2,
-          ty: 4,
-          nm: "Eyes",
-          sr: 1,
-          ks: {
-            o: eyesKeyframes.opacity,
-            r: { a: 0, k: 0 },
-            p: eyesKeyframes.position,
-            a: { a: 0, k: [200, 205, 0] },
-            s: eyesKeyframes.scale,
-          },
-          ao: 0,
-          shapes: [
-            // Left Eye
-            {
-              ty: "gr",
-              it: [
-                {
-                  ty: "el",
-                  d: 1,
-                  s: { a: 0, k: [33, 33] },
-                  p: { a: 0, k: [-74, 0] },
-                },
-                {
-                  ty: "fl",
-                  c: { a: 0, k: [0.1, 0.1, 0.11, 1] },
-                  o: { a: 0, k: 100 },
-                },
-              ],
-            },
-            // Right Eye
-            {
-              ty: "gr",
-              it: [
-                {
-                  ty: "el",
-                  d: 1,
-                  s: { a: 0, k: [33, 33] },
-                  p: { a: 0, k: [74, 0] },
-                },
-                {
-                  ty: "fl",
-                  c: { a: 0, k: [0.1, 0.1, 0.11, 1] },
-                  o: { a: 0, k: 100 },
-                },
-              ],
-            },
-            // Left Eye Highlight
-            {
-              ty: "gr",
-              it: [
-                {
-                  ty: "el",
-                  d: 1,
-                  s: { a: 0, k: [10.4, 10.4] },
-                  p: { a: 0, k: [-79.6, -9.6] },
-                },
-                {
-                  ty: "fl",
-                  c: { a: 0, k: [1, 1, 1, 1] },
-                  o: { a: 0, k: [30] },
-                },
-              ],
-            },
-            // Right Eye Highlight
-            {
-              ty: "gr",
-              it: [
-                {
-                  ty: "el",
-                  d: 1,
-                  s: { a: 0, k: [10.4, 10.4] },
-                  p: { a: 0, k: [79.6, -9.6] },
-                },
-                {
-                  ty: "fl",
-                  c: { a: 0, k: [1, 1, 1, 1] },
-                  o: { a: 0, k: [30] },
-                },
-              ],
-            },
-          ],
-        },
-
-        // ✅ LAYER 3: Badge (Pulse + Opacity)
-        {
-          ddd: 0,
-          ind: 3,
-          ty: 4,
-          nm: "Badge",
-          sr: 1,
-          ks: {
-            o: badgeKeyframes.opacity,
-            r: { a: 0, k: 0 },
-            p: badgeKeyframes.position,
-            a: { a: 0, k: [0, 0, 0] },
-            s: badgeKeyframes.scale,
-          },
-          ao: 0,
-          shapes: [
-            {
-              ty: "gr",
-              it: [
-                {
-                  ty: "el",
-                  d: 1,
-                  s: { a: 0, k: [28, 28] },
-                  p: { a: 0, k: [0, 0] },
-                },
-                {
-                  ty: "fl",
-                  c: { a: 0, k: getBadgeColor(mood) },
-                  o: { a: 0, k: 100 },
-                },
-              ],
-            },
-          ],
-        },
-
-        // ✅ LAYER 4: Accessories (Greeting Wave / Santa Hat / etc)
-        ...(mood === "greeting"
-          ? [buildGreetingWaveLayer(accessoriesKeyframes)]
-          : []),
-      ],
-      meta: {
-        generator: "Mochi Character Generator - Animated Lottie",
-        character,
+      const scaledCanvas = await captureAndScaleToTarget(
+        element,
+        targetSize.width,
+        targetSize.height,
         config,
-        mood,
-        animationDuration: durationMs,
-        type: "animated-vector-full",
-      },
-    };
+      );
 
-    // 4. Download
-    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
-      JSON.stringify(lottieData, null, 2),
-    )}`;
+      const frameDataUrl = scaledCanvas.toDataURL("image/png");
+      const assetId = `img_${i}`;
 
-    const downloadAnchor = document.createElement("a");
-    downloadAnchor.setAttribute("href", jsonString);
-    downloadAnchor.setAttribute("download", filename);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+      assets.push({
+        id: assetId,
+        w: targetSize.width,
+        h: targetSize.height,
+        u: "",
+        p: frameDataUrl,
+        e: 1,
+      });
 
-    console.log("✅ Lottie JSON exported successfully!");
-    return true;
-  } catch (err) {
-    console.error("❌ Lottie export gagal:", err);
-    throw new Error("Gagal mengekspor ke Lottie JSON animated.");
+      layers.push({
+        ddd: 0,
+        ind: i + 1,
+        ty: 2,
+        nm: `Frame_${i}`,
+        refId: assetId,
+        sr: 1,
+        ks: {
+          o: { a: 0, k: 100 },
+          r: { a: 0, k: 0 },
+          p: { a: 0, k: [targetSize.width / 2, targetSize.height / 2, 0] },
+          a: { a: 0, k: [targetSize.width / 2, targetSize.height / 2, 0] },
+          s: { a: 0, k: [100, 100, 100] },
+        },
+        ao: 0,
+        ip: i,
+        op: i + 1,
+        st: 0,
+      });
+    }
+  } finally {
+    // Resume player state safely
+    window.dispatchEvent(
+      new CustomEvent("mochi-timeline-update", {
+        detail: {
+          progress: 0,
+          isPlaying: false,
+          isExporting: false,
+          durationMs,
+        },
+      }),
+    );
   }
+
+  // 2. Assemble complete valid Lottie JSON specification
+  const lottieData = {
+    v: "5.7.4",
+    fr: fpsNumber,
+    ip: 0,
+    op: totalFrames,
+    w: targetSize.width,
+    h: targetSize.height,
+    nm: `${character}-${mood}`,
+    ddd: 0,
+    assets,
+    layers,
+    meta: {
+      generator: "Monotion Studio 100% Pixel-Perfect Lottie",
+      character,
+      mood,
+      durationMs,
+      totalFrames,
+    },
+  };
+
+  if (onProgress) {
+    onProgress(100);
+  }
+
+  // 3. Trigger download using Blob & URL.createObjectURL
+  const jsonString = JSON.stringify(lottieData, null, 2);
+  const jsonBlob = new Blob([jsonString], { type: "application/json" });
+  const downloadUrl = URL.createObjectURL(jsonBlob);
+
+  const downloadAnchor = document.createElement("a");
+  downloadAnchor.href = downloadUrl;
+  downloadAnchor.download = filename;
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
+
+  setTimeout(() => {
+    URL.revokeObjectURL(downloadUrl);
+  }, 1000);
+
+  return true;
 };
-
-// =========================================================================
-// BUILD BODY LAYER (with proper anchor & position)
-// =========================================================================
-function buildBodyLayer(bodyKeyframes, bodyColor, bodyStrokeColor) {
-  return {
-    ddd: 0,
-    ind: 1,
-    ty: 4,
-    nm: "Body",
-    sr: 1,
-    ks: {
-      o: { a: 0, k: 100 },
-      r: bodyKeyframes.rotation,
-      p: { a: 0, k: [200, 205, 0] }, // Fixed position at center
-      a: { a: 0, k: [105, 95, 0] }, // ← Anchor at ellipse center (half of 210x190)
-      s: bodyKeyframes.scale,
-    },
-    ao: 0,
-    shapes: [
-      {
-        ty: "gr",
-        it: [
-          // ✅ Ellipse body
-          {
-            ty: "el",
-            d: 1,
-            s: { a: 0, k: [210, 190] },
-            p: { a: 0, k: [0, 0] },
-          },
-          // Fill
-          {
-            ty: "fl",
-            c: { a: 0, k: bodyColor },
-            o: { a: 0, k: 100 },
-          },
-          // Stroke
-          {
-            ty: "st",
-            c: { a: 0, k: hexToRgb(bodyStrokeColor) },
-            w: { a: 0, k: 2 },
-            lc: 2,
-            lj: 2,
-            o: { a: 0, k: 100 },
-          },
-        ],
-      },
-    ],
-  };
-}
-
-// =========================================================================
-// KEYFRAME GENERATOR: BODY (Bounce + Rotate + Scale)
-// =========================================================================
-function generateBodyKeyframes(mood, totalFrames, durationMs) {
-  const isDancing = mood === "dancing";
-  const rotationFrames = [];
-  const positionFrames = [];
-  const scaleFrames = [];
-
-  for (let i = 0; i < totalFrames; i++) {
-    const p = i / totalFrames;
-    const bounce = (1 - Math.cos(p * Math.PI * 2)) / 2;
-
-    let pose;
-    if (isDancing) {
-      pose = {
-        y: -12 * bounce,
-        rotate: Math.sin(p * Math.PI * 2) * 6,
-        scaleX: 1 - 0.04 * bounce,
-        scaleY: 1 + 0.05 * bounce,
-      };
-    } else {
-      pose = {
-        y: -6 * bounce,
-        rotate: 0,
-        scaleX: 1,
-        scaleY: 1,
-        scale: 1 + 0.012 * bounce,
-      };
-    }
-
-    rotationFrames.push({
-      t: i,
-      s: [pose.rotate, pose.rotate, 0],
-    });
-
-    positionFrames.push({
-      t: i,
-      s: [200, 205 + pose.y, 0],
-    });
-
-    scaleFrames.push({
-      t: i,
-      s: [pose.scaleX * 100, pose.scaleY * 100, 100],
-    });
-  }
-
-  return {
-    rotation: { a: 1, k: rotationFrames },
-    position: { a: 1, k: positionFrames },
-    scale: { a: 1, k: scaleFrames },
-  };
-}
-
-// =========================================================================
-// KEYFRAME GENERATOR: EYES (Blink + Position Track + Surprised Scale)
-// =========================================================================
-function generateEyesKeyframes(mood, totalFrames, durationMs) {
-  const opacityFrames = [];
-  const positionFrames = [];
-  const scaleFrames = [];
-
-  const isSleeping = mood === "sleeping";
-  const isSurprised = mood === "surprised";
-  const isDizzy = mood === "dizzy";
-  const isWink = mood === "wink";
-
-  for (let i = 0; i < totalFrames; i++) {
-    const p = i / totalFrames;
-
-    // ✅ BLINK LOGIC: Deterministic blink every 30 frames (selama 5 frames)
-    const blinkCycleFrames = 30;
-    const blinkDurationFrames = 5;
-    const cyclePosition = i % blinkCycleFrames;
-    const isBlinking =
-      cyclePosition > blinkCycleFrames - blinkDurationFrames ||
-      cyclePosition < 2;
-    const blinkOpacity = isBlinking ? 0 : 100;
-
-    // ✅ SLEEP: Eyes closed
-    let opacity = isSleeping ? 0 : blinkOpacity;
-
-    // ✅ SURPRISED: Eyes wide (scale up)
-    let eyeScale = isSurprised ? 120 : 100;
-
-    // ✅ DIZZY: Eyes spinning
-    let eyeRotate = isDizzy ? p * 360 : 0;
-
-    // ✅ WINK: Right eye opacity low
-    if (isWink) {
-      opacity =
-        cyclePosition > blinkCycleFrames - blinkDurationFrames ? 0 : 100;
-    }
-
-    // ✅ Position tracking (subtle bounce with body)
-    const bounce = (1 - Math.cos(p * Math.PI * 2)) / 2;
-    const trackY = -3 * bounce;
-
-    opacityFrames.push({
-      t: i,
-      s: [opacity],
-    });
-
-    positionFrames.push({
-      t: i,
-      s: [0, trackY, 0],
-    });
-
-    scaleFrames.push({
-      t: i,
-      s: [eyeScale, eyeScale, 100],
-    });
-  }
-
-  return {
-    opacity: { a: 1, k: opacityFrames },
-    position: { a: 1, k: positionFrames },
-    scale: { a: 1, k: scaleFrames },
-  };
-}
-
-// =========================================================================
-// KEYFRAME GENERATOR: BADGE (Pulse + Opacity)
-// =========================================================================
-function generateBadgeKeyframes(mood, totalFrames, durationMs) {
-  const opacityFrames = [];
-  const positionFrames = [];
-  const scaleFrames = [];
-
-  const hasBadge =
-    mood === "working" ||
-    mood === "thinking" ||
-    mood === "searching" ||
-    mood === "approval" ||
-    mood === "question" ||
-    mood === "error" ||
-    mood === "finished" ||
-    mood === "rate_limit" ||
-    mood === "love" ||
-    mood === "proud";
-
-  if (!hasBadge) {
-    // Badge invisible
-    for (let i = 0; i < totalFrames; i++) {
-      opacityFrames.push({ t: i, s: [0] });
-      positionFrames.push({ t: i, s: [-108, 0, 0] });
-      scaleFrames.push({ t: i, s: [100, 100, 100] });
-    }
-  } else {
-    for (let i = 0; i < totalFrames; i++) {
-      const p = i / totalFrames;
-
-      // ✅ Pulse animation
-      const pulseScale = 100 + 15 * Math.sin(p * Math.PI * 2);
-
-      // ✅ Dot blink untuk working/thinking/searching
-      const isDotBadge =
-        mood === "working" || mood === "thinking" || mood === "searching";
-      const dotBlink = isDotBadge ? 50 + 50 * Math.sin(p * Math.PI * 2) : 100;
-
-      opacityFrames.push({
-        t: i,
-        s: [dotBlink],
-      });
-
-      // Badge position (top-left of body)
-      positionFrames.push({
-        t: i,
-        s: [-108, 0, 0],
-      });
-
-      scaleFrames.push({
-        t: i,
-        s: [pulseScale, pulseScale, 100],
-      });
-    }
-  }
-
-  return {
-    opacity: { a: 1, k: opacityFrames },
-    position: { a: 1, k: positionFrames },
-    scale: { a: 1, k: scaleFrames },
-  };
-}
-
-// =========================================================================
-// KEYFRAME GENERATOR: ACCESSORIES (Greeting Wave)
-// =========================================================================
-function generateAccessoriesKeyframes(mood, totalFrames, durationMs) {
-  const rotationFrames = [];
-
-  if (mood === "greeting") {
-    for (let i = 0; i < totalFrames; i++) {
-      const p = i / totalFrames;
-      const bounce = (1 - Math.cos(p * Math.PI * 2)) / 2;
-
-      // Wave rotate: -10 to +24 degrees
-      const waveRotate = -10 + 34 * bounce;
-
-      rotationFrames.push({
-        t: i,
-        s: [waveRotate, waveRotate, 0],
-      });
-    }
-  }
-
-  return {
-    rotation: { a: 1, k: rotationFrames },
-  };
-}
-
-// =========================================================================
-// BUILD GREETING WAVE LAYER
-// =========================================================================
-function buildGreetingWaveLayer(accessoriesKeyframes) {
-  return {
-    ddd: 0,
-    ind: 4,
-    ty: 4,
-    nm: "Greeting Wave",
-    sr: 1,
-    ks: {
-      o: { a: 0, k: 100 },
-      r: accessoriesKeyframes.rotation,
-      p: { a: 0, k: [280, 195, 0] },
-      a: { a: 0, k: [0, 0, 0] },
-      s: { a: 0, k: [100, 100, 100] },
-    },
-    ao: 0,
-    shapes: [
-      {
-        ty: "gr",
-        it: [
-          {
-            ty: "sh",
-            ks: {
-              a: 0,
-              k: {
-                c: false,
-                v: [
-                  [-15, -8],
-                  [15, -8],
-                  [15, 16],
-                  [-15, 16],
-                ],
-                i: [
-                  [0, 0],
-                  [0, 0],
-                  [0, 0],
-                  [0, 0],
-                ],
-                o: [
-                  [0, 0],
-                  [0, 0],
-                  [0, 0],
-                  [0, 0],
-                ],
-              },
-            },
-          },
-          {
-            ty: "fl",
-            c: { a: 0, k: [0.98, 0.98, 0.98, 1] },
-            o: { a: 0, k: 100 },
-          },
-        ],
-      },
-    ],
-  };
-}
-
-// =========================================================================
-// HELPERS: Path Parsing, Color Conversion
-// =========================================================================
-function parsePathToVertices(pathData) {
-  const coords = [];
-  const numbers = pathData.match(/[\d.-]+/g) || [];
-  for (let i = 0; i < numbers.length; i += 2) {
-    coords.push([parseFloat(numbers[i]), parseFloat(numbers[i + 1])]);
-  }
-  return coords;
-}
-
-function parsePathToInPoints(pathData) {
-  const coords = pathData.match(/[\d.-]+/g) || [];
-  return Array(Math.floor(coords.length / 2)).fill([0, 0]);
-}
-
-function parsePathToOutPoints(pathData) {
-  const coords = pathData.match(/[\d.-]+/g) || [];
-  return Array(Math.floor(coords.length / 2)).fill([0, 0]);
-}
-
-function hexToRgb(hex) {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (!result) return [1, 1, 1, 1];
-  return [
-    parseInt(result[1], 16) / 255,
-    parseInt(result[2], 16) / 255,
-    parseInt(result[3], 16) / 255,
-    1,
-  ];
-}
-
-function getBadgeColor(mood) {
-  const colorMap = {
-    working: [0.23, 0.51, 0.96, 1], // #3B82F6
-    thinking: [0.55, 0.33, 0.96, 1], // #8B5CF6
-    searching: [0.31, 0.27, 0.9, 1], // #4F46E5
-    approval: [0.99, 0.83, 0.33, 1], // #FCD34D
-    question: [0.02, 0.71, 0.82, 1], // #06B6D4
-    error: [0.94, 0.27, 0.27, 1], // #EF4444
-    finished: [0.06, 0.73, 0.51, 1], // #10B981
-    rate_limit: [0.92, 0.35, 0.05, 1], // #EA580C
-    love: [0.96, 0.25, 0.37, 1], // #F43F5E
-    proud: [0.06, 0.73, 0.51, 1], // #10B981
-  };
-  return colorMap[mood] || [0.79, 0.84, 0.89, 1]; // Default gray
-}

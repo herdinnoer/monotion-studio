@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { motion, useSpring, useAnimationControls } from "framer-motion";
 
 /**
@@ -89,19 +89,24 @@ export function MochiMaster({
   const eyeTrackY = useSpring(0, { stiffness: 140, damping: 16 });
 
   // Di MochiMaster useEffect untuk listen timeline update
-useEffect(() => {
-  const handleTimelineUpdate = (e) => {
-    if (e.detail) {
-      setTimeline({
-        progress: e.detail.progress ?? 0,
-        isPlaying: e.detail.isPlaying ?? true,
-        isExporting: e.detail.isExporting ?? false, // ← Add this
+  useEffect(() => {
+    const handleTimelineUpdate = (e) => {
+      if (!e.detail) return;
+      setTimeline((prev) => {
+        // Jika sedang dalam proses export, abaikan event dari player biasa
+        if (prev.isExporting && !e.detail.isExporting && e.detail.isPlaying) {
+          return prev;
+        }
+        return {
+          progress: e.detail.progress ?? 0,
+          isPlaying: e.detail.isExporting ? false : (e.detail.isPlaying ?? true),
+          isExporting: e.detail.isExporting ?? false,
+        };
       });
-    }
-  };
-  window.addEventListener("mochi-timeline-update", handleTimelineUpdate);
-  return () => window.removeEventListener("mochi-timeline-update", handleTimelineUpdate);
-}, []);
+    };
+    window.addEventListener("mochi-timeline-update", handleTimelineUpdate);
+    return () => window.removeEventListener("mochi-timeline-update", handleTimelineUpdate);
+  }, []);
 
 // Update shouldUseSeekPose logic
 const shouldUseSeekPose = !timeline.isPlaying || timeline.isExporting;
@@ -246,40 +251,38 @@ const shouldUseSeekPose = !timeline.isPlaying || timeline.isExporting;
       };
 
   // ✅ ADD: Function untuk get actual animation duration per state
-const getAnimationDuration = () => {
-  const durationMap = {
-    dancing: 0.8 * 1000,      // 800ms
-    greeting: 0.75 * 1000,    // 750ms
-    idle: 3.6 * 1000,         // 3600ms
-    working: 3.6 * 1000,
-    thinking: 3.6 * 1000,
-    searching: 3.6 * 1000,
-    approval: 3.6 * 1000,
-    question: 3.6 * 1000,
-    error: 3.6 * 1000,
-    finished: 3.6 * 1000,
-    rate_limit: 3.6 * 1000,
-    sleeping: 3.6 * 1000,
-    dizzy: 3.6 * 1000,
-    love: 3.6 * 1000,
-    surprised: 3.6 * 1000,
-    proud: 3.6 * 1000,
-    wink: 3.6 * 1000,
-    yawn: 3.6 * 1000,
-    annoyed: 3.6 * 1000,
-    beanie: 3.6 * 1000,
-    santa_hat: 3.6 * 1000,
-    glasses: 3.6 * 1000,
-  };
-  const duration = durationMap[state] || 3600; // ← Ini jadi default kalau state salah
-  console.log("🎯 MochiMaster state:", state, "duration:", duration);
-  return duration;
-};
+  const getAnimationDuration = useCallback((targetState = state) => {
+    const durationMap = {
+      dancing: 800,
+      greeting: 750,
+      idle: 3600,
+      working: 3600,
+      thinking: 3600,
+      searching: 3600,
+      approval: 3600,
+      question: 3600,
+      error: 3600,
+      finished: 3600,
+      rate_limit: 3600,
+      sleeping: 3600,
+      dizzy: 3600,
+      love: 3600,
+      surprised: 3600,
+      proud: 3600,
+      wink: 3600,
+      yawn: 3600,
+      annoyed: 3600,
+      beanie: 3600,
+      santa_hat: 3600,
+      glasses: 3600,
+    };
+    return durationMap[targetState] || 3600;
+  }, [state]);
 
-// ✅ ADD: Expose ke window global
-useEffect(() => {
-  window.getMochiAnimationDuration = getAnimationDuration;
-}, [getAnimationDuration]);
+  // ✅ ADD: Expose ke window global
+  useEffect(() => {
+    window.getMochiAnimationDuration = getAnimationDuration;
+  }, [getAnimationDuration]);
 
   return (
     <div

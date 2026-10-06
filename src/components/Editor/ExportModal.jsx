@@ -68,10 +68,14 @@ export function ExportModal({ isOpen, onClose, character, config, durationMs = 1
           break;
 
         case "lottie":
-          exportAsLottieJson({
+          await exportAsLottieJson({
+            elementId: "character-workspace",
             character,
             config,
+            resolution,
+            frameRate,
             filename: `${baseFilename}-lottie.json`,
+            onProgress: (p) => setProgress(p),
           });
           onClose();
           break;
@@ -149,8 +153,8 @@ export function ExportModal({ isOpen, onClose, character, config, durationMs = 1
           </div>
         </div>
 
-        {/* Resolution (Hanya Tampil Saat Format GIF atau WebM) */}
-        {(format === "gif" || format === "webm") && (
+        {/* Resolution (Tampil Saat Format GIF, WebM, atau Lottie) */}
+        {(format === "gif" || format === "webm" || format === "lottie") && (
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Resolution</span>
             <div className="flex bg-[#ECECEF] dark:bg-[#232328] p-1 rounded-xl border border-gray-200 dark:border-white/10 gap-1">
@@ -174,8 +178,8 @@ export function ExportModal({ isOpen, onClose, character, config, durationMs = 1
           </div>
         )}
 
-        {/* Frame Rate (Tampil Saat Format GIF atau WebM) */}
-        {(format === "gif" || format === "webm") && (
+        {/* Frame Rate (Tampil Saat Format GIF, WebM, atau Lottie) */}
+        {(format === "gif" || format === "webm" || format === "lottie") && (
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">Frame rate</span>
             <div className="flex bg-[#ECECEF] dark:bg-[#232328] p-1 rounded-xl border border-gray-200 dark:border-white/10 gap-1">
@@ -200,7 +204,7 @@ export function ExportModal({ isOpen, onClose, character, config, durationMs = 1
         )}
 
         {/* Indikator Progress */}
-        {isExporting && (format === "gif" || format === "webm") && (
+        {isExporting && (format === "gif" || format === "webm" || format === "lottie") && (
           <div className="w-full bg-[#ECECEF] dark:bg-[#232328] rounded-xl p-3 flex flex-col gap-2">
             <div className="flex justify-between text-xs text-gray-500 font-medium">
               <span className="flex items-center gap-1.5">
