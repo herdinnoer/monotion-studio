@@ -3,11 +3,16 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { motion, useAnimationControls } from "framer-motion";
 import { mochiConfig } from "./mochi.config";
-import { generateSuperellipsePath, generateSpiralPath } from "../_core/shapes";
+import { getMochiMood } from "./mochi.moods";
+import { generateSuperellipsePath } from "../_core/shapes";
 import { useTimeline } from "../_core/useTimeline";
 import { useBlink } from "../_core/useBlink";
 import { useEyeTracking } from "../_core/useEyeTracking";
-import { MOTIONS, loopBounce, getLoopAnimation } from "../_core/motions";
+import { MOTIONS, getLoopAnimation } from "../_core/motions";
+import { Eyes } from "../_core/parts/Eyes";
+import { Blush } from "../_core/parts/Blush";
+import { Badge } from "../_core/parts/Badge";
+import { Particles } from "../_core/parts/Particles";
 
 const { anatomy } = mochiConfig;
 
@@ -101,6 +106,7 @@ export function MochiMaster({
     return generateSuperellipsePath(cx, cy, rx, ry, shapePreset);
   }, [cx, cy, rx, ry, shapePreset]);
 
+  const mood = getMochiMood(state);
   const currentTheme = STATE_THEMES[state] || STATE_THEMES.idle;
   const gradId = color ? `customBodyGrad` : currentTheme.gradId;
   const strokeColor = currentTheme.stroke;
@@ -108,7 +114,6 @@ export function MochiMaster({
 
   // Pose frame deterministik saat EXPORT maupun SCRUBBING, dihitung dari progress
   const p = timeline.progress % 1;
-  const bounce = loopBounce(p);
   const seekBodyPose = MOTIONS[bodyMotion].seek(p);
 
   return (
@@ -427,7 +432,7 @@ export function MochiMaster({
           </motion.g>
         )}
 
-        {state === "finished" && renderFinishedStars(cx, cy, rx, ry, bounce)}
+        <Particles type={mood.particles} layer="back" cx={cx} cy={cy} rx={rx} ry={ry} p={p} />
 
         <path
           d={bodyPath}
@@ -436,432 +441,26 @@ export function MochiMaster({
           strokeWidth={0.1}
         />
 
-        {renderBlush(state, blushLeftX, blushRightX, blushY)}
+        <Blush variant={mood.blush} leftX={blushLeftX} rightX={blushRightX} y={blushY} />
 
-        {renderEyes({
-          state,
-          leftX: eyeLeftX,
-          rightX: eyeRightX,
-          baseY: eyeBaseY,
-          isBlinking,
-          eyeTrackX,
-          eyeTrackY,
-          bounce,
-          p,
-        })}
+        <Eyes
+          variant={mood.eyes}
+          leftX={eyeLeftX}
+          rightX={eyeRightX}
+          y={eyeBaseY}
+          isBlinking={isBlinking && mood.blink !== false}
+          eyeTrackX={eyeTrackX}
+          eyeTrackY={eyeTrackY}
+          p={p}
+        />
 
         {renderAccessories({ state, cx, cy, rx, ry, R, eyeBaseY })}
 
-        {renderBadge(state, badgeX, badgeY, bounce)}
+        <Badge type={mood.badge?.type} color={mood.badge?.color} x={badgeX} y={badgeY} p={p} />
 
-        {renderParticles(state, cx, cy, rx, ry, p)}
+        <Particles type={mood.particles} layer="front" cx={cx} cy={cy} rx={rx} ry={ry} p={p} />
       </motion.svg>
     </div>
-  );
-}
-
-function renderBlush(state, leftX, rightX, y) {
-  if (state === "sleeping" || state === "annoyed") return null;
-
-  if (state === "love") {
-    return (
-      <g fill="#F43F5E" opacity={0.82} filter="url(#dropShadowFilter)">
-        <path
-          d={`M ${leftX} ${y} C ${leftX - 8} ${y - 8}, ${leftX - 14} ${y + 4}, ${leftX} ${y + 12} C ${leftX + 14} ${y + 4}, ${leftX + 8} ${y - 8}, ${leftX} ${y} Z`}
-          transform={`scale(0.9) translate(${leftX * 0.11}, ${y * 0.11})`}
-        />
-        <path
-          d={`M ${rightX} ${y} C ${rightX - 8} ${y - 8}, ${rightX - 14} ${y + 4}, ${rightX} ${y + 12} C ${rightX + 14} ${y + 4}, ${rightX + 8} ${y - 8}, ${rightX} ${y} Z`}
-          transform={`scale(0.9) translate(${rightX * 0.11}, ${y * 0.11})`}
-        />
-      </g>
-    );
-  }
-
-  if (state === "proud") {
-    return (
-      <g fill="#F59E0B" opacity={0.92}>
-        <text x={leftX} y={y + 5} fontSize="17" textAnchor="middle">✨</text>
-        <text x={rightX} y={y + 5} fontSize="17" textAnchor="middle">✨</text>
-      </g>
-    );
-  }
-
-  return (
-    <g>
-      <ellipse cx={leftX} cy={y} rx={17} ry={9.5} fill="url(#blushGrad)" />
-      <ellipse cx={rightX} cy={y} rx={17} ry={9.5} fill="url(#blushGrad)" />
-    </g>
-  );
-}
-
-function renderEyes({
-  state,
-  leftX,
-  rightX,
-  baseY,
-  isBlinking,
-  eyeTrackX,
-  eyeTrackY,
-  p = 0,
-}) {
-  if (isBlinking && !["sleeping", "wink", "finished", "dancing"].includes(state)) {
-    return (
-      <g stroke="#18181B" strokeWidth={6.8} strokeLinecap="round">
-        <line x1={leftX - 13} y1={baseY} x2={leftX + 13} y2={baseY} />
-        <line x1={rightX - 13} y1={baseY} x2={rightX + 13} y2={baseY} />
-      </g>
-    );
-  }
-
-  if (["finished", "dancing", "proud"].includes(state)) {
-    return (
-      <g stroke="#111827" strokeWidth={6.8} strokeLinecap="round" fill="none">
-        <path d={`M ${leftX - 14} ${baseY + 5} Q ${leftX} ${baseY - 9} ${leftX + 14} ${baseY + 5}`} />
-        <path d={`M ${rightX - 14} ${baseY + 5} Q ${rightX} ${baseY - 9} ${rightX + 14} ${baseY + 5}`} />
-      </g>
-    );
-  }
-
-  if (state === "sleeping") {
-    return (
-      <g stroke="#1F2937" strokeWidth={6.8} strokeLinecap="round" fill="none">
-        <path d={`M ${leftX - 14} ${baseY - 3} Q ${leftX} ${baseY + 11} ${leftX + 14} ${baseY - 3}`} />
-        <path d={`M ${rightX - 14} ${baseY - 3} Q ${rightX} ${baseY + 11} ${rightX + 14} ${baseY - 3}`} />
-      </g>
-    );
-  }
-
-  if (state === "dizzy") {
-    const leftSpiral = generateSpiralPath(leftX, baseY, 18, 2.5);
-    const rightSpiral = generateSpiralPath(rightX, baseY, 18, 2.5);
-
-    return (
-      <g stroke="#1F2937" strokeWidth={3.5} strokeLinecap="round" strokeLinejoin="round" fill="none">
-        <motion.path
-          d={leftSpiral}
-          animate={{ rotate: p * 360 }}
-          style={{ transformOrigin: `${leftX}px ${baseY}px` }}
-        />
-        <motion.path
-          d={rightSpiral}
-          animate={{ rotate: -p * 360 }}
-          style={{ transformOrigin: `${rightX}px ${baseY}px` }}
-        />
-      </g>
-    );
-  }
-
-  if (state === "wink") {
-    return (
-      <g>
-        <path
-          d={`M ${leftX - 14} ${baseY + 5} Q ${leftX} ${baseY - 9} ${leftX + 14} ${baseY + 5}`}
-          stroke="#18181B"
-          strokeWidth={6.8}
-          strokeLinecap="round"
-          fill="none"
-        />
-        <motion.g style={{ x: eyeTrackX, y: eyeTrackY }}>
-          <circle cx={rightX} cy={baseY} r={16.5} fill="url(#eyeGloss)" />
-          <circle
-            cx={rightX - 4.8}
-            cy={baseY - 4.8}
-            r={5.2}
-            fill="#FFFFFF"
-            opacity={0.30}
-            filter="url(#eyeHighlightBloom)"
-          />
-          <circle
-            cx={rightX + 4.2}
-            cy={baseY + 4.2}
-            r={2.4}
-            fill="#FFFFFF"
-            opacity={0.30}
-            filter="url(#eyeHighlightBloom)"
-          />
-        </motion.g>
-      </g>
-    );
-  }
-
-  if (state === "yawn") {
-    return (
-      <g>
-        <path
-          d={`M ${leftX - 13} ${baseY - 7} L ${leftX} ${baseY} L ${leftX - 13} ${baseY + 7}`}
-          stroke="#1F2937"
-          strokeWidth={6.0}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-        <path
-          d={`M ${rightX + 13} ${baseY - 7} L ${rightX} ${baseY} L ${rightX + 13} ${baseY + 7}`}
-          stroke="#1F2937"
-          strokeWidth={6.0}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          fill="none"
-        />
-        <ellipse cx={(leftX + rightX) / 2} cy={baseY + 15} rx={7} ry={11} fill="#E11D48" />
-      </g>
-    );
-  }
-
-  if (state === "annoyed" || state === "error" || state === "rate_limit") {
-    return (
-      <g stroke="#18181B" strokeWidth={6.8} strokeLinecap="round">
-        <line
-          x1={leftX - 15}
-          y1={state === "error" ? baseY + 2.5 : baseY}
-          x2={leftX + 15}
-          y2={state === "error" ? baseY - 2.5 : baseY}
-        />
-        <line
-          x1={rightX - 15}
-          y1={state === "error" ? baseY - 2.5 : baseY}
-          x2={rightX + 15}
-          y2={state === "error" ? baseY + 2.5 : baseY}
-        />
-        {state === "error" && (
-          <ellipse cx={(leftX + rightX) / 2} cy={baseY + 16} rx={8} ry={5} fill="#BE123C" />
-        )}
-      </g>
-    );
-  }
-
-  if (state === "surprised") {
-    return (
-      <g>
-        <motion.g style={{ x: eyeTrackX, y: eyeTrackY }}>
-          <circle cx={leftX} cy={baseY} r={18} fill="url(#eyeGloss)" />
-          <circle
-            cx={leftX - 5.2}
-            cy={baseY - 5.2}
-            r={5.6}
-            fill="#FFFFFF"
-            opacity={0.30}
-            filter="url(#eyeHighlightBloom)"
-          />
-          <circle
-            cx={leftX + 4.5}
-            cy={baseY + 4.5}
-            r={2.6}
-            fill="#FFFFFF"
-            opacity={0.30}
-            filter="url(#eyeHighlightBloom)"
-          />
-
-          <circle cx={rightX} cy={baseY} r={18} fill="url(#eyeGloss)" />
-          <circle
-            cx={rightX - 5.2}
-            cy={baseY - 5.2}
-            r={5.6}
-            fill="#FFFFFF"
-            opacity={0.30}
-            filter="url(#eyeHighlightBloom)"
-          />
-          <circle
-            cx={rightX + 4.5}
-            cy={baseY + 4.5}
-            r={2.6}
-            fill="#FFFFFF"
-            opacity={0.30}
-            filter="url(#eyeHighlightBloom)"
-          />
-        </motion.g>
-
-        <circle
-          cx={(leftX + rightX) / 2}
-          cy={baseY + 18}
-          r={8.5}
-          fill="#18181B"
-        />
-      </g>
-    );
-  }
-
-  if (state === "love") {
-    return (
-      <motion.g style={{ x: eyeTrackX, y: eyeTrackY }}>
-        <circle cx={leftX} cy={baseY} r={17} fill="#BE123C" />
-        <text x={leftX} y={baseY + 6} fontSize="17" textAnchor="middle" fill="#FFFFFF">❤️</text>
-        <circle cx={rightX} cy={baseY} r={17} fill="#BE123C" />
-        <text x={rightX} y={baseY + 6} fontSize="17" textAnchor="middle" fill="#FFFFFF">❤️</text>
-      </motion.g>
-    );
-  }
-
-  return (
-    <motion.g style={{ x: eyeTrackX, y: eyeTrackY }}>
-      <circle cx={leftX} cy={baseY} r={16.5} fill="url(#eyeGloss)" />
-      <circle
-        cx={leftX - 4.8}
-        cy={baseY - 4.8}
-        r={5.2}
-        fill="#FFFFFF"
-        opacity={0.30}
-        filter="url(#eyeHighlightBloom)"
-      />
-      <circle
-        cx={leftX + 4.2}
-        cy={baseY + 4.2}
-        r={2.4}
-        fill="#FFFFFF"
-        opacity={0.30}
-        filter="url(#eyeHighlightBloom)"
-      />
-
-      <circle cx={rightX} cy={baseY} r={16.5} fill="url(#eyeGloss)" />
-      <circle
-        cx={rightX - 4.8}
-        cy={baseY - 4.8}
-        r={5.2}
-        fill="#FFFFFF"
-        opacity={0.30}
-        filter="url(#eyeHighlightBloom)"
-      />
-      <circle
-        cx={rightX + 4.2}
-        cy={baseY + 4.2}
-        r={2.4}
-        fill="#FFFFFF"
-        opacity={0.30}
-        filter="url(#eyeHighlightBloom)"
-      />
-    </motion.g>
-  );
-}
-
-function renderFinishedStars(cx, cy, rx, ry, bounce = 0) {
-  const starPath = "M 0 -12 Q 0 0 12 0 Q 0 0 0 12 Q 0 0 -12 0 Q 0 0 0 -12 Z";
-  const stars = [
-    { id: 1, x: cx - 75, y: cy - ry * 0.1, scale: 0.85 },
-    { id: 2, x: cx - 40, y: cy - ry * 0.3, scale: 1.3 },
-    { id: 3, x: cx + 20, y: cy - ry * 0.2, scale: 0.95 },
-    { id: 4, x: cx + 70, y: cy - ry * 0.1, scale: 1.15 },
-    { id: 5, x: cx - 95, y: cy + ry * 0.1, scale: 0.75 },
-    { id: 6, x: cx + 95, y: cy + ry * 0.1, scale: 0.85 },
-    { id: 7, x: cx - 5, y: cy - ry * 0.4, scale: 1.4 },
-  ];
-
-  return (
-    <g filter="url(#dropShadowFilter)">
-      {stars.map((star) => (
-        <g key={`finished-star-${star.id}`} transform={`translate(${star.x}, ${star.y})`}>
-          <motion.path
-            d={starPath}
-            fill="#F59E0B"
-            animate={{
-              y: 20 - 170 * bounce,
-              opacity: Math.sin(bounce * Math.PI),
-              scale: star.scale * Math.sin(bounce * Math.PI),
-              rotate: 120 * bounce,
-            }}
-          />
-        </g>
-      ))}
-    </g>
-  );
-}
-
-function renderBadge(state, bx, by, bounce = 0) {
-  const badgeMap = {
-    working: { bg: "#3B82F6", border: "#1D4ED8", type: "dots", shape: "pill" },
-    thinking: { bg: "#8B5CF6", border: "#6D28D9", type: "dots", shape: "pill" },
-    searching: { bg: "#4F46E5", border: "#3730A3", type: "dots", shape: "pill" },
-    approval: { bg: "#FCD34D", border: "#FCD34D", type: "exclamation", shape: "circle" },
-    question: { bg: "#06B6D4", border: "#0E7490", type: "question", shape: "circle" },
-    rate_limit: { bg: "#EA580C", border: "#C2410C", type: "exclamation", shape: "circle" },
-    love: { bg: "#F43F5E", border: "#BE123C", type: "heart", shape: "circle" },
-    error: { bg: "#EF4444", border: "#B91C1C", type: "exclamation", shape: "circle" },
-    finished: { bg: "#10B981", border: "#047857", type: "check", shape: "circle" },
-    proud: { bg: "#10B981", border: "#047857", type: "check", shape: "circle" },
-  };
-
-  const badge = badgeMap[state];
-  if (!badge) return null;
-
-  if (badge.shape === "circle") {
-    return (
-      <g
-        transform={`translate(${bx - -10}, ${by - 0}) scale(1.2)`}
-        filter="url(#dropShadowFilter)"
-      >
-        <circle cx={14} cy={14} r={14} fill={badge.bg} stroke={badge.border} strokeWidth={0.2} />
-        <circle cx={14} cy={14} r={14} fill="url(#badgeGlossSheen)" />
-
-        <text
-          x={14}
-          y={19}
-          fill="#FFFFFF"
-          fontSize="16"
-          fontWeight="bold"
-          textAnchor="middle"
-          fontFamily="system-ui, -apple-system, sans-serif"
-        >
-          {badge.type === "exclamation"
-            ? "!"
-            : badge.type === "question"
-            ? "?"
-            : badge.type === "check"
-            ? "✓"
-            : badge.type === "heart"
-            ? "♥"
-            : "•"}
-        </text>
-      </g>
-    );
-  }
-
-  return (
-    <g
-      transform={`translate(${bx - -2}, ${by - 0}) scale(1.1)`}
-      filter="url(#dropShadowFilter)"
-    >
-      <rect
-        x={0}
-        y={0}
-        width={52}
-        height={28}
-        rx={14}
-        fill={badge.bg}
-        stroke={badge.border}
-        strokeWidth={0.2}
-      />
-      <rect x={0} y={0} width={52} height={28} rx={14} fill="url(#badgeGlossSheen)" />
-
-      <g fill="#FFFFFF">
-        <motion.circle
-          cx={15}
-          cy={14}
-          r={4.0}
-          animate={{
-            opacity: 0.35 + 0.65 * Math.sin(bounce * Math.PI),
-            scale: 0.85 + 0.3 * Math.sin(bounce * Math.PI),
-          }}
-        />
-        <motion.circle
-          cx={26}
-          cy={14}
-          r={3.0}
-          animate={{
-            opacity: 0.35 + 0.65 * Math.sin((bounce + 0.25) * Math.PI),
-            scale: 0.85 + 0.3 * Math.sin((bounce + 0.25) * Math.PI),
-          }}
-        />
-        <motion.circle
-          cx={37}
-          cy={14}
-          r={2.0}
-          animate={{
-            opacity: 0.35 + 0.65 * Math.sin((bounce + 0.5) * Math.PI),
-            scale: 0.85 + 0.3 * Math.sin((bounce + 0.5) * Math.PI),
-          }}
-        />
-      </g>
-    </g>
   );
 }
 
@@ -1063,47 +662,6 @@ function renderAccessories({ state, cx, cy, rx, ry, R, eyeBaseY }) {
     default:
       return null;
   }
-}
-
-function renderParticles(state, cx, cy, rx, ry, p = 0) {
-  if (state === "sleeping") {
-    return (
-      <g fill="#A855F7" fontWeight="bold" fontFamily="sans-serif">
-        <motion.text
-          x={cx + rx * 0.65}
-          y={cy - ry * 0.45}
-          fontSize="18"
-          animate={{ y: -18 * (p % 1), opacity: Math.sin((p % 1) * Math.PI) }}
-        >
-          Z
-        </motion.text>
-        <motion.text
-          x={cx + rx * 0.82}
-          y={cy - ry * 0.65}
-          fontSize="14"
-          animate={{
-            y: -18 * ((p + 0.33) % 1),
-            opacity: Math.sin(((p + 0.33) % 1) * Math.PI),
-          }}
-        >
-          z
-        </motion.text>
-        <motion.text
-          x={cx + rx * 0.95}
-          y={cy - ry * 0.85}
-          fontSize="11"
-          animate={{
-            y: -18 * ((p + 0.66) % 1),
-            opacity: Math.sin(((p + 0.66) % 1) * Math.PI),
-          }}
-        >
-          z
-        </motion.text>
-      </g>
-    );
-  }
-
-  return null;
 }
 
 export { renderAccessories, renderAccessories as RenderAccessories };
