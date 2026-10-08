@@ -3,46 +3,9 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, useSpring, useAnimationControls } from "framer-motion";
 import { mochiConfig } from "./mochi.config";
+import { generateSuperellipsePath, generateSpiralPath } from "../_core/shapes";
 
 const { anatomy } = mochiConfig;
-
-/**
- * Superellipse generator: |x/rx|^n + |y/ry|^n = 1
- */
-function generateSuperellipsePath(cx, cy, rx, ry, preset = "mochi", segments = 160) {
-  let n = 2.7;
-  if (preset === "round") n = 2.0;
-  else if (preset === "boxy") n = 4.5;
-
-  const points = [];
-  for (let i = 0; i <= segments; i++) {
-    const theta = (i / segments) * Math.PI * 2;
-    const cosT = Math.cos(theta);
-    const sinT = Math.sin(theta);
-
-    const exponent = 2 / n;
-    const x = cx + rx * Math.sign(cosT) * Math.pow(Math.abs(cosT), exponent);
-    const y = cy + ry * Math.sign(sinT) * Math.pow(Math.abs(sinT), exponent);
-
-    points.push(`${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`);
-  }
-
-  return points.join(" ") + " Z";
-}
-
-function generateSpiralPath(cx, cy, maxR = 15.5, turns = 2.5) {
-  const points = [];
-  const steps = 80;
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps;
-    const angle = t * turns * 2 * Math.PI;
-    const r = t * maxR;
-    const x = cx + r * Math.cos(angle);
-    const y = cy + r * Math.sin(angle);
-    points.push(`${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${y.toFixed(2)}`);
-  }
-  return points.join(" ");
-}
 
 const STATE_THEMES = {
   idle: { gradId: "mochi3dGrad", stroke: "#CBD5E1", glow: null },
@@ -570,13 +533,6 @@ const shouldUseSeekPose = !timeline.isPlaying || timeline.isExporting;
         )}
 
         {state === "finished" && renderFinishedStars(cx, cy, rx, ry, bounce)}
-
-        <path
-          d={bodyPath}
-          fill={`url(#${gradId})`}
-          stroke={strokeColor}
-          strokeWidth={0.1}
-        />
 
         <path
           d={bodyPath}
