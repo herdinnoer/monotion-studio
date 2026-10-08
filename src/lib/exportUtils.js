@@ -1,37 +1,13 @@
 import * as htmlToImage from "html-to-image";
+import { getMochiMoodDuration } from "@/characters/mochi/mochi.moods";
 
 // =========================================================================
 // HELPER FUNCTIONS & MOOD DURATION MAP
 // =========================================================================
 
-// Durasi ideal 1 loop penuh (dalam ms) sesuai mood/state Mochi
+// Durasi 1 loop penuh dibaca dari daftar mood Mochi (sumber tunggal)
 export function getAnimationDurationByMood(mood = "idle") {
-  const durationMap = {
-    dancing: 800, // Animasi joget cepat (0.8s)
-    greeting: 750, // Animasi melambai (0.75s)
-    sleeping: 2400, // Animasi bernapas pelan & Zzz naik (2.4s)
-    dizzy: 1200, // Animasi mata pusing memutar (1.2s)
-    yawn: 2000, // Animasi menguap (2.0s)
-    idle: 1600, // Animasi standar (1.6s)
-    working: 1600,
-    thinking: 1600,
-    searching: 1600,
-    approval: 1600,
-    question: 1600,
-    error: 1600,
-    finished: 1600,
-    rate_limit: 1600,
-    love: 1600,
-    surprised: 1600,
-    proud: 1600,
-    wink: 1600,
-    annoyed: 1600,
-    beanie: 1600,
-    santa_hat: 1600,
-    glasses: 1600,
-  };
-
-  return durationMap[mood] || 1600;
+  return getMochiMoodDuration(mood);
 }
 
 // Detect WebM / Video MimeType yang didukung browser

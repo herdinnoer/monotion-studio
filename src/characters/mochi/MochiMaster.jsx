@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, useSpring, useAnimationControls } from "framer-motion";
 
 /**
@@ -249,40 +249,6 @@ const shouldUseSeekPose = !timeline.isPlaying || timeline.isExporting;
         scaleY: 1,
         scale: 1 + 0.012 * bounce,
       };
-
-  // ✅ ADD: Function untuk get actual animation duration per state
-  const getAnimationDuration = useCallback((targetState = state) => {
-    const durationMap = {
-      dancing: 800,
-      greeting: 750,
-      idle: 3600,
-      working: 3600,
-      thinking: 3600,
-      searching: 3600,
-      approval: 3600,
-      question: 3600,
-      error: 3600,
-      finished: 3600,
-      rate_limit: 3600,
-      sleeping: 3600,
-      dizzy: 3600,
-      love: 3600,
-      surprised: 3600,
-      proud: 3600,
-      wink: 3600,
-      yawn: 3600,
-      annoyed: 3600,
-      beanie: 3600,
-      santa_hat: 3600,
-      glasses: 3600,
-    };
-    return durationMap[targetState] || 3600;
-  }, [state]);
-
-  // ✅ ADD: Expose ke window global
-  useEffect(() => {
-    window.getMochiAnimationDuration = getAnimationDuration;
-  }, [getAnimationDuration]);
 
   return (
     <div

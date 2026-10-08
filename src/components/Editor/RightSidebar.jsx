@@ -3,7 +3,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { ColorInput } from "@/components/UI/ColorInput";
-import { MOCHI_STATES } from "./LeftSidebar";
+import { mochiMoods } from "@/characters/mochi/mochi.moods";
 import { ChevronDown } from "lucide-react";
 import { Switch } from "@heroui/react";
 
@@ -85,7 +85,7 @@ export const RightSidebar = ({ config, onConfigChange }) => {
         {/* Mood / Expression Section */}
         <div className="space-y-3">
           <h3 className="text-[12px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
-            Mood / State (26)
+            Mood / State ({mochiMoods.length})
           </h3>
           <div className="relative w-full">
             <select
@@ -98,9 +98,9 @@ export const RightSidebar = ({ config, onConfigChange }) => {
                 "transition-all cursor-pointer",
               )}
             >
-              {MOCHI_STATES.map((st) => (
-                <option key={st} value={st}>
-                  {st.replace(/_/g, " ")}
+              {mochiMoods.map((mood) => (
+                <option key={mood.id} value={mood.id}>
+                  {mood.label}
                 </option>
               ))}
             </select>

@@ -12,7 +12,7 @@ import {
   exportAsLottieJson,
 } from "@/lib/exportUtils";
 
-export function ExportModal({ isOpen, onClose, character, config, durationMs = 1600, }) {
+export function ExportModal({ isOpen, onClose, character, config, durationMs, }) {
   const [format, setFormat] = useState("gif");
   const [resolution, setResolution] = useState("720p");
   const [frameRate, setFrameRate] = useState("60 fps");

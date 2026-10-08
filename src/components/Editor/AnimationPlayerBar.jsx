@@ -3,11 +3,11 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Play, Pause, RotateCcw, Repeat, Gauge } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getMochiMoodDuration } from "@/characters/mochi/mochi.moods";
 
 export function AnimationPlayerBar({
   elementId = "character-workspace",
   currentState = "idle",
-  durationMs: initialDurationMs = 1600,
   totalFrames = 48,
   onDurationChange,
 }) {
@@ -17,12 +17,8 @@ export function AnimationPlayerBar({
   const [speed, setSpeed] = useState(1);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
 
-    // ✅ ADD: State untuk actual duration
-  const durationMs = useMemo(() => {
-    return typeof window !== "undefined"
-      ? window.getMochiAnimationDuration?.(currentState) || initialDurationMs
-      : initialDurationMs;
-  }, [currentState, initialDurationMs]);
+  // Durasi 1 putaran dibaca dari daftar mood Mochi
+  const durationMs = useMemo(() => getMochiMoodDuration(currentState), [currentState]);
 
   useEffect(() => {
     onDurationChange?.(durationMs);

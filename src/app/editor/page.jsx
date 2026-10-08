@@ -9,6 +9,7 @@ import { CenterWorkspace } from "@/components/Editor/CenterWorkspace";
 import { RightSidebar } from "@/components/Editor/RightSidebar";
 import { ExportModal } from "@/components/Editor/ExportModal";
 import { AnimationPlayerBar } from "@/components/Editor/AnimationPlayerBar";
+import { getMochiMoodDuration } from "@/characters/mochi/mochi.moods";
 
 const emptySubscribe = () => () => {};
 function useMounted() {
@@ -19,7 +20,7 @@ export default function EditorPage() {
   const mounted = useMounted();
   const { characters } = useCharacterTemplates();
   const [isExportOpen, setIsExportOpen] = useState(false);
-  const [currentDurationMs, setCurrentDurationMs] = useState(1600); // State untuk menyimpan duration aktual dari AnimationPlayerBar
+  const [currentDurationMs, setCurrentDurationMs] = useState(() => getMochiMoodDuration("idle")); // State untuk menyimpan duration aktual dari AnimationPlayerBar
 
   // State Riwayat Undo / Redo
   const [history, setHistory] = useState([
@@ -165,7 +166,6 @@ export default function EditorPage() {
           <AnimationPlayerBar
             elementId="character-workspace"
             currentState={config.mood}
-            durationMs={1600}
             onDurationChange={(duration) => setCurrentDurationMs(duration)} 
           />
         </div>

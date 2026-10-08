@@ -2,19 +2,13 @@
 
 import React from "react";
 import { MochiMaster } from "@/characters/mochi/MochiMaster";
+import { mochiMoods } from "@/characters/mochi/mochi.moods";
 import { cn } from "@/lib/utils";
 
-export const MOCHI_STATES = [
-  "idle", "working", "thinking", "searching", "approval", "question",
-  "error", "finished", "rate_limit", "sleeping", "dizzy", "greeting",
-  "love", "surprised", "proud", "wink", "yawn", "annoyed",
-  "dancing", "beanie", "santa_hat", "glasses"
-];
-
 export const LeftSidebar = ({ selectedCharacterId, onSelectCharacter, characters }) => {
-  const getMoodCount = (charId, defaultCount) => {
-    if (charId === "mochi") return MOCHI_STATES.length;
-    return defaultCount;
+  const getMoodCount = (charId) => {
+    if (charId === "mochi") return mochiMoods.length;
+    return 0;
   };
 
   return (
@@ -28,7 +22,7 @@ export const LeftSidebar = ({ selectedCharacterId, onSelectCharacter, characters
       {/* Grid 2 Kolom */}
       <div className="p-3 flex-1 overflow-y-auto custom-scrollbar grid grid-cols-2 gap-2.5 content-start">
         {characters.map((char) => {
-          const actualMoodCount = getMoodCount(char.id, char.moods);
+          const actualMoodCount = getMoodCount(char.id);
           const isSelected = selectedCharacterId === char.id;
 
           return (
