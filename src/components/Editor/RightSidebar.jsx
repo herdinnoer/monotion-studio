@@ -3,12 +3,13 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { ColorInput } from "@/components/UI/ColorInput";
-import { mochiMoods } from "@/characters/mochi/mochi.moods";
-import { mochiConfig, mochiDefaultShape } from "@/characters/mochi/mochi.config";
+import { getCharacter, getDefaultShape } from "@/characters/registry";
 import { ChevronDown } from "lucide-react";
 import { Switch } from "@heroui/react";
 
-export const RightSidebar = ({ config, onConfigChange }) => {
+export const RightSidebar = ({ characterId, config, onConfigChange }) => {
+  const character = getCharacter(characterId);
+  const shapePresets = character.shapePresets ?? [];
 
   const handleMoodChange = (mood) => {
     onConfigChange({ ...config, mood });
@@ -24,7 +25,7 @@ export const RightSidebar = ({ config, onConfigChange }) => {
 
   // Reset warna body karakter ke warna dasar awal karakter
   const handleResetColor = () => {
-    onConfigChange({ ...config, color: mochiConfig.defaultColor });
+    onConfigChange({ ...config, color: character.defaultColor });
   };
 
   const handleBgChange = (bgColor) => {
@@ -54,19 +55,21 @@ export const RightSidebar = ({ config, onConfigChange }) => {
       </div>
 
       <div className="p-4 flex-1 space-y-6">
-        {/* Shape Preset Section */}
+        {/* Shape Preset Section (hanya kalau karakter punya pilihan bentuk) */}
+        {shapePresets.length > 0 && (
+        <>
         <div className="space-y-3">
           <h3 className="text-[12px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
             Shape Preset
           </h3>
           <div className="grid grid-cols-3 gap-2">
-            {mochiConfig.shapePresets.map((preset) => (
+            {shapePresets.map((preset) => (
               <button
                 key={preset.id}
                 onClick={() => handleShapePresetChange(preset.id)}
                 className={cn(
                   "px-2 py-2 text-xs font-medium rounded-lg border transition-all text-center",
-                  (config.shapePreset || mochiDefaultShape) === preset.id
+                  (config.shapePreset || getDefaultShape(character)) === preset.id
                     ? "bg-[#0E89F8] text-white border-blue-600 shadow-sm"
                     : "bg-[#ECECEF] dark:bg-[#212025] border-divider text-foreground hover:border-gray-400"
                 )}
@@ -78,11 +81,13 @@ export const RightSidebar = ({ config, onConfigChange }) => {
         </div>
         {/* Divider antara Shape Preset & Mood */}
         <div className="border-t border-divider" />
+        </>
+        )}
 
         {/* Mood / Expression Section */}
         <div className="space-y-3">
           <h3 className="text-[12px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
-            Mood / State ({mochiMoods.length})
+            Mood / State ({character.moods.length})
           </h3>
           <div className="relative w-full">
             <select
@@ -95,7 +100,7 @@ export const RightSidebar = ({ config, onConfigChange }) => {
                 "transition-all cursor-pointer",
               )}
             >
-              {mochiMoods.map((mood) => (
+              {character.moods.map((mood) => (
                 <option key={mood.id} value={mood.id}>
                   {mood.label}
                 </option>
@@ -169,7 +174,7 @@ export const RightSidebar = ({ config, onConfigChange }) => {
               Reset
             </button>
           </div>
-          <ColorInput value={config.color || mochiConfig.defaultColor} onChange={handleColorChange} />
+          <ColorInput value={config.color || character.defaultColor} onChange={handleColorChange} />
         </div>
       </div>
     </aside>

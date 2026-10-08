@@ -1,11 +1,13 @@
 "use client";
 
 import React from "react";
-import { MochiMaster } from "@/characters/mochi/MochiMaster";
-import { mochiConfig, mochiDefaultShape, isMochiDefaultColor } from "@/characters/mochi/mochi.config";
+import { getCharacter, getDefaultShape, isDefaultColor } from "@/characters/registry";
 import { cn } from "@/lib/utils";
 
-export const CenterWorkspace = ({ config }) => {
+export const CenterWorkspace = ({ characterId, config }) => {
+  const character = getCharacter(characterId);
+  const CharacterComponent = character.Component;
+
   return (
     <main
       className={cn(
@@ -22,10 +24,10 @@ export const CenterWorkspace = ({ config }) => {
           backgroundColor: config.isBgRemoved ? "transparent" : config.backgroundColor,
         }}
       >
-        <MochiMaster
-          state={config.mood || mochiConfig.defaultMood}
-          shapePreset={config.shapePreset || mochiDefaultShape}
-          color={isMochiDefaultColor(config.color) ? null : config.color}
+        <CharacterComponent
+          state={config.mood || character.defaultMood}
+          shapePreset={config.shapePreset || getDefaultShape(character)}
+          color={isDefaultColor(character, config.color) ? null : config.color}
           size={500}
         />
       </div>

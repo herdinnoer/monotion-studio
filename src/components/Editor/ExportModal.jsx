@@ -43,6 +43,7 @@ export function ExportModal({ isOpen, onClose, character, config, durationMs, })
             resolution,
             frameRate,
             filename: `${baseFilename}.gif`,
+            character,
             onProgress: (p) => setProgress(p),
           });
           onClose();
@@ -62,6 +63,7 @@ export function ExportModal({ isOpen, onClose, character, config, durationMs, })
             resolution,
             frameRate,
             filename: `${baseFilename}.webm`,
+            character,
             onProgress: (p) => setProgress(p),
           });
           onClose();

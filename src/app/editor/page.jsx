@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useSyncExternalStore } from "react";
-import { useCharacterTemplates } from "@/hooks/useCharacterTemplates";
 import { cn } from "@/lib/utils";
 import { TopBar } from "@/components/Editor/TopBar";
 import { LeftSidebar } from "@/components/Editor/LeftSidebar";
@@ -9,13 +8,14 @@ import { CenterWorkspace } from "@/components/Editor/CenterWorkspace";
 import { RightSidebar } from "@/components/Editor/RightSidebar";
 import { ExportModal } from "@/components/Editor/ExportModal";
 import { AnimationPlayerBar } from "@/components/Editor/AnimationPlayerBar";
-import { getMochiMoodDuration, mochiMoods } from "@/characters/mochi/mochi.moods";
-import { mochiConfig, mochiDefaultShape } from "@/characters/mochi/mochi.config";
-
-// Mood dipertahankan kalau karakter punya mood itu; kalau tidak, pakai mood default karakter.
-function pickMood(currentMood) {
-  return mochiMoods.some((m) => m.id === currentMood) ? currentMood : mochiConfig.defaultMood;
-}
+import {
+  characters,
+  defaultCharacter,
+  getCharacter,
+  getDefaultShape,
+  getMoodDuration,
+  pickMood,
+} from "@/characters/registry";
 
 const emptySubscribe = () => () => {};
 function useMounted() {
@@ -24,18 +24,17 @@ function useMounted() {
 
 export default function EditorPage() {
   const mounted = useMounted();
-  const { characters } = useCharacterTemplates();
   const [isExportOpen, setIsExportOpen] = useState(false);
-  const [currentDurationMs, setCurrentDurationMs] = useState(() => getMochiMoodDuration(mochiConfig.defaultMood)); // State untuk menyimpan duration aktual dari AnimationPlayerBar
+  const [currentDurationMs, setCurrentDurationMs] = useState(() => getMoodDuration(defaultCharacter, defaultCharacter.defaultMood)); // State untuk menyimpan duration aktual dari AnimationPlayerBar
 
   // State Riwayat Undo / Redo
   const [history, setHistory] = useState([
     {
-      selectedCharacterId: mochiConfig.id,
+      selectedCharacterId: defaultCharacter.id,
       config: {
-        mood: mochiConfig.defaultMood,
-        shapePreset: mochiDefaultShape,
-        color: mochiConfig.defaultColor,
+        mood: defaultCharacter.defaultMood,
+        shapePreset: getDefaultShape(defaultCharacter),
+        color: defaultCharacter.defaultColor,
         backgroundColor: "#f5f5f7",
         isBgRemoved: false,
       },
@@ -69,11 +68,12 @@ export default function EditorPage() {
 
   // Handler Ganti Karakter
   const handleSelectCharacter = (id) => {
+    const character = getCharacter(id);
     const newConfig = {
       ...config,
-      mood: pickMood(config.mood),
-      shapePreset: mochiDefaultShape,
-      color: mochiConfig.defaultColor,
+      mood: pickMood(character, config.mood),
+      shapePreset: getDefaultShape(character),
+      color: character.defaultColor,
     };
     pushState(id, newConfig);
   };
@@ -166,16 +166,18 @@ export default function EditorPage() {
 
         {/* AREA TENGAH: CenterWorkspace + AnimationPlayerBar */}
         <div className="flex-1 flex flex-col gap-2 h-full min-h-0">
-          <CenterWorkspace config={config} />
+          <CenterWorkspace characterId={selectedCharacterId} config={config} />
           
           <AnimationPlayerBar
             elementId="character-workspace"
+            characterId={selectedCharacterId}
             currentState={config.mood}
             onDurationChange={(duration) => setCurrentDurationMs(duration)} 
           />
         </div>
 
         <RightSidebar
+          characterId={selectedCharacterId}
           config={config}
           onConfigChange={handleConfigChange}
         />

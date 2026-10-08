@@ -1,6 +1,6 @@
 // Daftar resmi mood Mochi (sumber tunggal).
 // Dropdown mood, label jumlah mood, dan durasi animasi (preview & export)
-// semuanya membaca dari file ini. Jangan tulis ulang daftar/angka ini di tempat lain.
+// semuanya membaca dari file ini (lewat registry.js). Jangan tulis ulang daftar/angka ini di tempat lain.
 
 import { MOTIONS } from "../_core/motions";
 import { mochiConfig } from "./mochi.config";
@@ -51,11 +51,6 @@ export const mochiMoods = [
   { id: "santa_hat", label: "Santa Hat", durationMs: FLOAT_MS, accessory: "santa_hat" },
   { id: "glasses", label: "Glasses", durationMs: FLOAT_MS, accessory: "glasses" },
 ];
-
-// Durasi 1 putaran untuk mood tertentu. Mood tak dikenal pakai durasi napas.
-export function getMochiMoodDuration(moodId) {
-  return mochiMoods.find((m) => m.id === moodId)?.durationMs ?? FLOAT_MS;
-}
 
 // Data lengkap 1 mood. Mood tak dikenal pakai mood default.
 export function getMochiMood(moodId) {

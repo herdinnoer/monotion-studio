@@ -1,14 +1,14 @@
 import * as htmlToImage from "html-to-image";
-import { getMochiMoodDuration } from "@/characters/mochi/mochi.moods";
+import { getCharacter, getMoodDuration } from "@/characters/registry";
 import { TIMELINE_EVENT } from "@/characters/_core/useTimeline";
 
 // =========================================================================
 // HELPER FUNCTIONS & MOOD DURATION MAP
 // =========================================================================
 
-// Durasi 1 loop penuh dibaca dari daftar mood Mochi (sumber tunggal)
-export function getAnimationDurationByMood(mood = "idle") {
-  return getMochiMoodDuration(mood);
+// Durasi 1 loop penuh dibaca dari daftar mood karakter (lewat registry)
+export function getAnimationDurationByMood(mood, characterId) {
+  return getMoodDuration(getCharacter(characterId), mood);
 }
 
 // Detect WebM / Video MimeType yang didukung browser
@@ -111,7 +111,7 @@ function cleanupWorkspaceAnimations(element, durationMs = 1600) {
     styleEl.parentNode.removeChild(styleEl);
   }
 
-  const wasPlaying = sessionStorage.getItem("mochi-was-playing") === "true";
+  const wasPlaying = sessionStorage.getItem("timeline-was-playing") === "true";
   window.dispatchEvent(
     new CustomEvent(TIMELINE_EVENT, {
       detail: {
@@ -159,6 +159,7 @@ export const exportAsGif = async ({
   resolution = "720p",
   frameRate = "30 fps",
   filename = "character-animation.gif",
+  character,
   animationDuration,
   onProgress,
   config = {},
@@ -172,7 +173,7 @@ export const exportAsGif = async ({
   const GIF = GIFModule.default || GIFModule;
 
   const mood = config?.mood || "idle";
-  const durationMs = animationDuration || getAnimationDurationByMood(mood);
+  const durationMs = animationDuration || getAnimationDurationByMood(mood, character);
 
   const resolutionMap = {
     "240p": { width: 240, height: 240 },
@@ -297,7 +298,7 @@ export const exportAsSvg = async ({
 
   const svgElement = container.querySelector("svg");
   if (!svgElement) {
-    throw new Error("Elemen SVG Mochi tidak ditemukan!");
+    throw new Error("Elemen SVG karakter tidak ditemukan!");
   }
 
   const clonedSvg = svgElement.cloneNode(true);
@@ -339,6 +340,7 @@ export const exportAsWebm = async ({
   resolution = "720p",
   frameRate = "30 fps",
   filename = "character-animation.webm",
+  character,
   animationDuration,
   onProgress,
   config = {},
@@ -347,7 +349,7 @@ export const exportAsWebm = async ({
   if (!element) throw new Error("Elemen workspace tidak ditemukan!");
 
   const mood = config?.mood || "idle";
-  const durationMs = animationDuration || getAnimationDurationByMood(mood);
+  const durationMs = animationDuration || getAnimationDurationByMood(mood, character);
 
   const resolutionMap = {
     "240p": { width: 240, height: 240 },
@@ -575,7 +577,7 @@ export default MochiCharacter;`;
 // =========================================================================
 export const exportAsLottieJson = async ({
   elementId = "character-workspace",
-  character = "mochi",
+  character,
   config = {},
   resolution = "480p",
   frameRate = "30 fps",
@@ -589,7 +591,7 @@ export const exportAsLottieJson = async ({
   }
 
   const mood = config?.mood || "idle";
-  const durationMs = animationDuration || getAnimationDurationByMood(mood);
+  const durationMs = animationDuration || getAnimationDurationByMood(mood, character);
 
   const resolutionMap = {
     "240p": { width: 240, height: 240 },

@@ -1,16 +1,9 @@
 "use client";
 
 import React from "react";
-import { MochiMaster } from "@/characters/mochi/MochiMaster";
-import { mochiMoods } from "@/characters/mochi/mochi.moods";
 import { cn } from "@/lib/utils";
 
 export const LeftSidebar = ({ selectedCharacterId, onSelectCharacter, characters }) => {
-  const getMoodCount = (charId) => {
-    if (charId === "mochi") return mochiMoods.length;
-    return 0;
-  };
-
   return (
     <aside className="w-[240px] h-full flex flex-col overflow-hidden bg-white dark:bg-[#161618] rounded-2xl border border-divider dark:shadow-xl shrink-0 select-none">
       <div className="p-4 border-b border-divider shrink-0">
@@ -22,7 +15,6 @@ export const LeftSidebar = ({ selectedCharacterId, onSelectCharacter, characters
       {/* Grid 2 Kolom */}
       <div className="p-3 flex-1 overflow-y-auto custom-scrollbar grid grid-cols-2 gap-2.5 content-start">
         {characters.map((char) => {
-          const actualMoodCount = getMoodCount(char.id);
           const isSelected = selectedCharacterId === char.id;
 
           return (
@@ -38,11 +30,7 @@ export const LeftSidebar = ({ selectedCharacterId, onSelectCharacter, characters
             >
               {/* Preview Karakter */}
               <div className="w-full aspect-square rounded-xl flex items-center justify-center overflow-hidden p-1">
-                {char.id === "mochi" ? (
-                  <MochiMaster state="idle" size={200} />
-                ) : (
-                  <span className="text-2xl">{char.thumbnail}</span>
-                )}
+                <char.Component state={char.defaultMood} size={200} />
               </div>
 
               {/* Label Nama & Mood di Dalam Kartu */}
@@ -51,7 +39,7 @@ export const LeftSidebar = ({ selectedCharacterId, onSelectCharacter, characters
                   {char.name}
                 </div>
                 <div className="text-[11px] text-gray-500">
-                  {actualMoodCount} moods
+                  {char.moods.length} moods
                 </div>
               </div>
             </button>

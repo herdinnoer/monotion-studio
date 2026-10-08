@@ -1,5 +1,5 @@
 // Pengaturan dasar Mochi (sumber tunggal).
-// Editor membaca warna awal, mood awal, dan pilihan bentuk dari sini.
+// Editor membaca warna awal, mood awal, dan pilihan bentuk dari sini (lewat registry.js).
 // MochiMaster membaca proporsi badan (anatomy) dari sini.
 
 export const mochiConfig = {
@@ -43,9 +43,3 @@ export const mochiConfig = {
   allowedAccessories: ["beanie", "santa_hat", "glasses"],
 };
 
-export const mochiDefaultShape = mochiConfig.shapePresets[0].id;
-
-// Cek apakah warna sama dengan warna dasar awal (huruf besar/kecil diabaikan).
-export function isMochiDefaultColor(color) {
-  return !color || color.toLowerCase() === mochiConfig.defaultColor.toLowerCase();
-}
