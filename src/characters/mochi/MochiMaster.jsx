@@ -258,7 +258,7 @@ export function MochiMaster({
           />
         )}
 
-        <Particles type={mood.particles} layer="back" anchor={points.stars} rx={rx} ry={ry} p={p} />
+        <Particles type={mood.particles} layer="back" points={points} rx={rx} ry={ry} p={p} />
 
         <MochiBody
           bodyPath={bodyPath}
@@ -309,7 +309,7 @@ export function MochiMaster({
 
         <Badge type={mood.badge?.type} color={mood.badge?.color} x={points.badge.x} y={points.badge.y} p={p} />
 
-        <Particles type={mood.particles} layer="front" anchor={points.zzz} rx={rx} ry={ry} p={p} />
+        <Particles type={mood.particles} layer="front" points={points} rx={rx} ry={ry} p={p} />
       </motion.svg>
     </div>
   );

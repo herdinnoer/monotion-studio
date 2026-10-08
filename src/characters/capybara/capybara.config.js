@@ -58,16 +58,21 @@ export const capybaraConfig = {
     leaf: { paint: "fixed" }, // daun tetap hijau, menempel di jeruk
   },
 
-  // Titik tempel Zzz, bintang, badge, dan aksesori (lihat _core/anchors.js).
+  // Titik tempel Zzz, bintang, badge, aksesori, mulut, dan partikel (lihat _core/anchors.js).
   // Relatif ke badan: 0 = tengah, ±1 = tepi. Kepala lebih tinggi karena ada jeruk.
   anchors: {
     hat: { x: 0, y: -0.55 },
     face: { x: 0, y: -0.183 }, // garis tengah mata, diukur dari referensi
-    zzz: { x: 0.7, y: -0.7 },
+    zzz: { x: 1.058, y: -0.667 }, // tengah Z besar (zzz-bold), diukur dari referensi sleeping
     stars: { x: 0, y: -0.45 },
     badge: { x: -0.9, y: -0.95 },
     // Pangkal mulut (ujung atas garis tengah), tepat di bawah hidung. Diukur dari referensi
     mouth: { x: 0, y: 0.151 },
+    // Pusat tanda marah (annoyed), di dahi kanan atas. Diukur dari referensi (B18.6)
+    anger: { x: 0.594, y: -0.557 },
+    // Tengah sebaran kilau (proud), setinggi bintang-bintang di kiri & kanan kepala.
+    // Diukur dari referensi (B18.6)
+    twinkle: { x: 0, y: -0.379 },
   },
 
   // Aksesori yang boleh dipakai Capybara. Topi bentrok dengan jeruk, jadi hanya kacamata.

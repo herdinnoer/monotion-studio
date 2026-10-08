@@ -12,6 +12,7 @@ import { MOTIONS, getLoopAnimation } from "../_core/motions";
 import { Eyes } from "../_core/parts/Eyes";
 import { Blush } from "../_core/parts/Blush";
 import { Mouth } from "../_core/parts/Mouth";
+import { Brows } from "../_core/parts/Brows";
 import { Badge } from "../_core/parts/Badge";
 import { Particles } from "../_core/parts/Particles";
 import { Accessory } from "../_core/parts/accessories";
@@ -214,7 +215,7 @@ export function CapybaraMaster({
           />
         )}
 
-        <Particles type={mood.particles} layer="back" anchor={points.stars} rx={rx} ry={ry} p={p} />
+        <Particles type={mood.particles} layer="back" points={points} rx={rx} ry={ry} p={p} />
 
         <CapybaraBody
           bodyPath={bodyPath}
@@ -245,9 +246,18 @@ export function CapybaraMaster({
           size={anatomy.eyeSize * rx}
         />
 
+        <Brows
+          variant={mood.brows}
+          leftX={eyeLeftX}
+          rightX={eyeRightX}
+          y={eyeBaseY}
+          size={anatomy.eyeSize * rx}
+          baseColor={baseColor}
+        />
+
         <Mouth variant={mood.mouth} x={points.mouth.x} y={points.mouth.y} size={anatomy.mouthSize * rx} />
 
-        {/* Lapisan tipis mood: menimpa badan, garis tepi, mata, mulut, pipi & moncong */}
+        {/* Lapisan tipis mood: menimpa badan, garis tepi, mata, alis, mulut, pipi & moncong */}
         {tintFill && (
           <path
             d={bodyPath}
@@ -280,7 +290,7 @@ export function CapybaraMaster({
 
         <Badge type={mood.badge?.type} color={mood.badge?.color} x={points.badge.x} y={points.badge.y} p={p} />
 
-        <Particles type={mood.particles} layer="front" anchor={points.zzz} rx={rx} ry={ry} p={p} />
+        <Particles type={mood.particles} layer="front" points={points} rx={rx} ry={ry} p={p} />
       </motion.svg>
     </div>
   );

@@ -12,10 +12,12 @@
 //   badge — pusat lencana di pojok kepala
 //
 // Titik tambahan (hanya wajib kalau ada mood yang memakainya):
-//   mouth — pangkal mulut, tepat di bawah hidung (lihat _core/parts/Mouth.jsx)
+//   mouth   — pangkal mulut, tepat di bawah hidung (lihat _core/parts/Mouth.jsx)
+//   anger   — pusat tanda marah di dahi (partikel "anger", lihat _core/parts/Particles.jsx)
+//   twinkle — tengah sebaran kilau berkelip (partikel "twinkle")
 
 export const ANCHOR_NAMES = ["hat", "face", "zzz", "stars", "badge"];
-export const OPTIONAL_ANCHOR_NAMES = ["mouth"];
+export const OPTIONAL_ANCHOR_NAMES = ["mouth", "anger", "twinkle"];
 
 // Ubah titik tempel relatif jadi koordinat SVG (piksel di kanvas 400×400).
 export function resolveAnchors(anchors, { cx, cy, rx, ry }) {
