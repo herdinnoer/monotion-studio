@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { MochiMaster } from "@/components/Characters/Mochi/MochiMaster";
+import { MochiMaster } from "@/characters/mochi/MochiMaster";
 import { cn } from "@/lib/utils";
 
 export const MOCHI_STATES = [
