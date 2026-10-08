@@ -10,9 +10,11 @@
 // Component menerima props: state (id mood), shapePreset, color, size.
 
 import mochi from "./mochi";
+import capybara from "./capybara";
 
 export const characters = [
   mochi,
+  capybara,
 ];
 
 export const defaultCharacter = characters[0];

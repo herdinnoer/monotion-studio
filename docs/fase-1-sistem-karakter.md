@@ -326,7 +326,7 @@ Telinga dan jeruk digambar di `CapybaraBody.jsx` (menyatu dengan tubuh), **bukan
 | B14 | Lapisan tipis warna mood + glow di `_core/moodTint.js`. Warna dasar tidak lagi menghapus nuansa mood. **Tes tambahan:** mood error & love × warna putih, hitam, satu warna terang | 5.6, B-5 |
 | B15 | Titik tempel (`anchors`) + `allowedAccessories`: aksesori, Zzz, bintang, badge membaca titik tempel; aksesori pindah ke `_core/parts/accessories/` dan menyesuaikan lebar kepala | 5.4 |
 | B16 | Buat `registry.js` (daftar karakter ditulis manual, satu baris per karakter); editor membaca karakter dari registry; hapus semua `if (mochi)`; buang `characterLibrary.json` | 5.1, 5.3, 5.9 |
-| B17 | **Tes akhir:** buat Capybara sederhana 3 mood (contoh 3.5) dengan **menambah satu folder `src/characters/capybara/` + satu baris di `registry.js`**, tanpa mengubah kode editor | 5.5, 5.9 |
+| B17 | **Tes akhir:** buat Capybara sederhana 3 mood (contoh 3.5) dengan **menambah satu folder `src/characters/capybara/` + satu baris di `registry.js`**, tanpa mengubah kode editor. **Status: fungsi lulus, desain dilanjutkan di B18 dan Fase 4** | 5.5, 5.9 |
 
 Di luar Fase 1:
 

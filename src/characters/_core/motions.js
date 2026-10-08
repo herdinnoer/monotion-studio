@@ -52,6 +52,28 @@ export const MOTIONS = {
     loop: { rotate: [-10, 24, -10] },
     seek: (p) => ({ rotate: -10 + 34 * loopBounce(p) }),
   },
+
+  // Layu turun pelan (untuk bagian bergerak, misalnya telinga saat tidur).
+  // Selalu agak turun & gepeng, makin turun di tengah putaran.
+  droop: {
+    durationMs: 3600,
+    loop: { y: [4, 7, 4], scaleY: [0.85, 0.75, 0.85] },
+    seek: (p) => {
+      const b = loopBounce(p);
+      return { y: 4 + 3 * b, scaleY: 0.85 - 0.1 * b };
+    },
+  },
+
+  // Melompat kecil dua kali per putaran (untuk bagian bergerak, misalnya jeruk).
+  bounce: {
+    durationMs: 3600,
+    loop: { y: [0, -10, 0, -10, 0], rotate: [0, -6, 0, 6, 0] },
+    seek: (p) => {
+      const b = loopBounce((p * 2) % 1);
+      const side = p < 0.5 ? -1 : 1;
+      return { y: -10 * b, rotate: side * 6 * b };
+    },
+  },
 };
 
 // Animasi loop siap pakai untuk framer-motion (gerakan + aturan ulang tanpa henti).
