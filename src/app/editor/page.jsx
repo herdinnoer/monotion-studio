@@ -63,21 +63,12 @@ export default function EditorPage() {
 
   // Handler Ganti Karakter
   const handleSelectCharacter = (id) => {
-    let newConfig;
-    if (id === "mochi") {
-      newConfig = {
-        ...config,
-        mood: "idle",
-        shapePreset: "mochi",
-        color: "#ffffff",
-      };
-    } else {
-      newConfig = {
-        ...config,
-        mood: "idle",
-        color: "#3B82F6",
-      };
-    }
+    const newConfig = {
+      ...config,
+      mood: "idle",
+      shapePreset: "mochi",
+      color: "#ffffff",
+    };
     pushState(id, newConfig);
   };
 
@@ -169,10 +160,7 @@ export default function EditorPage() {
 
         {/* AREA TENGAH: CenterWorkspace + AnimationPlayerBar */}
         <div className="flex-1 flex flex-col gap-2 h-full min-h-0">
-          <CenterWorkspace
-            character={selectedCharacterId}
-            config={config}
-          />
+          <CenterWorkspace config={config} />
           
           <AnimationPlayerBar
             elementId="character-workspace"
@@ -183,7 +171,6 @@ export default function EditorPage() {
         </div>
 
         <RightSidebar
-          character={selectedCharacterId}
           config={config}
           onConfigChange={handleConfigChange}
         />

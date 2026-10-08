@@ -1,11 +1,10 @@
 "use client";
 
 import React from "react";
-import { CoveyCharacter } from "@/components/Characters/Covey/CoveyCharacter";
 import { MochiMaster } from "@/components/Characters/Mochi/MochiMaster";
 import { cn } from "@/lib/utils";
 
-export const CenterWorkspace = ({ character, config }) => {
+export const CenterWorkspace = ({ config }) => {
   return (
     <main
       className={cn(
@@ -22,22 +21,12 @@ export const CenterWorkspace = ({ character, config }) => {
           backgroundColor: config.isBgRemoved ? "transparent" : config.backgroundColor,
         }}
       >
-        {character === "mochi" ? (
-          <MochiMaster
-            state={config.mood || "idle"}
-            shapePreset={config.shapePreset || "mochi"}
-            color={config.color !== "#ffffff" && config.color !== "#FFFFFF" ? config.color : null}
-            size={500}
-          />
-        ) : (
-          <CoveyCharacter
-            mood={config.mood}
-            color={config.color}
-            text={config.text}
-            size={500}
-            showText={true}
-          />
-        )}
+        <MochiMaster
+          state={config.mood || "idle"}
+          shapePreset={config.shapePreset || "mochi"}
+          color={config.color !== "#ffffff" && config.color !== "#FFFFFF" ? config.color : null}
+          size={500}
+        />
       </div>
     </main>
   );

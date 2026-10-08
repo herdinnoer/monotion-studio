@@ -1,9 +1,7 @@
 "use client";
 
 import React from "react";
-import { CoveyCharacter } from "@/components/Characters/Covey/CoveyCharacter";
 import { MochiMaster } from "@/components/Characters/Mochi/MochiMaster";
-import { coveyMoods } from "@/components/Characters/Covey/coveyMoods";
 import { cn } from "@/lib/utils";
 
 export const MOCHI_STATES = [
@@ -16,7 +14,6 @@ export const MOCHI_STATES = [
 export const LeftSidebar = ({ selectedCharacterId, onSelectCharacter, characters }) => {
   const getMoodCount = (charId, defaultCount) => {
     if (charId === "mochi") return MOCHI_STATES.length;
-    if (charId === "covey") return Object.keys(coveyMoods).length;
     return defaultCount;
   };
 
@@ -49,8 +46,6 @@ export const LeftSidebar = ({ selectedCharacterId, onSelectCharacter, characters
               <div className="w-full aspect-square rounded-xl flex items-center justify-center overflow-hidden p-1">
                 {char.id === "mochi" ? (
                   <MochiMaster state="idle" size={200} />
-                ) : char.id === "covey" ? (
-                  <CoveyCharacter mood="idle" size={26} showText={false} />
                 ) : (
                   <span className="text-2xl">{char.thumbnail}</span>
                 )}

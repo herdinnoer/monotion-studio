@@ -1,16 +1,13 @@
 "use client";
 
 import React from "react";
-import { coveyMoods } from "@/components/Characters/Covey/coveyMoods";
 import { cn } from "@/lib/utils";
 import { ColorInput } from "@/components/UI/ColorInput";
 import { MOCHI_STATES } from "./LeftSidebar";
 import { ChevronDown } from "lucide-react";
 import { Switch } from "@heroui/react";
 
-export const RightSidebar = ({ character, config, onConfigChange }) => {
-  const moods = coveyMoods;
-  const isMochi = character === "mochi";
+export const RightSidebar = ({ config, onConfigChange }) => {
 
   const handleMoodChange = (mood) => {
     onConfigChange({ ...config, mood });
@@ -56,43 +53,39 @@ export const RightSidebar = ({ character, config, onConfigChange }) => {
       </div>
 
       <div className="p-4 flex-1 space-y-6">
-        {/* Shape Preset Section (For Mochi) */}
-        {isMochi && (
-          <>
-            <div className="space-y-3">
-              <h3 className="text-[12px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
-                Shape Preset
-              </h3>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { id: "mochi", label: "Mochi" },
-                  { id: "round", label: "Round" },
-                  { id: "boxy", label: "Boxy" },
-                ].map((preset) => (
-                  <button
-                    key={preset.id}
-                    onClick={() => handleShapePresetChange(preset.id)}
-                    className={cn(
-                      "px-2 py-2 text-xs font-medium rounded-lg border transition-all text-center",
-                      (config.shapePreset || "mochi") === preset.id
-                        ? "bg-[#0E89F8] text-white border-blue-600 shadow-sm"
-                        : "bg-[#ECECEF] dark:bg-[#212025] border-divider text-foreground hover:border-gray-400"
-                    )}
-                  >
-                    {preset.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {/* Divider antara Shape Preset & Mood */}
-            <div className="border-t border-divider" />
-          </>
-        )}
+        {/* Shape Preset Section */}
+        <div className="space-y-3">
+          <h3 className="text-[12px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
+            Shape Preset
+          </h3>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { id: "mochi", label: "Mochi" },
+              { id: "round", label: "Round" },
+              { id: "boxy", label: "Boxy" },
+            ].map((preset) => (
+              <button
+                key={preset.id}
+                onClick={() => handleShapePresetChange(preset.id)}
+                className={cn(
+                  "px-2 py-2 text-xs font-medium rounded-lg border transition-all text-center",
+                  (config.shapePreset || "mochi") === preset.id
+                    ? "bg-[#0E89F8] text-white border-blue-600 shadow-sm"
+                    : "bg-[#ECECEF] dark:bg-[#212025] border-divider text-foreground hover:border-gray-400"
+                )}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        {/* Divider antara Shape Preset & Mood */}
+        <div className="border-t border-divider" />
 
         {/* Mood / Expression Section */}
         <div className="space-y-3">
           <h3 className="text-[12px] font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-400">
-            {isMochi ? "Mood / State (26)" : "Mood"}
+            Mood / State (26)
           </h3>
           <div className="relative w-full">
             <select
@@ -105,17 +98,11 @@ export const RightSidebar = ({ character, config, onConfigChange }) => {
                 "transition-all cursor-pointer",
               )}
             >
-              {isMochi
-                ? MOCHI_STATES.map((st) => (
-                    <option key={st} value={st}>
-                      {st.replace(/_/g, " ")}
-                    </option>
-                  ))
-                : Object.entries(moods).map(([key, mood]) => (
-                    <option key={key} value={key}>
-                      {mood.name} • {mood.description}
-                    </option>
-                  ))}
+              {MOCHI_STATES.map((st) => (
+                <option key={st} value={st}>
+                  {st.replace(/_/g, " ")}
+                </option>
+              ))}
             </select>
             <ChevronDown
               size={14}
