@@ -28,6 +28,19 @@ export const mochiConfig = {
     body: { paint: "base" },
     arm: { paint: "base", moving: true, origin: { x: 0.8, y: 0.06 } },
   },
+
+  // Titik tempel aksesori, Zzz, bintang, dan badge (lihat _core/anchors.js).
+  // Relatif ke badan: 0 = tengah, ±1 = tepi.
+  anchors: {
+    hat: { x: 0, y: -0.367 }, // tepi atas pinggiran topi
+    face: { x: 0, y: -0.02 }, // garis mata
+    zzz: { x: 0.65, y: -0.45 },
+    stars: { x: 0, y: -0.2 },
+    badge: { x: -0.96, y: -1.0 },
+  },
+
+  // Aksesori yang boleh dipakai Mochi (lihat _core/parts/accessories/).
+  allowedAccessories: ["beanie", "santa_hat", "glasses"],
 };
 
 export const mochiDefaultShape = mochiConfig.shapePresets[0].id;

@@ -17,6 +17,8 @@ const FLOAT_MS = MOTIONS.float.durationMs;
 //   particles — "zzz" atau "stars" (lihat Particles.jsx), bawaan tanpa partikel
 //   tint      — warna lapisan tipis mood (kunci di _core/moodTint.js), bawaan tanpa
 //   glow      — warna glow di luar badan (kunci di _core/moodTint.js), bawaan tanpa
+//   accessory — aksesori (lihat _core/parts/accessories/), harus ada di
+//               `allowedAccessories` di mochi.config.js
 //   parts     — gerakan bagian bergerak, { namaBagian: presetGerak } (lihat motions.js).
 //               Tangan Mochi hanya muncul kalau mood menyebut `arm`.
 export const mochiMoods = [
@@ -45,9 +47,9 @@ export const mochiMoods = [
   { id: "yawn", label: "Yawn", durationMs: FLOAT_MS, eyes: "yawn" },
   { id: "annoyed", label: "Annoyed", durationMs: FLOAT_MS, eyes: "flat", blush: "none" },
   { id: "dancing", label: "Dancing", durationMs: MOTIONS.dance.durationMs, eyes: "happy", blink: false },
-  { id: "beanie", label: "Beanie", durationMs: FLOAT_MS },
-  { id: "santa_hat", label: "Santa Hat", durationMs: FLOAT_MS },
-  { id: "glasses", label: "Glasses", durationMs: FLOAT_MS },
+  { id: "beanie", label: "Beanie", durationMs: FLOAT_MS, accessory: "beanie" },
+  { id: "santa_hat", label: "Santa Hat", durationMs: FLOAT_MS, accessory: "santa_hat" },
+  { id: "glasses", label: "Glasses", durationMs: FLOAT_MS, accessory: "glasses" },
 ];
 
 // Durasi 1 putaran untuk mood tertentu. Mood tak dikenal pakai durasi napas.
