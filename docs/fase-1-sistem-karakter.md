@@ -153,7 +153,7 @@ src/characters/
 |---|---|---|
 | Punya `defaultMood` | `*.config.js` | 5.3 |
 | Punya `defaultColor` (warna dasar awal) | `*.config.js` | 5.3 |
-| Tiap bagian badan ditandai `paint: "base"` (ikut warna dasar) atau `paint: "fixed"` (warna tetap) | `*.config.js` → `parts` | 5.2 |
+| Tiap bagian badan ditandai `paint: "base"` (ikut warna dasar), `paint: "derived"` (turunan warna dasar, mulai B18.1), atau `paint: "fixed"` (warna tetap) | `*.config.js` → `parts` | 5.2, 5.11 |
 | Bagian yang bisa dianimasikan sendiri ditandai `moving: true` + titik putar (`origin`) | `*.config.js` → `parts` | 5.7 |
 | Punya titik tempel kepala: `hat`, `face`, `zzz`, `stars`, `badge` | `*.config.js` → `anchors` | 5.4 |
 | Punya daftar aksesori yang diizinkan | `*.config.js` → `allowedAccessories` | 5.4 |
@@ -167,8 +167,9 @@ Angka posisi (`origin`, `anchors`) ditulis **relatif ke ukuran badan** (0 = teng
 ### 3.3 Urutan lapisan warna (sama untuk semua karakter)
 
 ```
-1. Warna dasar user        → hanya bagian ber-paint "base"
-2. Warna tetap             → bagian ber-paint "fixed" (jeruk, mata, pipi, dll)
+1. Warna dasar user        → bagian ber-paint "base", dan bagian ber-paint
+                             "derived" (dihitung dari warna dasar, lihat 5.11)
+2. Warna tetap             → bagian ber-paint "fixed" (daun, mata, pipi, dll)
 3. Lapisan tipis mood      → menimpa badan, garis tepi, DAN elemen,
                              opacity = MOOD_TINT_OPACITY dari _core
 4. Glow mood               → di luar badan
@@ -328,10 +329,53 @@ Telinga dan jeruk digambar di `CapybaraBody.jsx` (menyatu dengan tubuh), **bukan
 | B16 | Buat `registry.js` (daftar karakter ditulis manual, satu baris per karakter); editor membaca karakter dari registry; hapus semua `if (mochi)`; buang `characterLibrary.json` | 5.1, 5.3, 5.9 |
 | B17 | **Tes akhir:** buat Capybara sederhana 3 mood (contoh 3.5) dengan **menambah satu folder `src/characters/capybara/` + satu baris di `registry.js`**, tanpa mengubah kode editor. **Status: fungsi lulus, desain dilanjutkan di B18 dan Fase 4** | 5.5, 5.9 |
 
+### 4.4 Langkah B18: lengkapi cetakan
+
+Hasil perbandingan cetakan dengan gambar referensi `docs/reference/capybara-moods.jpg`
+(15 mood). Gambar hanya acuan bentuk, ekspresi, dan susunan; gayanya mengikuti 5.10.
+
+**Celah yang ditemukan**
+
+| Level | Celah |
+|---|---|
+| Belum ada wadahnya (perlu sistem baru) | Mulut terpisah (sekarang mulut menempel di mata `yawn`, `angry`, `surprised`); alis + kerutan dahi; warna turunan (5.11); badan berubah bentuk per mood (Capybara juga belum membaca `motion` dari mood); kepala kubah (superellipse simetris atas-bawah, kepala referensi atasnya lebih sempit) |
+| Wadah ada, gambarnya belum | Mata cokelat besar + kilau bintang; mata putih besar + titik pupil; mata setengah tertutup; mata hati masih emoji; wink mata kanan; partikel pusaran, tanda marah, hati melayang, kilau diam berkelip (butuh titik tempel baru); air liur (jadi bagian mulut menguap); pipi pink padat |
+| Sudah bisa | Mata `sleepy`, `dizzy`, `flat`, `wink`; Zzz; glow & lapisan tipis mood; telinga layu; jeruk melompat |
+
+Laci baru (mulut, alis, mata, partikel) ditaruh di `_core` supaya bisa dipakai semua
+karakter (5.3). B18 hanya mengisi varian yang dibutuhkan 5 mood uji; varian lainnya
+dicicil di Fase 4.
+
+**Mood uji (5):** idle, annoyed, proud (baru) + sleeping, love (lama). Mata hati di love
+boleh tetap emoji dulu, diganti di Fase 4.
+
+**Sumber bentuk & warna:** file SVG Figma `docs/reference/capybara.svg`. Selama file itu
+belum ada, warna memakai perkiraan dari gambar referensi.
+
+| Langkah | Pekerjaan | Untuk mood | Keputusan |
+|---|---|---|---|
+| B18.1 | **Warna turunan:** jenis cat `paint: "derived"` di config + rumus "lebih gelap/terang dari warna dasar", otomatis balik arah kalau warna dasar sangat terang/gelap. Moncong, dalam telinga, dan jeruk pindah ke sini; daun tetap hijau. `defaultColor` Capybara diganti oranye (perkiraan dulu, final dari SVG Figma) | semua | 5.11 |
+| B18.2 | **Kepala kubah:** bentuk badan baru di `_core/shapes.js`, telinga & moncong digambar ulang, halus bergradient tanpa bulu. **Wajib mengikuti SVG Figma, bukan menebak dari gambar.** Kalau SVG belum ada saat gilirannya, lewati dulu dan kerjakan langkah lain yang tidak bergantung padanya | semua | 5.10 |
+| B18.3 | **Laci mulut:** `_core/parts/Mouth.jsx` + titik tempel `mouth` + kunci `mouth` di daftar mood. Isi awal: `w` (ω), `frown` (cemberut), `smirk` (senyum puas) | idle, annoyed, proud | 5.3 |
+| B18.4 | **Mata baru:** `iris` (cokelat besar + kilau), setengah tertutup `heavy` (kesal) dan `smug` (melirik). Tetap ikut mouse & bisa kedip | idle, annoyed, proud | 5.3 |
+| B18.5 | **Laci alis:** `_core/parts/Brows.jsx`. Isi awal: `angry` (+ kerutan dahi), `smug` | annoyed, proud | 5.3 |
+| B18.6 | **Partikel baru:** `anger` (tanda marah) dan `twinkle` (kilau diam berkelip) + titik tempel barunya. Wajib ikut mode seek | annoyed, proud | 5.4, 5.7 |
+| B18.7 | **Pose badan per mood:** kunci `pose` di mood (contoh proud: badan sedikit melebar/gepeng, kepala mendongak). Capybara membaca `motion` dari mood. Wajib ikut mode seek | proud | 5.7 |
+| B18.8 | **Pasang mood** idle, annoyed, proud di `capybara.moods.js` (sleeping & love tetap) | — | 5.1 |
+| B18.9 | **Tes akhir:** 5 mood × warna dasar putih, hitam, oranye, satu warna terang. Jeruk selalu terbedakan dari kepala. Export GIF/WebM sama dengan preview. Mochi tidak berubah | — | 5.10, 5.11 |
+
+Setiap langkah tetap memakai tes wajib 4.1.
+
 Di luar Fase 1:
 
 - **B-7 "Copy React Component":** tetap disembunyikan (opsinya sudah di-comment di
   `ExportModal.jsx:106`). Dievaluasi di Fase 3. Lihat 5.8.
+- **Fase 4, mulut Mochi:** mulut yang menempel di mata Mochi (`yawn`, `angry`,
+  `surprised`) dipindah ke laci mulut (`_core/parts/Mouth.jsx`). Langkah tersendiri
+  karena mengubah tampilan Mochi.
+- **Fase 4, sisa 10 mood Capybara:** varian yang belum dibuat di B18: mulut "o", mulut
+  terbuka + lidah, mulut "x", mulut menguap + air liur; mata putih + pupil, mata hati
+  tanpa emoji, wink mata kanan; partikel pusaran & hati melayang; pipi pink padat.
 
 ---
 
@@ -401,3 +445,28 @@ Fase 1, dievaluasi di Fase 3.
 Karakter baru didaftarkan dengan **menambah satu baris di `registry.js`**, bukan
 deteksi folder otomatis. Definisi tes akhir (5.5) menjadi: tambah satu folder +
 satu baris di `registry.js`, tanpa mengubah kode editor.
+
+### 5.10 Gaya karakter: halus bergradient, tanpa tekstur bulu
+
+Semua karakter digambar halus bergradient seperti Mochi, **tanpa tekstur bulu**.
+Gambar referensi (misalnya `docs/reference/capybara-moods.jpg`) hanya acuan bentuk,
+ekspresi, dan susunan, bukan acuan gaya permukaan.
+
+### 5.11 Tiga jenis warna di cetakan
+
+Setiap bagian badan memakai salah satu dari tiga jenis warna:
+
+| Jenis | `paint` | Arti |
+|---|---|---|
+| Ikut warna dasar | `"base"` | Sama dengan warna dasar pilihan user |
+| Turunan warna dasar | `"derived"` | Lebih gelap/terang dari warna dasar. Otomatis balik arah kalau warna dasar sangat terang/gelap, supaya tetap terlihat beda |
+| Warna tetap | `"fixed"` | Tidak ikut warna user |
+
+Capybara:
+
+- Badan dan telinga: ikut warna dasar.
+- Moncong, dalam telinga, dan jeruk: turunan warna dasar. Jeruk **harus tetap
+  terbedakan dari kepala** di warna dasar apa pun.
+- Daun: warna tetap hijau.
+- Warna dasar awal (`defaultColor`): oranye seperti referensi. Kode final diambil dari
+  SVG Figma (`docs/reference/capybara.svg`); sementara memakai perkiraan dari gambar.
