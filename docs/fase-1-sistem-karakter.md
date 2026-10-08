@@ -288,7 +288,7 @@ export const capybaraMoods = [
 Telinga dan jeruk digambar di `CapybaraBody.jsx` (menyatu dengan tubuh), **bukan** sebagai aksesori.
 
 > Catatan: gerakan bagian (`droop`, `bounce`) dan daftar aksesori Capybara di atas
-> masih **contoh**. Nilai finalnya mengikuti desain Figma.
+> masih **contoh**. Nilai finalnya mengikuti gambar referensi (5.13).
 
 ---
 
@@ -349,14 +349,16 @@ dicicil di Fase 4.
 **Mood uji (5):** idle, annoyed, proud (baru) + sleeping, love (lama). Mata hati di love
 boleh tetap emoji dulu, diganti di Fase 4.
 
-**Sumber bentuk & warna:** file SVG Figma `docs/reference/capybara.svg`. Selama file itu
-belum ada, warna memakai perkiraan dari gambar referensi.
+**Sumber bentuk & warna:** gambar referensi per mood di `docs/reference/capybara/`
+(potongan `capybara-moods.jpg`). Tidak ada SVG Figma; semua bentuk dibuat dari gambar
+referensi dan dicek dengan halaman pembanding (B18.0). Lihat 5.13.
 
 | Langkah | Pekerjaan | Untuk mood | Keputusan |
 |---|---|---|---|
-| B18.1 | **Warna turunan:** jenis cat `paint: "derived"` di config + rumus "lebih gelap/terang dari warna dasar", otomatis balik arah kalau warna dasar sangat terang/gelap. Moncong, dalam telinga, dan jeruk pindah ke sini; daun tetap hijau. `defaultColor` Capybara diganti oranye (perkiraan dulu, final dari SVG Figma) | semua | 5.11 |
+| B18.0 | **Alat pembanding:** (1) `capybara-moods.jpg` dipotong jadi 15 gambar per mood tanpa tulisan label di `docs/reference/capybara/<mood>.png` (semua 563 × 498 piksel, posisi karakter seragam). (2) Halaman alat kerja `/alat/pembanding` (`src/app/alat/pembanding/`): pilih mood, mode tumpuk dengan slider opacity referensi 0–100%, mode berdampingan, slider geser & ukuran referensi untuk menyejajarkan dengan karakter (tersimpan di browser), dan tombol bekukan gerakan. Mood yang belum ada di kode hanya menampilkan referensi. **Bukan untuk user:** sudah otomatis 404 di build produksi, dan **wajib dihapus sebelum rilis (Fase 5)** | semua | 5.13 |
+| B18.1 | **Warna turunan:** jenis cat `paint: "derived"` di config + rumus "lebih gelap/terang dari warna dasar", otomatis balik arah kalau warna dasar sangat terang/gelap. Moncong, dalam telinga, dan jeruk pindah ke sini; daun tetap hijau. `defaultColor` Capybara diganti oranye (diambil dari gambar referensi, 5.13) | semua | 5.11 |
 | B18.1b | **Bayangan badan dari warna dasar:** ujung gelap gradient badan memakai versi gelap warna dasar itu sendiri (rumus B18.1, `getBodyShadowColor` di `_core/derivedColor.js`), menggantikan abu `#475569`. Berlaku untuk Mochi dan Capybara. Gradient bawaan Mochi (putih, warna belum diganti) tidak berubah | semua | 5.11, 5.12 |
-| B18.2 | **Kepala kubah:** bentuk badan baru di `_core/shapes.js`, telinga & moncong digambar ulang, halus bergradient tanpa bulu. **Wajib mengikuti SVG Figma, bukan menebak dari gambar.** Kalau SVG belum ada saat gilirannya, lewati dulu dan kerjakan langkah lain yang tidak bergantung padanya | semua | 5.10 |
+| B18.2 | **Kepala kubah:** bentuk badan baru di `_core/shapes.js`, telinga & moncong digambar ulang, halus bergradient tanpa bulu. **Tidak menunggu SVG Figma lagi:** bentuk dibuat dari gambar referensi (`docs/reference/capybara/`) dan dicek dengan halaman pembanding (B18.0) sampai semirip mungkin | semua | 5.10, 5.13 |
 | B18.3 | **Laci mulut:** `_core/parts/Mouth.jsx` + titik tempel `mouth` + kunci `mouth` di daftar mood. Isi awal: `w` (ω), `frown` (cemberut), `smirk` (senyum puas) | idle, annoyed, proud | 5.3 |
 | B18.4 | **Mata baru:** `iris` (cokelat besar + kilau), setengah tertutup `heavy` (kesal) dan `smug` (melirik). Tetap ikut mouse & bisa kedip | idle, annoyed, proud | 5.3 |
 | B18.5 | **Laci alis:** `_core/parts/Brows.jsx`. Isi awal: `angry` (+ kerutan dahi), `smug` | annoyed, proud | 5.3 |
@@ -371,6 +373,9 @@ Di luar Fase 1:
 
 - **B-7 "Copy React Component":** tetap disembunyikan (opsinya sudah di-comment di
   `ExportModal.jsx:106`). Dievaluasi di Fase 3. Lihat 5.8.
+- **Fase 5, halaman pembanding:** `src/app/alat/pembanding/` (B18.0) adalah alat kerja,
+  bukan fitur. Wajib dihapus (atau minimal tetap disembunyikan) sebelum rilis. Gambar di
+  `docs/reference/capybara/` boleh tetap ada sebagai dokumentasi.
 - **Fase 4, mulut Mochi:** mulut yang menempel di mata Mochi (`yawn`, `angry`,
   `surprised`) dipindah ke laci mulut (`_core/parts/Mouth.jsx`). Langkah tersendiri
   karena mengubah tampilan Mochi.
@@ -469,8 +474,8 @@ Capybara:
 - Moncong, dalam telinga, dan jeruk: turunan warna dasar. Jeruk **harus tetap
   terbedakan dari kepala** di warna dasar apa pun.
 - Daun: warna tetap hijau.
-- Warna dasar awal (`defaultColor`): oranye seperti referensi. Kode final diambil dari
-  SVG Figma (`docs/reference/capybara.svg`); sementara memakai perkiraan dari gambar.
+- Warna dasar awal (`defaultColor`): oranye seperti referensi, diambil dari gambar
+  referensi (tidak ada SVG Figma, lihat 5.13).
 
 ### 5.12 Bayangan badan dari warna dasar
 
@@ -479,3 +484,15 @@ hijau → hijau tua), bukan abu gelap tetap `#475569`. Berlaku untuk semua karak
 termasuk Mochi. Rumusnya sama dengan warna turunan (5.11, B18.1), diatur sekali di
 `_core/derivedColor.js` (`BODY_SHADOW_SHADE`) supaya seragam. Kalau warna dasar sangat
 gelap (misalnya hitam), arahnya otomatis dibalik jadi sedikit lebih terang.
+
+### 5.13 Bentuk Capybara semirip mungkin dengan gambar referensi
+
+Bentuk semua bagian Capybara di setiap mood (kepala, telinga, moncong, jeruk, daun,
+mata, mulut, alis, pipi, partikel, dan perubahan bentuk badan) harus **semirip mungkin**
+dengan `docs/reference/capybara-moods.jpg` (potongan per mood di
+`docs/reference/capybara/`). Gaya permukaan tetap halus bergradient seperti sekarang
+(5.10), jadi yang ditiru adalah bentuk, bukan tekstur bulu.
+
+Tidak ada SVG Figma. Semua bentuk dibuat dari gambar referensi dan dicek kemiripannya
+dengan halaman pembanding `/alat/pembanding` (B18.0). Keputusan ini menggantikan
+rujukan ke `docs/reference/capybara.svg` di 3.5, B18.1, dan 5.11.
