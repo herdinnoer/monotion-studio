@@ -16,6 +16,7 @@ import { Particles } from "../_core/parts/Particles";
 import { Accessory } from "../_core/parts/accessories";
 import { resolveAnchors } from "../_core/anchors";
 import { CapybaraBody } from "./CapybaraBody";
+import { mixColor } from "../_core/derivedColor";
 import {
   MOOD_TINT_OPACITY,
   MOOD_TINT_GRADIENT,
@@ -27,7 +28,7 @@ import {
 const { anatomy, anchors, allowedAccessories, defaultColor } = capybaraConfig;
 
 // Garis tepi badan (tipis). Nuansa mood datang dari lapisan tipis, bukan dari sini.
-const BODY_STROKE = "#8A5A2E";
+const BODY_STROKE = mixColor(defaultColor, -0.45);
 
 // Bentuk badan Capybara (tidak bisa diganti user): superellipse yang sama dengan Mochi
 const BODY_SHAPE = "mochi";
@@ -88,6 +89,8 @@ export function CapybaraMaster({
   const mood = getCapybaraMood(state);
   // Lapisan 1: warna dasar (gradient cokelat bawaan, atau warna pilihan user)
   const baseFill = color ? "url(#capybaraCustomGrad)" : "url(#capybaraBaseGrad)";
+  // Warna dasar dalam kode hex, untuk menghitung bagian ber-paint "derived"
+  const baseColor = color ?? defaultColor;
   // Lapisan 3 & 4: nuansa mood (lapisan tipis + glow), dari _core/moodTint.js
   const moodColors = getMoodColors(mood);
   const tintFill = moodColors.tint ? "url(#capybaraMoodTintGrad)" : null;
@@ -114,9 +117,9 @@ export function CapybaraMaster({
           {/* Id gradient khas Capybara diberi awalan "capybara" supaya tidak bentrok
               dengan karakter lain yang tampil bersamaan (misalnya di daftar karakter). */}
           <radialGradient id="capybaraBaseGrad" cx="36%" cy="28%" r="72%" fx="34%" fy="24%">
-            <stop offset="0%" stopColor="#E9C08F" />
+            <stop offset="0%" stopColor={mixColor(defaultColor, 0.35)} />
             <stop offset="55%" stopColor={defaultColor} />
-            <stop offset="100%" stopColor="#8A5A2E" />
+            <stop offset="100%" stopColor={mixColor(defaultColor, -0.3)} />
           </radialGradient>
 
           {color && (
@@ -219,6 +222,7 @@ export function CapybaraMaster({
           rx={rx}
           ry={ry}
           baseFill={baseFill}
+          baseColor={baseColor}
           stroke={BODY_STROKE}
           tintFill={tintFill}
           tintColor={moodColors.tint}

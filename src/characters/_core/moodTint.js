@@ -2,6 +2,8 @@
 //
 // Urutan lapisan warna (sama untuk semua karakter):
 //   1. Warna dasar user  → bagian ber-paint "base"
+//                          + bagian ber-paint "derived" (dihitung dari warna dasar,
+//                            lihat derivedColor.js)
 //   2. Warna tetap       → bagian ber-paint "fixed"
 //   3. Lapisan tipis mood → menimpa badan, garis tepi, dan elemen (mata, pipi)
 //   4. Glow mood          → di luar badan

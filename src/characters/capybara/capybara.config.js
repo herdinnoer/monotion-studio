@@ -7,7 +7,7 @@
 export const capybaraConfig = {
   id: "capybara",
   name: "Capybara",
-  defaultColor: "#C68A4E",
+  defaultColor: "#F28C3E", // oranye perkiraan dari gambar referensi; final dari SVG Figma
   defaultMood: "idle",
 
   // Proporsi, relatif ke ukuran badan (R).
@@ -15,18 +15,24 @@ export const capybaraConfig = {
   anatomy: { rx: 1.18, ry: 0.86, eyeSpacing: 0.4, blushSpacing: 0.6 },
 
   // Bagian badan (digambar di CapybaraBody.jsx).
-  //   paint: "base"  = ikut warna dasar pilihan user
-  //   paint: "fixed" = warna tetap, tidak ikut warna user
-  //   moving: true   = bisa digerakkan sendiri per mood (lihat `parts` di capybara.moods.js)
-  //   origin         = titik putar, relatif ke badan (0 = tengah, ±1 = tepi)
+  //   paint: "base"    = ikut warna dasar pilihan user
+  //   paint: "derived" = turunan warna dasar (lihat _core/derivedColor.js)
+  //                      shade < 0 = lebih gelap, shade > 0 = lebih terang;
+  //                      arahnya otomatis dibalik kalau warna dasar sangat gelap/terang
+  //   paint: "fixed"   = warna tetap, tidak ikut warna user
+  //   moving: true     = bisa digerakkan sendiri per mood (lihat `parts` di capybara.moods.js)
+  //   origin           = titik putar, relatif ke badan (0 = tengah, ±1 = tepi)
   // Telinga & jeruk menyatu dengan tubuh (bukan aksesori).
   parts: {
     body: { paint: "base" },
     earL: { paint: "base", moving: true, origin: { x: -0.55, y: -0.85 } },
     earR: { paint: "base", moving: true, origin: { x: 0.55, y: -0.85 } },
-    snout: { paint: "fixed" }, // moncong & lubang hidung
-    orange: { paint: "fixed", moving: true, origin: { x: 0, y: -1.0 } }, // jeruk: warna tetap
-    leaf: { paint: "fixed" }, // daun ikut gerak jeruk
+    earInner: { paint: "derived", shade: -0.3 }, // bagian dalam kedua telinga
+    snout: { paint: "derived", shade: -0.22 }, // moncong
+    nostril: { paint: "derived", shade: -0.6 }, // lubang hidung
+    // Jeruk lebih terang dari kepala supaya selalu terbedakan
+    orange: { paint: "derived", shade: 0.25, moving: true, origin: { x: 0, y: -1.0 } },
+    leaf: { paint: "fixed" }, // daun tetap hijau, ikut gerak jeruk
   },
 
   // Titik tempel Zzz, bintang, badge, dan aksesori (lihat _core/anchors.js).
