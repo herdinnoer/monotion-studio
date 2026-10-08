@@ -102,8 +102,8 @@ export function ExportModal({ isOpen, onClose, character, config, durationMs = 1
     { id: "gif", label: "GIF" },
     { id: "svg", label: "SVG" },
     { id: "webm", label: "WebM" },
-    { id: "lottie", label: "Lottie" },
-    { id: "react", label: "React" },
+   // { id: "lottie", label: "Lottie" }, //
+   // { id: "react", label: "React" }, //
   ];
 
   const availableResolutions =

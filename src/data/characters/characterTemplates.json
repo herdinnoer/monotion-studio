@@ -60,6 +60,30 @@
         "backgroundColor": "#F9F0FF"
       },
       "category": "processing"
+    },
+    {
+      "id": "capybara-idle",
+      "characterId": "capybara",
+      "name": "Capybara Chill",
+      "mood": "idle",
+      "text": "Chill Guys~",
+      "backgroundColor": "#FFF2E6"
+    },
+    {
+      "id": "capybara-happy",
+      "characterId": "capybara",
+      "name": "Happy Capybara",
+      "mood": "happy",
+      "text": "So Happy!",
+      "backgroundColor": "#FFE8D6"
+    },
+    {
+      "id": "capybara-sleeping",
+      "characterId": "capybara",
+      "name": "Sleeping Capybara",
+      "mood": "sleeping",
+      "text": "Zzz...",
+      "backgroundColor": "#E6F0FA"
     }
   ]
 }

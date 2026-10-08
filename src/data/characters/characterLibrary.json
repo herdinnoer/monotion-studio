@@ -25,6 +25,20 @@
         "backgroundColor": true,
         "text": false
       }
+    },
+    {
+      "id": "capybara",
+      "name": "Capybara",
+      "description": "Friendly and calm character with 15 expressions",
+      "component": "CapybaraCharacter",
+      "thumbnail": "🍊",
+      "moods": 15,
+      "customizable": {
+        "color": true,
+        "backgroundColor": true,
+        "text": false
+      }
     }
+    
   ]
 }

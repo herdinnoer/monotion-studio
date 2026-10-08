@@ -1,6 +1,7 @@
 export { CoveyCharacter } from "./Covey/CoveyCharacter";
 export { MochiMaster } from "./Mochi/MochiMaster";
 export * from "./Covey/index";
+export * from "./Capybara";
 
 // Character metadata untuk library
 export const CHARACTER_LIBRARY = [

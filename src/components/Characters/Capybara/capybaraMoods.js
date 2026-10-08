@@ -1,0 +1,92 @@
+export const MOOD_DEFINITIONS = {
+  idle: {
+    eyeType: "shiny",
+    mouthType: "smile",
+    eyebrows: "none",
+    effects: [],
+  },
+  happy: {
+    eyeType: "sparkle",
+    mouthType: "open_happy",
+    eyebrows: "happy",
+    effects: [],
+  },
+  love: {
+    eyeType: "hearts",
+    mouthType: "smile",
+    eyebrows: "none",
+    effects: [],
+  },
+  blank: {
+    eyeType: "shiny",
+    mouthType: "small_o",
+    eyebrows: "none",
+    effects: [],
+  },
+  shocked: {
+    eyeType: "shocked",
+    mouthType: "shocked_o",
+    eyebrows: "raised",
+    effects: [],
+  },
+  wow: {
+    eyeType: "shocked",
+    mouthType: "tall_o",
+    eyebrows: "raised",
+    effects: [],
+  },
+  proud: {
+    eyeType: "closed_happy",
+    mouthType: "smile",
+    eyebrows: "none",
+    effects: ["sparkles_around"],
+  },
+  neutral: {
+    eyeType: "shiny",
+    mouthType: "neutral_line",
+    eyebrows: "none",
+    effects: [],
+  },
+  sleeping: {
+    eyeType: "closed_down",
+    mouthType: "small_neutral",
+    eyebrows: "none",
+    effects: ["zzz"],
+  },
+  playful: {
+    eyeType: "wink",
+    mouthType: "tongue_out",
+    eyebrows: "playful",
+    effects: [],
+  },
+  dozing: {
+    eyeType: "closed_down",
+    mouthType: "small_neutral",
+    eyebrows: "none",
+    effects: ["zzz_triple"],
+  },
+  dizzy: {
+    eyeType: "spirals",
+    mouthType: "cross",
+    eyebrows: "worried",
+    effects: ["dizzy_swirls"],
+  },
+  yawning: {
+    eyeType: "droopy",
+    mouthType: "yawn",
+    eyebrows: "none",
+    effects: ["droplet"],
+  },
+  annoyed: {
+    eyeType: "annoyed",
+    mouthType: "frown",
+    eyebrows: "angry",
+    effects: ["anger_mark"],
+  },
+  charmed: {
+    eyeType: "shiny",
+    mouthType: "smile",
+    eyebrows: "none",
+    effects: ["hearts_sparkles"],
+  },
+};
