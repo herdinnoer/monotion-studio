@@ -18,6 +18,16 @@ export const mochiConfig = {
   // Proporsi, relatif ke ukuran badan (R).
   // rx/ry = lebar/tinggi badan, eyeSpacing/blushSpacing = jarak mata/pipi dari tengah.
   anatomy: { rx: 1.14, ry: 0.88, eyeSpacing: 0.37, blushSpacing: 0.52 },
+
+  // Bagian badan (digambar di MochiBody.jsx).
+  //   paint: "base"  = ikut warna dasar pilihan user
+  //   paint: "fixed" = warna tetap, tidak ikut warna user
+  //   moving: true   = bisa digerakkan sendiri per mood (lihat `parts` di mochi.moods.js)
+  //   origin         = titik putar, relatif ke badan (0 = tengah, ±1 = tepi)
+  parts: {
+    body: { paint: "base" },
+    arm: { paint: "base", moving: true, origin: { x: 0.8, y: 0.06 } },
+  },
 };
 
 export const mochiDefaultShape = mochiConfig.shapePresets[0].id;

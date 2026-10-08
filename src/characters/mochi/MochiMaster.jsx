@@ -13,6 +13,7 @@ import { Eyes } from "../_core/parts/Eyes";
 import { Blush } from "../_core/parts/Blush";
 import { Badge } from "../_core/parts/Badge";
 import { Particles } from "../_core/parts/Particles";
+import { MochiBody } from "./MochiBody";
 
 const { anatomy } = mochiConfig;
 
@@ -62,7 +63,6 @@ export function MochiMaster({
   const { eyeTrackX, eyeTrackY } = useEyeTracking(containerRef, enableTracking);
 
   const bodyControls = useAnimationControls();
-  const greetingControls = useAnimationControls();
 
   const bodyMotion = state === "dancing" ? "dance" : "float";
 
@@ -74,16 +74,6 @@ export function MochiMaster({
       bodyControls.stop();
     }
   }, [timeline.isPlaying, timeline.isExporting, bodyMotion, state, bodyControls]);
-
-  useEffect(() => {
-    if (state === "greeting") {
-      if (timeline.isPlaying && !timeline.isExporting) {
-        greetingControls.start(getLoopAnimation("wave"));
-      } else {
-        greetingControls.stop();
-      }
-    }
-  }, [timeline.isPlaying, timeline.isExporting, state, greetingControls]);
 
   const cx = 200;
   const cy = 205;
@@ -404,41 +394,18 @@ export function MochiMaster({
           />
         )}
 
-        {state === "greeting" && (
-          <motion.g
-            style={{ transformOrigin: `${cx + rx * 0.80}px ${cy + 5}px` }}
-            animate={
-              shouldUseSeekPose
-                ? MOTIONS.wave.seek(p)
-                : greetingControls
-            }
-            filter="url(#dropShadowFilter)"
-          >
-            <path
-              d={`M ${cx + rx * 0.70} ${cy - 8}
-                 C ${cx + rx * 1.05} ${cy - 28}, ${cx + rx * 1.28} ${cy - 16}, ${cx + rx * 1.28} ${cy + 5}
-                 C ${cx + rx * 1.28} ${cy + 22}, ${cx + rx * 1.05} ${cy + 24}, ${cx + rx * 0.70} ${cy + 16} Z`}
-              fill="url(#mochi3dGrad)"
-            />
-            <ellipse
-              cx={cx + rx * 1.08}
-              cy={cy - 2}
-              rx={10}
-              ry={5}
-              fill="#FFFFFF"
-              opacity={0.55}
-              transform={`rotate(-22, ${cx + rx * 1.08}, ${cy - 2})`}
-            />
-          </motion.g>
-        )}
-
         <Particles type={mood.particles} layer="back" cx={cx} cy={cy} rx={rx} ry={ry} p={p} />
 
-        <path
-          d={bodyPath}
-          fill={`url(#${gradId})`}
+        <MochiBody
+          bodyPath={bodyPath}
+          cx={cx}
+          cy={cy}
+          rx={rx}
+          ry={ry}
+          baseFill={`url(#${gradId})`}
           stroke={strokeColor}
-          strokeWidth={0.1}
+          partMotions={mood.parts}
+          timeline={timeline}
         />
 
         <Blush variant={mood.blush} leftX={blushLeftX} rightX={blushRightX} y={blushY} />

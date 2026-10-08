@@ -15,6 +15,8 @@ const FLOAT_MS = MOTIONS.float.durationMs;
 //   blush     — jenis pipi (lihat Blush.jsx), bawaan "soft"
 //   badge     — lencana { type, color } (lihat Badge.jsx), bawaan tanpa lencana
 //   particles — "zzz" atau "stars" (lihat Particles.jsx), bawaan tanpa partikel
+//   parts     — gerakan bagian bergerak, { namaBagian: presetGerak } (lihat motions.js).
+//               Tangan Mochi hanya muncul kalau mood menyebut `arm`.
 export const mochiMoods = [
   { id: "idle", label: "Idle", durationMs: FLOAT_MS },
   { id: "working", label: "Working", durationMs: FLOAT_MS, badge: { type: "dots", color: "blue" } },
@@ -31,7 +33,7 @@ export const mochiMoods = [
   { id: "sleeping", label: "Sleeping", durationMs: FLOAT_MS,
     eyes: "sleepy", blink: false, blush: "none", particles: "zzz" },
   { id: "dizzy", label: "Dizzy", durationMs: FLOAT_MS, eyes: "dizzy" },
-  { id: "greeting", label: "Greeting", durationMs: MOTIONS.wave.durationMs },
+  { id: "greeting", label: "Greeting", durationMs: MOTIONS.wave.durationMs, parts: { arm: "wave" } },
   { id: "love", label: "Love", durationMs: FLOAT_MS,
     eyes: "hearts", blush: "hearts", badge: { type: "heart", color: "rose" } },
   { id: "surprised", label: "Surprised", durationMs: FLOAT_MS, eyes: "surprised" },
