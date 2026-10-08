@@ -43,3 +43,12 @@ export function deriveColor(baseHex, shade) {
   const flip = (shade < 0 && brightness < TOO_DARK) || (shade > 0 && brightness > TOO_LIGHT);
   return mixColor(baseHex, flip ? -shade : shade);
 }
+
+// Bayangan badan (bagian bawah gradient badan), bersama untuk semua karakter.
+// Memakai versi gelap dari warna dasar itu sendiri (hijau → hijau tua), bukan abu
+// tetap, supaya warnanya tidak terlihat kusam. Lihat keputusan 5.12.
+export const BODY_SHADOW_SHADE = -0.3;
+
+export function getBodyShadowColor(baseHex) {
+  return deriveColor(baseHex, BODY_SHADOW_SHADE);
+}

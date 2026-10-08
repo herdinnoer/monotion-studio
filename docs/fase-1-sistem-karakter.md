@@ -355,6 +355,7 @@ belum ada, warna memakai perkiraan dari gambar referensi.
 | Langkah | Pekerjaan | Untuk mood | Keputusan |
 |---|---|---|---|
 | B18.1 | **Warna turunan:** jenis cat `paint: "derived"` di config + rumus "lebih gelap/terang dari warna dasar", otomatis balik arah kalau warna dasar sangat terang/gelap. Moncong, dalam telinga, dan jeruk pindah ke sini; daun tetap hijau. `defaultColor` Capybara diganti oranye (perkiraan dulu, final dari SVG Figma) | semua | 5.11 |
+| B18.1b | **Bayangan badan dari warna dasar:** ujung gelap gradient badan memakai versi gelap warna dasar itu sendiri (rumus B18.1, `getBodyShadowColor` di `_core/derivedColor.js`), menggantikan abu `#475569`. Berlaku untuk Mochi dan Capybara. Gradient bawaan Mochi (putih, warna belum diganti) tidak berubah | semua | 5.11, 5.12 |
 | B18.2 | **Kepala kubah:** bentuk badan baru di `_core/shapes.js`, telinga & moncong digambar ulang, halus bergradient tanpa bulu. **Wajib mengikuti SVG Figma, bukan menebak dari gambar.** Kalau SVG belum ada saat gilirannya, lewati dulu dan kerjakan langkah lain yang tidak bergantung padanya | semua | 5.10 |
 | B18.3 | **Laci mulut:** `_core/parts/Mouth.jsx` + titik tempel `mouth` + kunci `mouth` di daftar mood. Isi awal: `w` (ω), `frown` (cemberut), `smirk` (senyum puas) | idle, annoyed, proud | 5.3 |
 | B18.4 | **Mata baru:** `iris` (cokelat besar + kilau), setengah tertutup `heavy` (kesal) dan `smug` (melirik). Tetap ikut mouse & bisa kedip | idle, annoyed, proud | 5.3 |
@@ -470,3 +471,11 @@ Capybara:
 - Daun: warna tetap hijau.
 - Warna dasar awal (`defaultColor`): oranye seperti referensi. Kode final diambil dari
   SVG Figma (`docs/reference/capybara.svg`); sementara memakai perkiraan dari gambar.
+
+### 5.12 Bayangan badan dari warna dasar
+
+Bayangan/gradient badan memakai **versi gelap dari warna dasar itu sendiri** (misalnya
+hijau → hijau tua), bukan abu gelap tetap `#475569`. Berlaku untuk semua karakter,
+termasuk Mochi. Rumusnya sama dengan warna turunan (5.11, B18.1), diatur sekali di
+`_core/derivedColor.js` (`BODY_SHADOW_SHADE`) supaya seragam. Kalau warna dasar sangat
+gelap (misalnya hitam), arahnya otomatis dibalik jadi sedikit lebih terang.

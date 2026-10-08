@@ -16,7 +16,7 @@ import { Particles } from "../_core/parts/Particles";
 import { Accessory } from "../_core/parts/accessories";
 import { resolveAnchors } from "../_core/anchors";
 import { CapybaraBody } from "./CapybaraBody";
-import { mixColor } from "../_core/derivedColor";
+import { mixColor, getBodyShadowColor } from "../_core/derivedColor";
 import {
   MOOD_TINT_OPACITY,
   MOOD_TINT_GRADIENT,
@@ -119,14 +119,14 @@ export function CapybaraMaster({
           <radialGradient id="capybaraBaseGrad" cx="36%" cy="28%" r="72%" fx="34%" fy="24%">
             <stop offset="0%" stopColor={mixColor(defaultColor, 0.35)} />
             <stop offset="55%" stopColor={defaultColor} />
-            <stop offset="100%" stopColor={mixColor(defaultColor, -0.3)} />
+            <stop offset="100%" stopColor={getBodyShadowColor(defaultColor)} />
           </radialGradient>
 
           {color && (
             <radialGradient id="capybaraCustomGrad" cx="36%" cy="28%" r="72%" fx="34%" fy="24%">
               <stop offset="0%" stopColor="#FFFFFF" />
               <stop offset="55%" stopColor={color} />
-              <stop offset="100%" stopColor="#475569" />
+              <stop offset="100%" stopColor={getBodyShadowColor(color)} />
             </radialGradient>
           )}
 
