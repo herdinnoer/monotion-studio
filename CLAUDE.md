@@ -16,7 +16,8 @@ Versi di bawah sesuai yang terpasang di `node_modules`. Cek ulang `package.json`
 - **JavaScript**, bukan TypeScript. Pakai file `.js` / `.jsx`, jangan bikin `.ts` / `.tsx`.
 - **Tailwind CSS 4** untuk styling
 - **HeroUI 3.2.6** (`@heroui/react` + `@heroui/styles`) sebagai design system
-- Library pendukung: `framer-motion` (animasi), `zustand` + `zundo` (state + undo/redo), `gif.js` / `gifshot` (export GIF), `webm-muxer` (export WebM), `lucide-react` / `@iconify/react` (ikon)
+- Library pendukung: `framer-motion` (animasi), `gif.js` (export GIF), `html-to-image` (ubah tampilan karakter jadi gambar untuk export), `webm-muxer` (export WebM), `lucide-react` (ikon)
+- Undo/redo ditulis manual pakai `useState` di `src/app/editor/page.jsx`, tanpa library tambahan.
 
 ## Aturan UI
 
