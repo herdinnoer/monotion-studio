@@ -14,33 +14,18 @@ import { Blush } from "../_core/parts/Blush";
 import { Badge } from "../_core/parts/Badge";
 import { Particles } from "../_core/parts/Particles";
 import { MochiBody } from "./MochiBody";
+import {
+  MOOD_TINT_OPACITY,
+  MOOD_TINT_GRADIENT,
+  MOOD_TINT_STOPS,
+  MOOD_GLOW_OPACITY,
+  getMoodColors,
+} from "../_core/moodTint";
 
 const { anatomy } = mochiConfig;
 
-const STATE_THEMES = {
-  idle: { gradId: "mochi3dGrad", stroke: "#CBD5E1", glow: null },
-  working: { gradId: "working3dGrad", stroke: "#93C5FD", glow: null },
-  thinking: { gradId: "thinking3dGrad", stroke: "#C4B5FD", glow: null },
-  searching: { gradId: "searching3dGrad", stroke: "#A5B4FC", glow: null },
-  approval: { gradId: "approval3dGrad", stroke: "#FCD34D", glow: null },
-  question: { gradId: "question3dGrad", stroke: "#80DEEA", glow: null },
-  error: { gradId: "error3dGrad", stroke: "#FDA4AF", glow: "glow-red" },
-  finished: { gradId: "finished3dGrad", stroke: "#6EE7B7", glow: "glow-teal" },
-  rate_limit: { gradId: "ratelimit3dGrad", stroke: "#FDBA74", glow: null },
-  sleeping: { gradId: "sleeping3dGrad", stroke: "#D8B4FE", glow: null },
-  dizzy: { gradId: "dizzy3dGrad", stroke: "#F472B6", glow: null },
-  greeting: { gradId: "greeting3dGrad", stroke: "#FDE047", glow: null },
-  love: { gradId: "love3dGrad", stroke: "#F43F5E", glow: "glow-pink" },
-  surprised: { gradId: "mochi3dGrad", stroke: "#CBD5E1", glow: null },
-  proud: { gradId: "proud3dGrad", stroke: "#A7F3D0", glow: null },
-  wink: { gradId: "mochi3dGrad", stroke: "#CBD5E1", glow: null },
-  yawn: { gradId: "mochi3dGrad", stroke: "#CBD5E1", glow: null },
-  annoyed: { gradId: "mochi3dGrad", stroke: "#94A3B8", glow: null },
-  dancing: { gradId: "mochi3dGrad", stroke: "#CBD5E1", glow: null },
-  beanie: { gradId: "mochi3dGrad", stroke: "#CBD5E1", glow: null },
-  santa_hat: { gradId: "mochi3dGrad", stroke: "#CBD5E1", glow: null },
-  glasses: { gradId: "mochi3dGrad", stroke: "#CBD5E1", glow: null },
-};
+// Garis tepi badan (tipis). Nuansa mood datang dari lapisan tipis, bukan dari sini.
+const BODY_STROKE = "#CBD5E1";
 
 export function MochiMaster({
   state = "idle",
@@ -97,10 +82,11 @@ export function MochiMaster({
   }, [cx, cy, rx, ry, shapePreset]);
 
   const mood = getMochiMood(state);
-  const currentTheme = STATE_THEMES[state] || STATE_THEMES.idle;
-  const gradId = color ? `customBodyGrad` : currentTheme.gradId;
-  const strokeColor = currentTheme.stroke;
-  const outerGlowFilter = currentTheme.glow;
+  // Lapisan 1: warna dasar (gradient putih bawaan, atau warna pilihan user)
+  const baseFill = color ? "url(#customBodyGrad)" : "url(#mochi3dGrad)";
+  // Lapisan 3 & 4: nuansa mood (lapisan tipis + glow), dari _core/moodTint.js
+  const moodColors = getMoodColors(mood);
+  const tintFill = moodColors.tint ? "url(#moodTintGrad)" : null;
 
   // Pose frame deterministik saat EXPORT maupun SCRUBBING, dihitung dari progress
   const p = timeline.progress % 1;
@@ -128,96 +114,18 @@ export function MochiMaster({
             <stop offset="100%" stopColor="#CBD5E1" />
           </radialGradient>
 
-          <radialGradient id="working3dGrad" cx="36%" cy="28%" r="72%" fx="34%" fy="24%">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="45%" stopColor="#E0F2FE" />
-            <stop offset="80%" stopColor="#BAE6FD" />
-            <stop offset="100%" stopColor="#93C5FD" />
-          </radialGradient>
-
-          <radialGradient id="thinking3dGrad" cx="36%" cy="28%" r="72%" fx="34%" fy="24%">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="45%" stopColor="#F3E8FF" />
-            <stop offset="80%" stopColor="#DDD6FE" />
-            <stop offset="100%" stopColor="#C4B5FD" />
-          </radialGradient>
-
-          <radialGradient id="searching3dGrad" cx="36%" cy="28%" r="72%" fx="34%" fy="24%">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="45%" stopColor="#EEF2FF" />
-            <stop offset="80%" stopColor="#C7D2FE" />
-            <stop offset="100%" stopColor="#A5B4FC" />
-          </radialGradient>
-
-          <radialGradient id="approval3dGrad" cx="36%" cy="28%" r="72%" fx="34%" fy="24%">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="45%" stopColor="#FEF3C7" />
-            <stop offset="80%" stopColor="#FDE68A" />
-            <stop offset="100%" stopColor="#FCD34D" />
-          </radialGradient>
-
-          <radialGradient id="question3dGrad" cx="36%" cy="28%" r="72%" fx="34%" fy="24%">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="45%" stopColor="#E0F7FA" />
-            <stop offset="80%" stopColor="#B2EBF2" />
-            <stop offset="100%" stopColor="#80DEEA" />
-          </radialGradient>
-
-          <radialGradient id="error3dGrad" cx="36%" cy="28%" r="72%" fx="34%" fy="24%">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="45%" stopColor="#FFE4E6" />
-            <stop offset="80%" stopColor="#FECDD3" />
-            <stop offset="100%" stopColor="#FDA4AF" />
-          </radialGradient>
-
-          <radialGradient id="finished3dGrad" cx="36%" cy="28%" r="72%" fx="34%" fy="24%">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="45%" stopColor="#ECFDF5" />
-            <stop offset="80%" stopColor="#A7F3D0" />
-            <stop offset="100%" stopColor="#6EE7B7" />
-          </radialGradient>
-
-          <radialGradient id="ratelimit3dGrad" cx="36%" cy="28%" r="72%" fx="34%" fy="24%">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="45%" stopColor="#FFEDD5" />
-            <stop offset="80%" stopColor="#FED7AA" />
-            <stop offset="100%" stopColor="#FDBA74" />
-          </radialGradient>
-
-          <radialGradient id="sleeping3dGrad" cx="36%" cy="28%" r="72%" fx="34%" fy="24%">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="45%" stopColor="#FAF5FF" />
-            <stop offset="80%" stopColor="#E9D5FF" />
-            <stop offset="100%" stopColor="#D8B4FE" />
-          </radialGradient>
-
-          <radialGradient id="dizzy3dGrad" cx="36%" cy="28%" r="72%" fx="34%" fy="24%">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="45%" stopColor="#FCE7F3" />
-            <stop offset="80%" stopColor="#FBCFE8" />
-            <stop offset="100%" stopColor="#F472B6" />
-          </radialGradient>
-
-          <radialGradient id="greeting3dGrad" cx="36%" cy="28%" r="72%" fx="34%" fy="24%">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="55%" stopColor="#F8FAFC" />
-            <stop offset="85%" stopColor="#E2E8F0" />
-            <stop offset="100%" stopColor="#CBD5E1" />
-          </radialGradient>
-
-          <radialGradient id="love3dGrad" cx="36%" cy="28%" r="72%" fx="34%" fy="24%">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="45%" stopColor="#F0F9FF" />
-            <stop offset="80%" stopColor="#BAE6FD" />
-            <stop offset="100%" stopColor="#7DD3FC" />
-          </radialGradient>
-
-          <radialGradient id="proud3dGrad" cx="36%" cy="28%" r="72%" fx="34%" fy="24%">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="45%" stopColor="#ECFDF5" />
-            <stop offset="80%" stopColor="#D1FAE5" />
-            <stop offset="100%" stopColor="#A7F3D0" />
-          </radialGradient>
+          {moodColors.tint && (
+            <radialGradient id="moodTintGrad" {...MOOD_TINT_GRADIENT}>
+              {MOOD_TINT_STOPS.map((stop) => (
+                <stop
+                  key={stop.offset}
+                  offset={stop.offset}
+                  stopColor={moodColors.tint}
+                  stopOpacity={stop.opacity}
+                />
+              ))}
+            </radialGradient>
+          )}
 
           {color && (
             <radialGradient id="customBodyGrad" cx="36%" cy="28%" r="72%" fx="34%" fy="24%">
@@ -336,23 +244,7 @@ export function MochiMaster({
             </feMerge>
           </filter>
 
-          <filter id="glow-teal" x="-25%" y="-25%" width="150%" height="150%">
-            <feGaussianBlur stdDeviation="9" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-
-          <filter id="glow-red" x="-25%" y="-25%" width="150%" height="150%">
-            <feGaussianBlur stdDeviation="9" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-
-          <filter id="glow-pink" x="-25%" y="-25%" width="150%" height="150%">
+          <filter id="moodGlow" x="-25%" y="-25%" width="150%" height="150%">
             <feGaussianBlur stdDeviation="9" result="coloredBlur" />
             <feMerge>
               <feMergeNode in="coloredBlur" />
@@ -377,20 +269,14 @@ export function MochiMaster({
           />
         )}
 
-        {outerGlowFilter && (
+        {moodColors.glow && (
           <path
             d={bodyPath}
             fill="none"
-            stroke={
-              state === "finished"
-                ? "#10B981"
-                : state === "love"
-                ? "#F43F5E"
-                : "#EF4444"
-            }
+            stroke={moodColors.glow}
             strokeWidth={0.2}
-            opacity={0.65}
-            filter={`url(#${outerGlowFilter})`}
+            opacity={MOOD_GLOW_OPACITY}
+            filter="url(#moodGlow)"
           />
         )}
 
@@ -402,8 +288,10 @@ export function MochiMaster({
           cy={cy}
           rx={rx}
           ry={ry}
-          baseFill={`url(#${gradId})`}
-          stroke={strokeColor}
+          baseFill={baseFill}
+          stroke={BODY_STROKE}
+          tintFill={tintFill}
+          tintColor={moodColors.tint}
           partMotions={mood.parts}
           timeline={timeline}
         />
@@ -420,6 +308,18 @@ export function MochiMaster({
           eyeTrackY={eyeTrackY}
           p={p}
         />
+
+        {/* Lapisan tipis mood: menimpa badan, garis tepi, mata & pipi */}
+        {tintFill && (
+          <path
+            d={bodyPath}
+            fill={tintFill}
+            stroke={moodColors.tint}
+            strokeWidth={0.1}
+            opacity={MOOD_TINT_OPACITY}
+            pointerEvents="none"
+          />
+        )}
 
         {renderAccessories({ state, cx, cy, rx, ry, R, eyeBaseY })}
 

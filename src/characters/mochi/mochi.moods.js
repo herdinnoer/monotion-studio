@@ -15,29 +15,31 @@ const FLOAT_MS = MOTIONS.float.durationMs;
 //   blush     — jenis pipi (lihat Blush.jsx), bawaan "soft"
 //   badge     — lencana { type, color } (lihat Badge.jsx), bawaan tanpa lencana
 //   particles — "zzz" atau "stars" (lihat Particles.jsx), bawaan tanpa partikel
+//   tint      — warna lapisan tipis mood (kunci di _core/moodTint.js), bawaan tanpa
+//   glow      — warna glow di luar badan (kunci di _core/moodTint.js), bawaan tanpa
 //   parts     — gerakan bagian bergerak, { namaBagian: presetGerak } (lihat motions.js).
 //               Tangan Mochi hanya muncul kalau mood menyebut `arm`.
 export const mochiMoods = [
   { id: "idle", label: "Idle", durationMs: FLOAT_MS },
-  { id: "working", label: "Working", durationMs: FLOAT_MS, badge: { type: "dots", color: "blue" } },
-  { id: "thinking", label: "Thinking", durationMs: FLOAT_MS, badge: { type: "dots", color: "violet" } },
-  { id: "searching", label: "Searching", durationMs: FLOAT_MS, badge: { type: "dots", color: "indigo" } },
-  { id: "approval", label: "Approval", durationMs: FLOAT_MS, badge: { type: "exclamation", color: "amber" } },
-  { id: "question", label: "Question", durationMs: FLOAT_MS, badge: { type: "question", color: "cyan" } },
-  { id: "error", label: "Error", durationMs: FLOAT_MS,
+  { id: "working", label: "Working", durationMs: FLOAT_MS, tint: "blue", badge: { type: "dots", color: "blue" } },
+  { id: "thinking", label: "Thinking", durationMs: FLOAT_MS, tint: "violet", badge: { type: "dots", color: "violet" } },
+  { id: "searching", label: "Searching", durationMs: FLOAT_MS, tint: "indigo", badge: { type: "dots", color: "indigo" } },
+  { id: "approval", label: "Approval", durationMs: FLOAT_MS, tint: "amber", badge: { type: "exclamation", color: "amber" } },
+  { id: "question", label: "Question", durationMs: FLOAT_MS, tint: "cyan", badge: { type: "question", color: "cyan" } },
+  { id: "error", label: "Error", durationMs: FLOAT_MS, tint: "red", glow: "red",
     eyes: "angry", badge: { type: "exclamation", color: "red" } },
-  { id: "finished", label: "Finished", durationMs: FLOAT_MS,
+  { id: "finished", label: "Finished", durationMs: FLOAT_MS, tint: "teal", glow: "teal",
     eyes: "happy", blink: false, badge: { type: "check", color: "emerald" }, particles: "stars" },
-  { id: "rate_limit", label: "Rate Limit", durationMs: FLOAT_MS,
+  { id: "rate_limit", label: "Rate Limit", durationMs: FLOAT_MS, tint: "orange",
     eyes: "flat", badge: { type: "exclamation", color: "orange" } },
-  { id: "sleeping", label: "Sleeping", durationMs: FLOAT_MS,
+  { id: "sleeping", label: "Sleeping", durationMs: FLOAT_MS, tint: "purple",
     eyes: "sleepy", blink: false, blush: "none", particles: "zzz" },
-  { id: "dizzy", label: "Dizzy", durationMs: FLOAT_MS, eyes: "dizzy" },
+  { id: "dizzy", label: "Dizzy", durationMs: FLOAT_MS, tint: "magenta", eyes: "dizzy" },
   { id: "greeting", label: "Greeting", durationMs: MOTIONS.wave.durationMs, parts: { arm: "wave" } },
-  { id: "love", label: "Love", durationMs: FLOAT_MS,
+  { id: "love", label: "Love", durationMs: FLOAT_MS, tint: "pink", glow: "pink",
     eyes: "hearts", blush: "hearts", badge: { type: "heart", color: "rose" } },
   { id: "surprised", label: "Surprised", durationMs: FLOAT_MS, eyes: "surprised" },
-  { id: "proud", label: "Proud", durationMs: FLOAT_MS,
+  { id: "proud", label: "Proud", durationMs: FLOAT_MS, tint: "mint",
     eyes: "happy", blush: "sparkle", badge: { type: "check", color: "emerald" } },
   { id: "wink", label: "Wink", durationMs: FLOAT_MS, eyes: "wink", blink: false },
   { id: "yawn", label: "Yawn", durationMs: FLOAT_MS, eyes: "yawn" },

@@ -3,6 +3,7 @@
 import React from "react";
 import { mochiConfig } from "./mochi.config";
 import { MovingPart } from "../_core/MovingPart";
+import { MOOD_TINT_OPACITY } from "../_core/moodTint";
 
 const { parts } = mochiConfig;
 
@@ -10,11 +11,18 @@ const { parts } = mochiConfig;
 //
 // - baseFill:  isi untuk bagian ber-paint "base" (ikut warna dasar user)
 // - partMotions: gerakan bagian bergerak dari mood, misalnya { arm: "wave" }
+// - tintFill/tintColor: lapisan tipis mood (null = mood tanpa nuansa warna).
+//   Lapisan tipis untuk badan digambar MochiMaster di atas mata & pipi;
+//   untuk tangan digambar di sini supaya ikut bergerak bersama tangan.
 //
 // Bagian yang ditandai paint "base" di mochi.config.js memakai baseFill,
 // jadi tangan selalu sewarna dengan badan.
-export function MochiBody({ bodyPath, cx, cy, rx, ry, baseFill, stroke, partMotions = {}, timeline }) {
+export function MochiBody({ bodyPath, cx, cy, rx, ry, baseFill, stroke, tintFill, tintColor, partMotions = {}, timeline }) {
   const paintOf = (partId) => (parts[partId].paint === "base" ? baseFill : undefined);
+
+  const armPath = `M ${cx + rx * 0.70} ${cy - 8}
+               C ${cx + rx * 1.05} ${cy - 28}, ${cx + rx * 1.28} ${cy - 16}, ${cx + rx * 1.28} ${cy + 5}
+               C ${cx + rx * 1.28} ${cy + 22}, ${cx + rx * 1.05} ${cy + 24}, ${cx + rx * 0.70} ${cy + 16} Z`;
 
   return (
     <>
@@ -25,12 +33,7 @@ export function MochiBody({ bodyPath, cx, cy, rx, ry, baseFill, stroke, partMoti
           timeline={timeline}
           filter="url(#dropShadowFilter)"
         >
-          <path
-            d={`M ${cx + rx * 0.70} ${cy - 8}
-               C ${cx + rx * 1.05} ${cy - 28}, ${cx + rx * 1.28} ${cy - 16}, ${cx + rx * 1.28} ${cy + 5}
-               C ${cx + rx * 1.28} ${cy + 22}, ${cx + rx * 1.05} ${cy + 24}, ${cx + rx * 0.70} ${cy + 16} Z`}
-            fill={paintOf("arm")}
-          />
+          <path d={armPath} fill={paintOf("arm")} />
           {/* Kilau di tangan (warna tetap, bukan bagian dari warna dasar) */}
           <ellipse
             cx={cx + rx * 1.08}
@@ -41,6 +44,9 @@ export function MochiBody({ bodyPath, cx, cy, rx, ry, baseFill, stroke, partMoti
             opacity={0.55}
             transform={`rotate(-22, ${cx + rx * 1.08}, ${cy - 2})`}
           />
+          {tintFill && (
+            <path d={armPath} fill={tintFill} stroke={tintColor} strokeWidth={0.1} opacity={MOOD_TINT_OPACITY} />
+          )}
         </MovingPart>
       )}
 
