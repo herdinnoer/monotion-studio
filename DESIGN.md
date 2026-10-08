@@ -72,6 +72,9 @@ Nama token dipakai di CSS variable dan Tailwind. Nilai diambil dari editor sekar
 ### Kanvas
 - Pola titik: titik 1px, jarak 20px.
 - Terang: titik `rgba(0,0,0,0.15)`. Gelap: titik `rgba(255,255,255,0.12)`.
+- **Papan catur** (tanda background transparan, saat "Remove Background" aktif): kotak 8px.
+  - Terang: `surface` (`#FFFFFF`) + `surface-hover` (`#E4E4E8`).
+  - Gelap: `surface-raised` (`#232328`) + `surface-hover` (`#2C2C32`).
 
 ---
 
