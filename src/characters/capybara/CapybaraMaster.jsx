@@ -11,6 +11,7 @@ import { useEyeTracking } from "../_core/useEyeTracking";
 import { MOTIONS, getLoopAnimation } from "../_core/motions";
 import { Eyes } from "../_core/parts/Eyes";
 import { Blush } from "../_core/parts/Blush";
+import { Mouth } from "../_core/parts/Mouth";
 import { Badge } from "../_core/parts/Badge";
 import { Particles } from "../_core/parts/Particles";
 import { Accessory } from "../_core/parts/accessories";
@@ -81,7 +82,8 @@ export function CapybaraMaster({
 
   const blushLeftX = cx - anatomy.blushSpacing * rx;
   const blushRightX = cx + anatomy.blushSpacing * rx;
-  const blushY = cy + 0.12 * ry;
+  const blushY = cy + anatomy.blushY * ry;
+  const blushSize = { rx: anatomy.blush.rx * rx, ry: anatomy.blush.ry * rx };
 
   const bodyPath = useMemo(() => generateDomePath(cx, cy, rx, ry, anatomy.head), [cx, cy, rx, ry]);
 
@@ -229,7 +231,7 @@ export function CapybaraMaster({
           timeline={timeline}
         />
 
-        <Blush variant={mood.blush} leftX={blushLeftX} rightX={blushRightX} y={blushY} />
+        <Blush variant={mood.blush} leftX={blushLeftX} rightX={blushRightX} y={blushY} size={blushSize} />
 
         <Eyes
           variant={mood.eyes}
@@ -240,10 +242,12 @@ export function CapybaraMaster({
           eyeTrackX={eyeTrackX}
           eyeTrackY={eyeTrackY}
           p={p}
-          heartIconSize={anatomy.heartIconSize}
+          size={anatomy.eyeSize * rx}
         />
 
-        {/* Lapisan tipis mood: menimpa badan, garis tepi, mata, pipi & moncong */}
+        <Mouth variant={mood.mouth} x={points.mouth.x} y={points.mouth.y} size={anatomy.mouthSize * rx} />
+
+        {/* Lapisan tipis mood: menimpa badan, garis tepi, mata, mulut, pipi & moncong */}
         {tintFill && (
           <path
             d={bodyPath}

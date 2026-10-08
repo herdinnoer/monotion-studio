@@ -10,8 +10,12 @@
 //   zzz   — huruf Z pertama saat tidur
 //   stars — pusat sebaran bintang
 //   badge — pusat lencana di pojok kepala
+//
+// Titik tambahan (hanya wajib kalau ada mood yang memakainya):
+//   mouth — pangkal mulut, tepat di bawah hidung (lihat _core/parts/Mouth.jsx)
 
 export const ANCHOR_NAMES = ["hat", "face", "zzz", "stars", "badge"];
+export const OPTIONAL_ANCHOR_NAMES = ["mouth"];
 
 // Ubah titik tempel relatif jadi koordinat SVG (piksel di kanvas 400×400).
 export function resolveAnchors(anchors, { cx, cy, rx, ry }) {
@@ -19,6 +23,10 @@ export function resolveAnchors(anchors, { cx, cy, rx, ry }) {
   for (const name of ANCHOR_NAMES) {
     const anchor = anchors[name] ?? { x: 0, y: 0 };
     points[name] = { x: cx + anchor.x * rx, y: cy + anchor.y * ry };
+  }
+  for (const name of OPTIONAL_ANCHOR_NAMES) {
+    const anchor = anchors[name];
+    if (anchor) points[name] = { x: cx + anchor.x * rx, y: cy + anchor.y * ry };
   }
   return points;
 }

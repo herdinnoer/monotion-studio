@@ -15,14 +15,22 @@ export const capybaraConfig = {
   // head = bentuk kepala kubah (lihat generateDomePath di _core/shapes.js), dicocokkan
   // dengan tepi kepala yang terlihat di docs/reference/capybara/idle.png:
   // tinggi/lebar 0.816 (ry/rx), terlebar di sepertiga bawah, atas sedikit menyempit.
-  // heartIconSize = ukuran ikon hati di mata mood love (bawaan _core 17).
+  // eyeSize = jari-jari mata besar (iris, iris-heart, heavy, smug, closed), dikali rx.
+  // eyeSpacing & eyeSize diukur dari docs/reference/capybara/idle.png (sama di semua mood).
+  // blushSpacing, blushY, blush = jarak pipi dari tengah (× rx), tinggi pipi (× ry), dan ukuran
+  // oval pipi "solid" (× rx), diukur dari docs/reference/capybara/ (idle, annoyed, sleeping, love).
+  // mouthSize = 1 satuan mulut (lihat _core/parts/Mouth.jsx), dikali rx: setengah lebar
+  // mulut ω di docs/reference/capybara/idle.png.
   anatomy: {
     rx: 1.18,
     ry: 0.963,
-    eyeSpacing: 0.4,
-    blushSpacing: 0.6,
+    eyeSpacing: 0.55,
+    eyeSize: 0.203,
+    blushSpacing: 0.705,
+    blushY: 0.216,
+    blush: { rx: 0.167, ry: 0.125 },
     head: { widest: 0.34, nTop: 2.2, bottomCurve: { start: 0.25, a: 0.75, b: 0.45 }, taper: 0.05 },
-    heartIconSize: 24,
+    mouthSize: 0.246,
   },
 
   // Bagian badan (digambar di CapybaraBody.jsx).
@@ -54,10 +62,12 @@ export const capybaraConfig = {
   // Relatif ke badan: 0 = tengah, ±1 = tepi. Kepala lebih tinggi karena ada jeruk.
   anchors: {
     hat: { x: 0, y: -0.55 },
-    face: { x: 0, y: -0.2 },
+    face: { x: 0, y: -0.183 }, // garis tengah mata, diukur dari referensi
     zzz: { x: 0.7, y: -0.7 },
     stars: { x: 0, y: -0.45 },
     badge: { x: -0.9, y: -0.95 },
+    // Pangkal mulut (ujung atas garis tengah), tepat di bawah hidung. Diukur dari referensi
+    mouth: { x: 0, y: 0.151 },
   },
 
   // Aksesori yang boleh dipakai Capybara. Topi bentrok dengan jeruk, jadi hanya kacamata.

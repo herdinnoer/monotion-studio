@@ -8,12 +8,40 @@ import React from "react";
 //   soft    — rona merah muda lembut (bawaan)
 //   hearts  — pipi bentuk hati
 //   sparkle — kilau ✨
+//   solid   — pipi pink padat, lebih besar (Capybara, dimajukan dari Fase 4)
 //   none    — tanpa pipi
 //
 // Rona "soft" memakai gradient "blushGrad", "hearts" memakai filter
 // "dropShadowFilter", keduanya dari <defs> karakter.
-export function Blush({ variant = "soft", leftX, rightX, y }) {
+// size = { rx, ry } ukuran oval pipi "solid" dalam piksel kanvas; karakter
+// mengaturnya lewat anatomy (Capybara: blush). Pipi lain tidak memakainya.
+
+// Warna pipi "solid", diambil dari docs/reference/capybara/ (pipi diterangi dari kiri atas)
+const SOLID_BLUSH_STOPS = [
+  { offset: "0%", color: "#F7918D" },
+  { offset: "55%", color: "#E28081" },
+  { offset: "100%", color: "#D25E5F" },
+];
+
+export function Blush({ variant = "soft", leftX, rightX, y, size = { rx: 17, ry: 9.5 } }) {
   if (variant === "none") return null;
+
+  if (variant === "solid") {
+    // Isinya selalu sama, jadi id gradient aman dipakai bersama oleh semua karakter di halaman
+    return (
+      <g>
+        <defs>
+          <radialGradient id="blushSolidGrad" cx="40%" cy="30%" r="75%">
+            {SOLID_BLUSH_STOPS.map((stop) => (
+              <stop key={stop.offset} offset={stop.offset} stopColor={stop.color} />
+            ))}
+          </radialGradient>
+        </defs>
+        <ellipse cx={leftX} cy={y} rx={size.rx} ry={size.ry} fill="url(#blushSolidGrad)" />
+        <ellipse cx={rightX} cy={y} rx={size.rx} ry={size.ry} fill="url(#blushSolidGrad)" />
+      </g>
+    );
+  }
 
   if (variant === "hearts") {
     return (

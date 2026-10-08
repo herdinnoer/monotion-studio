@@ -12,7 +12,9 @@
 // menghapus nuansa mood. Karakter tidak boleh menentukan kekuatannya sendiri.
 
 // Satu angka untuk semua karakter. Mengubahnya = semua karakter ikut berubah.
-export const MOOD_TINT_OPACITY = 0.3;
+// Dibuat samar supaya warna dasar tetap dominan (di gambar referensi Capybara badan
+// tetap oranye di semua mood). Di tepi badan warna mood hanya 12%.
+export const MOOD_TINT_OPACITY = 0.12;
 
 // Lapisan tipis berbentuk gradient bulat: bening di titik kilau (kiri atas),
 // makin pekat ke tepi badan. Jadi kesan 3D/kilau badan tetap terlihat.
