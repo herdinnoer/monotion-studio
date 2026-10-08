@@ -2,9 +2,11 @@
 // Dropdown mood, label jumlah mood, dan durasi animasi (preview & export)
 // semuanya membaca dari file ini. Jangan tulis ulang daftar/angka ini di tempat lain.
 
-// Durasi 1 putaran animasi (ms), mengikuti gerakan di MochiMaster:
-// napas 3,6 detik, dancing 0,8 detik, tangan greeting 0,75 detik.
-const FLOAT_MS = 3600;
+import { MOTIONS } from "../_core/motions";
+
+// Durasi 1 putaran animasi (ms), dibaca dari preset gerakan di _core/motions.js:
+// napas (float), dancing (dance), tangan greeting (wave).
+const FLOAT_MS = MOTIONS.float.durationMs;
 
 export const mochiMoods = [
   { id: "idle", label: "Idle", durationMs: FLOAT_MS },
@@ -18,14 +20,14 @@ export const mochiMoods = [
   { id: "rate_limit", label: "Rate Limit", durationMs: FLOAT_MS },
   { id: "sleeping", label: "Sleeping", durationMs: FLOAT_MS },
   { id: "dizzy", label: "Dizzy", durationMs: FLOAT_MS },
-  { id: "greeting", label: "Greeting", durationMs: 750 },
+  { id: "greeting", label: "Greeting", durationMs: MOTIONS.wave.durationMs },
   { id: "love", label: "Love", durationMs: FLOAT_MS },
   { id: "surprised", label: "Surprised", durationMs: FLOAT_MS },
   { id: "proud", label: "Proud", durationMs: FLOAT_MS },
   { id: "wink", label: "Wink", durationMs: FLOAT_MS },
   { id: "yawn", label: "Yawn", durationMs: FLOAT_MS },
   { id: "annoyed", label: "Annoyed", durationMs: FLOAT_MS },
-  { id: "dancing", label: "Dancing", durationMs: 800 },
+  { id: "dancing", label: "Dancing", durationMs: MOTIONS.dance.durationMs },
   { id: "beanie", label: "Beanie", durationMs: FLOAT_MS },
   { id: "santa_hat", label: "Santa Hat", durationMs: FLOAT_MS },
   { id: "glasses", label: "Glasses", durationMs: FLOAT_MS },

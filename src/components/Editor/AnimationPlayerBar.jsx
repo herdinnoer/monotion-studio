@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { Play, Pause, RotateCcw, Repeat, Gauge } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getMochiMoodDuration } from "@/characters/mochi/mochi.moods";
+import { TIMELINE_EVENT, dispatchTimeline } from "@/characters/_core/useTimeline";
 
 export function AnimationPlayerBar({
   elementId = "character-workspace",
@@ -49,11 +50,11 @@ export function AnimationPlayerBar({
         isExportingRef.current = false;
       }
     };
-    window.addEventListener("mochi-timeline-update", handleExternalTimeline);
-    return () => window.removeEventListener("mochi-timeline-update", handleExternalTimeline);
+    window.addEventListener(TIMELINE_EVENT, handleExternalTimeline);
+    return () => window.removeEventListener(TIMELINE_EVENT, handleExternalTimeline);
   }, []);
 
-  // Broadcast sinyal kontrol ke MochiMaster (CSS & Framer Motion)
+  // Broadcast sinyal kontrol ke karakter (CSS & Framer Motion)
   const broadcastTimelineState = useCallback((prog, playing) => {
     // Jangan broadcast jika sedang dalam proses export
     if (isExportingRef.current) return;
@@ -61,11 +62,7 @@ export function AnimationPlayerBar({
     // Gunakan queueMicrotask agar dispatchEvent dipanggil di luar render cycle React
     queueMicrotask(() => {
       if (isExportingRef.current) return;
-      window.dispatchEvent(
-        new CustomEvent("mochi-timeline-update", {
-          detail: { progress: prog, isPlaying: playing, durationMs, isExporting: false },
-        })
-      );
+      dispatchTimeline({ progress: prog, isPlaying: playing, durationMs, isExporting: false });
     });
 
     const element = document.getElementById(elementId);

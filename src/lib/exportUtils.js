@@ -1,5 +1,6 @@
 import * as htmlToImage from "html-to-image";
 import { getMochiMoodDuration } from "@/characters/mochi/mochi.moods";
+import { TIMELINE_EVENT } from "@/characters/_core/useTimeline";
 
 // =========================================================================
 // HELPER FUNCTIONS & MOOD DURATION MAP
@@ -35,10 +36,10 @@ function getSupportedMimeType() {
   return "";
 }
 
-// Broadcast sinyal progress seek ke MochiMaster
+// Broadcast sinyal progress seek ke karakter
 function broadcastSeekProgress(progress0To1, durationMs = 1600) {
   window.dispatchEvent(
-    new CustomEvent("mochi-timeline-update", {
+    new CustomEvent(TIMELINE_EVENT, {
       detail: {
         progress: progress0To1,
         isPlaying: false,
@@ -112,7 +113,7 @@ function cleanupWorkspaceAnimations(element, durationMs = 1600) {
 
   const wasPlaying = sessionStorage.getItem("mochi-was-playing") === "true";
   window.dispatchEvent(
-    new CustomEvent("mochi-timeline-update", {
+    new CustomEvent(TIMELINE_EVENT, {
       detail: {
         progress: 0,
         isPlaying: wasPlaying,
@@ -189,7 +190,7 @@ export const exportAsGif = async ({
   // ✅ FIX: Pause player IMMEDIATELY before starting export
   // This prevents race condition between export loop and player timeline
   window.dispatchEvent(
-    new CustomEvent("mochi-timeline-update", {
+    new CustomEvent(TIMELINE_EVENT, {
       detail: {
         progress: 0,
         isPlaying: false, // ← PAUSE player
@@ -241,7 +242,7 @@ export const exportAsGif = async ({
     // ✅ FIX: Always resume as paused (safe default)
     // User can click play button if they want to resume
     window.dispatchEvent(
-      new CustomEvent("mochi-timeline-update", {
+      new CustomEvent(TIMELINE_EVENT, {
         detail: {
           progress: 0,
           isPlaying: false, // ← Leave paused
@@ -370,7 +371,7 @@ export const exportAsWebm = async ({
 
   // Pause player and lock export mode
   window.dispatchEvent(
-    new CustomEvent("mochi-timeline-update", {
+    new CustomEvent(TIMELINE_EVENT, {
       detail: {
         progress: 0,
         isPlaying: false,
@@ -604,7 +605,7 @@ export const exportAsLottieJson = async ({
 
   // 1. Pause player IMMEDIATELY before starting export to avoid race condition
   window.dispatchEvent(
-    new CustomEvent("mochi-timeline-update", {
+    new CustomEvent(TIMELINE_EVENT, {
       detail: {
         progress: 0,
         isPlaying: false,
@@ -677,7 +678,7 @@ export const exportAsLottieJson = async ({
   } finally {
     // Resume player state safely
     window.dispatchEvent(
-      new CustomEvent("mochi-timeline-update", {
+      new CustomEvent(TIMELINE_EVENT, {
         detail: {
           progress: 0,
           isPlaying: false,

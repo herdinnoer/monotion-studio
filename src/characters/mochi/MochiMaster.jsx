@@ -1,9 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import { motion, useSpring, useAnimationControls } from "framer-motion";
+import React, { useEffect, useMemo, useRef } from "react";
+import { motion, useAnimationControls } from "framer-motion";
 import { mochiConfig } from "./mochi.config";
 import { generateSuperellipsePath, generateSpiralPath } from "../_core/shapes";
+import { useTimeline } from "../_core/useTimeline";
+import { useBlink } from "../_core/useBlink";
+import { useEyeTracking } from "../_core/useEyeTracking";
+import { MOTIONS, loopBounce, getLoopAnimation } from "../_core/motions";
 
 const { anatomy } = mochiConfig;
 
@@ -45,74 +49,31 @@ export function MochiMaster({
   onClick,
 }) {
   const containerRef = useRef(null);
-  const [isBlinking, setIsBlinking] = useState(false);
-  const [timeline, setTimeline] = useState({ progress: 0, isPlaying: true, isExporting: false });
+
+  // Mesin gerak bersama dari _core: timeline, kedip, mata ikut mouse
+  const timeline = useTimeline();
+  const { shouldUseSeekPose } = timeline;
+  const isBlinking = useBlink(enableBlink, timeline);
+  const { eyeTrackX, eyeTrackY } = useEyeTracking(containerRef, enableTracking);
 
   const bodyControls = useAnimationControls();
   const greetingControls = useAnimationControls();
 
-  const eyeTrackX = useSpring(0, { stiffness: 140, damping: 16 });
-  const eyeTrackY = useSpring(0, { stiffness: 140, damping: 16 });
-
-  // Di MochiMaster useEffect untuk listen timeline update
-  useEffect(() => {
-    const handleTimelineUpdate = (e) => {
-      if (!e.detail) return;
-      setTimeline((prev) => {
-        // Jika sedang dalam proses export, abaikan event dari player biasa
-        if (prev.isExporting && !e.detail.isExporting && e.detail.isPlaying) {
-          return prev;
-        }
-        return {
-          progress: e.detail.progress ?? 0,
-          isPlaying: e.detail.isExporting ? false : (e.detail.isPlaying ?? true),
-          isExporting: e.detail.isExporting ?? false,
-        };
-      });
-    };
-    window.addEventListener("mochi-timeline-update", handleTimelineUpdate);
-    return () => window.removeEventListener("mochi-timeline-update", handleTimelineUpdate);
-  }, []);
-
-// Update shouldUseSeekPose logic
-const shouldUseSeekPose = !timeline.isPlaying || timeline.isExporting;
-// ✅ Now when exporting, akan gunakan seekBodyPose yang deterministic
-
-  const isDancing = state === "dancing";
+  const bodyMotion = state === "dancing" ? "dance" : "float";
 
   // Kontrol Animasi Preview Normal (Hanya aktif jika sedang PLAY dan TIDAK sedang EXPORT)
   useEffect(() => {
     if (timeline.isPlaying && !timeline.isExporting) {
-      bodyControls.start(
-        isDancing
-          ? {
-              y: [0, -12, 0],
-              rotate: [-6, 6, -6],
-              scaleX: [1, 0.96, 1],
-              scaleY: [1, 1.05, 1],
-              transition: { repeat: Infinity, duration: 0.8, ease: "easeInOut" },
-            }
-          : {
-              y: [0, -6, 0],
-              rotate: 0,
-              scaleX: 1,
-              scaleY: 1,
-              scale: [1, 1.012, 1],
-              transition: { repeat: Infinity, duration: 3.6, ease: "easeInOut" },
-            }
-      );
+      bodyControls.start(getLoopAnimation(bodyMotion));
     } else {
       bodyControls.stop();
     }
-  }, [timeline.isPlaying, timeline.isExporting, isDancing, state, bodyControls]);
+  }, [timeline.isPlaying, timeline.isExporting, bodyMotion, state, bodyControls]);
 
   useEffect(() => {
     if (state === "greeting") {
       if (timeline.isPlaying && !timeline.isExporting) {
-        greetingControls.start({
-          rotate: [-10, 24, -10],
-          transition: { repeat: Infinity, duration: 0.75, ease: "easeInOut" },
-        });
+        greetingControls.start(getLoopAnimation("wave"));
       } else {
         greetingControls.stop();
       }
@@ -145,76 +106,10 @@ const shouldUseSeekPose = !timeline.isPlaying || timeline.isExporting;
   const strokeColor = currentTheme.stroke;
   const outerGlowFilter = currentTheme.glow;
 
-  // Auto-Blink timer
-  useEffect(() => {
-    if (!enableBlink || (!timeline.isPlaying && !timeline.isExporting)) return;
-    let timerId;
-
-    const runBlinkCycle = () => {
-      const interval = 2500 + Math.random() * 2500;
-      timerId = setTimeout(() => {
-        setIsBlinking(true);
-        setTimeout(() => {
-          setIsBlinking(false);
-          runBlinkCycle();
-        }, 130);
-      }, interval);
-    };
-
-    runBlinkCycle();
-    return () => clearTimeout(timerId);
-  }, [enableBlink, timeline.isPlaying, timeline.isExporting]);
-
-  // Mouse Tracking
-  useEffect(() => {
-    if (!enableTracking) return;
-
-    const handleMouseMove = (e) => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-
-      const deltaX = (e.clientX - centerX) / (rect.width / 2);
-      const deltaY = (e.clientY - centerY) / (rect.height / 2);
-
-      const clampedX = Math.max(-1, Math.min(1, deltaX)) * 8;
-      const clampedY = Math.max(-1, Math.min(1, deltaY)) * 6;
-
-      eyeTrackX.set(clampedX);
-      eyeTrackY.set(clampedY);
-    };
-
-    const handleMouseLeave = () => {
-      eyeTrackX.set(0);
-      eyeTrackY.set(0);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      handleMouseLeave();
-    };
-  }, [enableTracking, eyeTrackX, eyeTrackY]);
-
-  // PERBAIKAN UTAMA: Perhitungan pose frame deterministik saat EXPORT maupun SCRUBBING
+  // Pose frame deterministik saat EXPORT maupun SCRUBBING, dihitung dari progress
   const p = timeline.progress % 1;
-  const bounce = (1 - Math.cos(p * Math.PI * 2)) / 2;
-
-  const seekBodyPose = isDancing
-    ? {
-        y: -12 * bounce,
-        rotate: Math.sin(p * Math.PI * 2) * 6,
-        scaleX: 1 - 0.04 * bounce,
-        scaleY: 1 + 0.05 * bounce,
-      }
-    : {
-        y: -6 * bounce,
-        rotate: 0,
-        scaleX: 1,
-        scaleY: 1,
-        scale: 1 + 0.012 * bounce,
-      };
+  const bounce = loopBounce(p);
+  const seekBodyPose = MOTIONS[bodyMotion].seek(p);
 
   return (
     <div
@@ -509,7 +404,7 @@ const shouldUseSeekPose = !timeline.isPlaying || timeline.isExporting;
             style={{ transformOrigin: `${cx + rx * 0.80}px ${cy + 5}px` }}
             animate={
               shouldUseSeekPose
-                ? { rotate: -10 + 34 * bounce }
+                ? MOTIONS.wave.seek(p)
                 : greetingControls
             }
             filter="url(#dropShadowFilter)"
