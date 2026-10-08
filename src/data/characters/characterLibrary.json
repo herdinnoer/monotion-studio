@@ -1,19 +1,6 @@
 {
   "characters": [
     {
-      "id": "covey",
-      "name": "Covey",
-      "description": "Cute round mascot with big personality",
-      "component": "CoveyCharacter",
-      "thumbnail": "🟤",
-      "moods": 14,
-      "customizable": {
-        "color": true,
-        "backgroundColor": true,
-        "text": true
-      }
-    },
-    {
       "id": "mochi",
       "name": "Mochi",
       "description": "Superellipse 3D cute character with 30 expressions",
@@ -25,20 +12,6 @@
         "backgroundColor": true,
         "text": false
       }
-    },
-    {
-      "id": "capybara",
-      "name": "Capybara",
-      "description": "Friendly and calm character with 15 expressions",
-      "component": "CapybaraCharacter",
-      "thumbnail": "🍊",
-      "moods": 15,
-      "customizable": {
-        "color": true,
-        "backgroundColor": true,
-        "text": false
-      }
     }
-    
   ]
 }
