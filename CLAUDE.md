@@ -40,7 +40,7 @@ Versi di bawah sesuai yang terpasang di `node_modules`. Cek ulang `package.json`
 ## Panduan kualitas UI
 
 - Sebelum mengerjakan apa pun yang berhubungan dengan tampilan (UI), baca dulu `.github/antislop.md` dan ikuti aturannya. Abaikan bagian wizard instalasi di file itu.
-- `DESIGN.md` (arah desain: identitas, palet warna, tipografi, mood) **belum ada**. File ini akan dibuat dulu sebelum mengerjakan tampilan.
+- **Wajib baca `DESIGN.md`** (arah desain: identitas, palet warna, tipografi, mood) sebelum mengerjakan UI, dan ikuti arahannya.
 
 ## Cara menambah karakter baru
 
