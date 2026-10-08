@@ -74,6 +74,8 @@ badan (proporsi), bukan angka mati (`MochiMaster.jsx:156–171`).
 | B-5 | Warna custom menghapus nuansa mood | `MochiMaster.jsx:178`, `:400` | Langkah B14 |
 | B-6 | Sisa Covey: `config.text` tidak dipakai Mochi | `page.jsx:32` | Langkah B9 |
 | B-7 | "Copy React Component" cuma placeholder, bukan kode Mochi asli | `exportUtils.js:557` | Di luar Fase 1, dievaluasi di Fase 3 (lihat 5.8) |
+| B-8 | Export WebM tidak diberi durasi mood yang dipilih, jadi Greeting/Dancing ikut durasi Idle. Ditemukan saat B16. Perbaikan: `ExportModal` mengirim `animationDuration` ke `exportAsWebm`, sama seperti GIF (durasi dari registry) | `ExportModal.jsx` (case `"webm"`) | Setelah B16 |
+| B-9 | Export GIF & WebM tidak diberi pengaturan background (`config`), jadi kanvas export selalu diisi `#f5f5f7` di bawah gambar karakter. Akibatnya "Remove Background" tidak menghasilkan latar transparan (jadi abu-abu muda). Ditemukan saat perbaikan B-8 | `ExportModal.jsx` (case `"gif"` & `"webm"`), `exportUtils.js` (`captureAndScaleToTarget`) | Ditunda ke Fase 2/3, perlu dites di beberapa pemutar video |
 
 ---
 

@@ -60,6 +60,7 @@ export function ExportModal({ isOpen, onClose, character, config, durationMs, })
         case "webm":
           await exportAsWebm({
             elementId: "character-workspace",
+            animationDuration: durationMs,
             resolution,
             frameRate,
             filename: `${baseFilename}.webm`,
