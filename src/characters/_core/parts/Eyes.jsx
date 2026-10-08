@@ -20,6 +20,7 @@ import { generateSpiralPath } from "../shapes";
 //   hearts    — lingkaran merah berisi hati
 //
 // Gambar mata memakai gradient "eyeGloss" & filter "eyeHighlightBloom" dari <defs> karakter.
+// heartIconSize = ukuran ikon hati di mata "hearts" (bawaan 17, karakter boleh memperbesar).
 export function Eyes({
   variant = "round",
   leftX,
@@ -29,6 +30,7 @@ export function Eyes({
   eyeTrackX,
   eyeTrackY,
   p = 0,
+  heartIconSize = 17,
 }) {
   if (isBlinking) {
     return (
@@ -212,9 +214,9 @@ export function Eyes({
     return (
       <motion.g style={{ x: eyeTrackX, y: eyeTrackY }}>
         <circle cx={leftX} cy={baseY} r={17} fill="#BE123C" />
-        <text x={leftX} y={baseY + 6} fontSize="17" textAnchor="middle" fill="#FFFFFF">❤️</text>
+        <text x={leftX} y={baseY + heartIconSize * 0.35} fontSize={heartIconSize} textAnchor="middle" fill="#FFFFFF">❤️</text>
         <circle cx={rightX} cy={baseY} r={17} fill="#BE123C" />
-        <text x={rightX} y={baseY + 6} fontSize="17" textAnchor="middle" fill="#FFFFFF">❤️</text>
+        <text x={rightX} y={baseY + heartIconSize * 0.35} fontSize={heartIconSize} textAnchor="middle" fill="#FFFFFF">❤️</text>
       </motion.g>
     );
   }

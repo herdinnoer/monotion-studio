@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 import { motion, useAnimationControls } from "framer-motion";
 import { capybaraConfig } from "./capybara.config";
 import { getCapybaraMood } from "./capybara.moods";
-import { generateSuperellipsePath } from "../_core/shapes";
+import { generateDomePath } from "../_core/shapes";
 import { useTimeline } from "../_core/useTimeline";
 import { useBlink } from "../_core/useBlink";
 import { useEyeTracking } from "../_core/useEyeTracking";
@@ -15,7 +15,7 @@ import { Badge } from "../_core/parts/Badge";
 import { Particles } from "../_core/parts/Particles";
 import { Accessory } from "../_core/parts/accessories";
 import { resolveAnchors } from "../_core/anchors";
-import { CapybaraBody } from "./CapybaraBody";
+import { CapybaraBody, CapybaraOrange } from "./CapybaraBody";
 import { mixColor, getBodyShadowColor } from "../_core/derivedColor";
 import {
   MOOD_TINT_OPACITY,
@@ -30,8 +30,7 @@ const { anatomy, anchors, allowedAccessories, defaultColor } = capybaraConfig;
 // Garis tepi badan (tipis). Nuansa mood datang dari lapisan tipis, bukan dari sini.
 const BODY_STROKE = mixColor(defaultColor, -0.45);
 
-// Bentuk badan Capybara (tidak bisa diganti user): superellipse yang sama dengan Mochi
-const BODY_SHAPE = "mochi";
+// Bentuk badan Capybara (tidak bisa diganti user): kepala kubah, atur di anatomy.head
 
 // Gerakan badan: semua mood Capybara pakai napas naik-turun
 const BODY_MOTION = "float";
@@ -67,7 +66,7 @@ export function CapybaraMaster({
   }, [timeline.isPlaying, timeline.isExporting, state, bodyControls]);
 
   const cx = 200;
-  const cy = 215;
+  const cy = 212;
   const R = 95;
   const rx = anatomy.rx * R;
   const ry = anatomy.ry * R;
@@ -84,7 +83,7 @@ export function CapybaraMaster({
   const blushRightX = cx + anatomy.blushSpacing * rx;
   const blushY = cy + 0.12 * ry;
 
-  const bodyPath = useMemo(() => generateSuperellipsePath(cx, cy, rx, ry, BODY_SHAPE), [cx, cy, rx, ry]);
+  const bodyPath = useMemo(() => generateDomePath(cx, cy, rx, ry, anatomy.head), [cx, cy, rx, ry]);
 
   const mood = getCapybaraMood(state);
   // Lapisan 1: warna dasar (gradient cokelat bawaan, atau warna pilihan user)
@@ -241,6 +240,7 @@ export function CapybaraMaster({
           eyeTrackX={eyeTrackX}
           eyeTrackY={eyeTrackY}
           p={p}
+          heartIconSize={anatomy.heartIconSize}
         />
 
         {/* Lapisan tipis mood: menimpa badan, garis tepi, mata, pipi & moncong */}
@@ -254,6 +254,17 @@ export function CapybaraMaster({
             pointerEvents="none"
           />
         )}
+
+        {/* Jeruk digambar SETELAH lapisan tipis badan supaya tetap solid (keputusan 5.14) */}
+        <CapybaraOrange
+          cx={cx}
+          cy={cy}
+          rx={rx}
+          ry={ry}
+          baseColor={baseColor}
+          tintFill={tintFill}
+          tintColor={moodColors.tint}
+        />
 
         <Accessory
           type={mood.accessory}

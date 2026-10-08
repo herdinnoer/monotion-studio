@@ -1,7 +1,8 @@
 // Daftar resmi mood Capybara (sumber tunggal, versi sederhana: 3 mood).
 // Format sama dengan mochi.moods.js — lihat penjelasan tiap kunci di sana.
 // Tambahan untuk Capybara:
-//   parts — gerakan bagian bergerak: earL, earR (telinga), orange (jeruk)
+//   parts — gerakan bagian bergerak: earL, earR (telinga).
+//           Jeruk tidak bisa digerakkan sendiri, selalu ikut gerak badan (keputusan 5.14).
 
 import { MOTIONS } from "../_core/motions";
 import { capybaraConfig } from "./capybara.config";
@@ -15,7 +16,7 @@ export const capybaraMoods = [
     eyes: "sleepy", blink: false, blush: "none", particles: "zzz",
     parts: { earL: "droop", earR: "droop" } },
   { id: "love", label: "Love", durationMs: FLOAT_MS, tint: "pink", glow: "pink",
-    eyes: "hearts", badge: { type: "heart", color: "rose" }, parts: { orange: "bounce" } },
+    eyes: "hearts" },
 ];
 
 // Data lengkap 1 mood. Mood tak dikenal pakai mood default.

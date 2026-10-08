@@ -60,9 +60,10 @@ const codeMoodIds = new Set(capybara.moods.map((m) => m.id));
 // Posisi & ukuran referensi dihitung dalam persen kanvas ini.
 const STAGE_PX = 500;
 
-// Posisi awal referensi: kira-kira badan referensi menumpuk badan kode.
+// Posisi awal referensi: kepala referensi menumpuk kepala kode (diukur di B18.2;
+// kepala di gambar referensi agak ke kanan dari tengah gambar, jadi x digeser ke kiri).
 // x, y = geser titik tengah (% kanvas); scale = ukuran (% dari ukuran asli gambar)
-const DEFAULT_ALIGN = { x: 0, y: -7, scale: 65 };
+const DEFAULT_ALIGN = { x: -3, y: -7, scale: 65 };
 const STORAGE_KEY = "monotion-pembanding-align";
 
 function loadAlign() {

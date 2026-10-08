@@ -255,9 +255,12 @@ export const capybaraConfig = {
 
   parts: {
     body:   { paint: "base" },
-    earL:   { paint: "base",  moving: true, origin: { x: -0.55, y: -0.85 } },
-    earR:   { paint: "base",  moving: true, origin: { x:  0.55, y: -0.85 } },
-    orange: { paint: "fixed", moving: true, origin: { x: 0, y: -1.0 } },  // jeruk: warna tetap
+    earL:   { paint: "derived", shade: -0.18, moving: true, origin: { x: -0.53, y: -0.55 } },
+    earR:   { paint: "derived", shade: -0.18, moving: true, origin: { x:  0.53, y: -0.55 } },
+    earInner: { paint: "derived", shade: -0.3 },
+    snout:  { paint: "derived", shade: -0.22 },
+    orange: { paint: "derived", shade: 0.25 },  // jeruk: turunan warna dasar, TIDAK bergerak sendiri (5.14)
+    stem:   { paint: "fixed" },
     leaf:   { paint: "fixed" },
   },
 
@@ -281,13 +284,15 @@ export const capybaraMoods = [
   { id: "sleeping", label: "Sleeping", motion: "float", eyes: "sleepy",
     particles: "zzz", parts: { earL: "droop", earR: "droop" } },
   { id: "love",     label: "Love",     motion: "float", eyes: "hearts",
-    tint: "pink", glow: "pink", badge: "heart", parts: { orange: "bounce" } },
+    tint: "pink", glow: "pink" },              // tanpa badge, hati hanya di mata
 ];
 ```
 
 Telinga dan jeruk digambar di `CapybaraBody.jsx` (menyatu dengan tubuh), **bukan** sebagai aksesori.
+Jeruk selalu menempel di kepala dan ikut gerak badan di semua mood; hanya telinga
+yang boleh bergerak sendiri (5.14).
 
-> Catatan: gerakan bagian (`droop`, `bounce`) dan daftar aksesori Capybara di atas
+> Catatan: gerakan telinga (`droop`) dan daftar aksesori Capybara di atas
 > masih **contoh**. Nilai finalnya mengikuti gambar referensi (5.13).
 
 ---
@@ -340,7 +345,7 @@ Hasil perbandingan cetakan dengan gambar referensi `docs/reference/capybara-mood
 |---|---|
 | Belum ada wadahnya (perlu sistem baru) | Mulut terpisah (sekarang mulut menempel di mata `yawn`, `angry`, `surprised`); alis + kerutan dahi; warna turunan (5.11); badan berubah bentuk per mood (Capybara juga belum membaca `motion` dari mood); kepala kubah (superellipse simetris atas-bawah, kepala referensi atasnya lebih sempit) |
 | Wadah ada, gambarnya belum | Mata cokelat besar + kilau bintang; mata putih besar + titik pupil; mata setengah tertutup; mata hati masih emoji; wink mata kanan; partikel pusaran, tanda marah, hati melayang, kilau diam berkelip (butuh titik tempel baru); air liur (jadi bagian mulut menguap); pipi pink padat |
-| Sudah bisa | Mata `sleepy`, `dizzy`, `flat`, `wink`; Zzz; glow & lapisan tipis mood; telinga layu; jeruk melompat |
+| Sudah bisa | Mata `sleepy`, `dizzy`, `flat`, `wink`; Zzz; glow & lapisan tipis mood; telinga layu; ~~jeruk melompat~~ (dihapus, lihat 5.14) |
 
 Laci baru (mulut, alis, mata, partikel) ditaruh di `_core` supaya bisa dipakai semua
 karakter (5.3). B18 hanya mengisi varian yang dibutuhkan 5 mood uji; varian lainnya
@@ -358,7 +363,7 @@ referensi dan dicek dengan halaman pembanding (B18.0). Lihat 5.13.
 | B18.0 | **Alat pembanding:** (1) `capybara-moods.jpg` dipotong jadi 15 gambar per mood tanpa tulisan label di `docs/reference/capybara/<mood>.png` (semua 563 × 498 piksel, posisi karakter seragam). (2) Halaman alat kerja `/alat/pembanding` (`src/app/alat/pembanding/`): pilih mood, mode tumpuk dengan slider opacity referensi 0–100%, mode berdampingan, slider geser & ukuran referensi untuk menyejajarkan dengan karakter (tersimpan di browser), dan tombol bekukan gerakan. Mood yang belum ada di kode hanya menampilkan referensi. **Bukan untuk user:** sudah otomatis 404 di build produksi, dan **wajib dihapus sebelum rilis (Fase 5)** | semua | 5.13 |
 | B18.1 | **Warna turunan:** jenis cat `paint: "derived"` di config + rumus "lebih gelap/terang dari warna dasar", otomatis balik arah kalau warna dasar sangat terang/gelap. Moncong, dalam telinga, dan jeruk pindah ke sini; daun tetap hijau. `defaultColor` Capybara diganti oranye (diambil dari gambar referensi, 5.13) | semua | 5.11 |
 | B18.1b | **Bayangan badan dari warna dasar:** ujung gelap gradient badan memakai versi gelap warna dasar itu sendiri (rumus B18.1, `getBodyShadowColor` di `_core/derivedColor.js`), menggantikan abu `#475569`. Berlaku untuk Mochi dan Capybara. Gradient bawaan Mochi (putih, warna belum diganti) tidak berubah | semua | 5.11, 5.12 |
-| B18.2 | **Kepala kubah:** bentuk badan baru di `_core/shapes.js`, telinga & moncong digambar ulang, halus bergradient tanpa bulu. **Tidak menunggu SVG Figma lagi:** bentuk dibuat dari gambar referensi (`docs/reference/capybara/`) dan dicek dengan halaman pembanding (B18.0) sampai semirip mungkin | semua | 5.10, 5.13 |
+| B18.2 | **Kepala kubah:** bentuk badan baru di `_core/shapes.js`, telinga & moncong digambar ulang, halus bergradient tanpa bulu. **Tidak menunggu SVG Figma lagi:** bentuk dibuat dari gambar referensi (`docs/reference/capybara/`) dan dicek dengan halaman pembanding (B18.0) sampai semirip mungkin. **Status: selesai, disetujui user.** Angka final ada di daftar "Bentuk yang sudah disetujui" di bawah tabel ini | semua | 5.10, 5.13 |
 | B18.3 | **Laci mulut:** `_core/parts/Mouth.jsx` + titik tempel `mouth` + kunci `mouth` di daftar mood. Isi awal: `w` (ω), `frown` (cemberut), `smirk` (senyum puas) | idle, annoyed, proud | 5.3 |
 | B18.4 | **Mata baru:** `iris` (cokelat besar + kilau), setengah tertutup `heavy` (kesal) dan `smug` (melirik). Tetap ikut mouse & bisa kedip | idle, annoyed, proud | 5.3 |
 | B18.5 | **Laci alis:** `_core/parts/Brows.jsx`. Isi awal: `angry` (+ kerutan dahi), `smug` | annoyed, proud | 5.3 |
@@ -368,6 +373,31 @@ referensi dan dicek dengan halaman pembanding (B18.0). Lihat 5.13.
 | B18.9 | **Tes akhir:** 5 mood × warna dasar putih, hitam, oranye, satu warna terang. Jeruk selalu terbedakan dari kepala. Export GIF/WebM sama dengan preview. Mochi tidak berubah | — | 5.10, 5.11 |
 
 Setiap langkah tetap memakai tes wajib 4.1.
+
+**Bentuk yang sudah disetujui (B18.2)**
+
+Bagian di bawah ini sudah dicek user di halaman pembanding dan disetujui. **Jangan
+diubah tanpa diminta.** Setiap kali mengubah bentuk Capybara (termasuk mengubah rumus
+bersama di `_core/shapes.js` atau `_core/derivedColor.js`), cek dulu daftar ini dan
+pastikan bagian yang disetujui tidak ikut bergeser. Kalau perubahan kepala memindahkan
+bagian lain (misalnya pangkal telinga), sesuaikan angkanya supaya posisinya di layar tetap.
+
+Satuan angka: relatif ke badan (x dikali `rx`, y dikali `ry`; 0 = tengah, ±1 = tepi),
+kecuali disebut lain. Kanvas 400 × 400, badan di `cx` 200, `cy` 212, `R` 95
+(`CapybaraMaster.jsx`).
+
+| Bagian | Yang disetujui | Angka final (file) |
+|---|---|---|
+| Kepala (kubah atas) | Tinggi ÷ lebar 0.816 seperti referensi, terlebar di sepertiga bawah, atas sedikit menyempit | `capybara.config.js` → `anatomy`: `rx` 1.18, `ry` 0.963; `head`: `widest` 0.34, `nTop` 2.2, `taper` 0.05 |
+| Pipi bawah / sudut bawah kepala | Membulat seperti mangkuk/roti bun: sisi menggembung lalu melengkung lebar masuk ke dasar, dasar tengah agak rata, tanpa tekukan | `anatomy.head.bottomCurve`: `start` 0.25, `a` 0.75, `b` 0.45 (lengkung Bezier, `_core/shapes.js`). Jangan kembali ke superellipse dengan `nBottom` < 2 (titik terlebar bertekuk lancip), dan jangan kecilkan `a`/`b` untuk "membulatkan" (justru muncul sudut). Untuk lebih bulat, naikkan `start` |
+| Telinga | Bentuk jempol, sedikit miring ke luar (efek menghadap samping), sabit gelap di **sisi luar**, ukuran dari hasil ukur referensi | `CapybaraBody.jsx` → `SHAPE.ear`: `height` 0.433, `tipRadius` 0.172, `sideAngle` 13, `baseLift` 0.13, `baseDepth` 0.15, `tilt` 15; `SHAPE.earInner`: `height` 0.37, `tipRadius` 0.146, `baseLift` 0.11, `baseDepth` 0.11, `shift` 0.01, `up` 0.035; `SHAPE.earCrescent`: `coverShift` 0.16, `coverDown` 0.04. `capybara.config.js` → `earL/earR.origin` (±0.566, −0.539). Ukuran telinga dalam satuan `rx` |
+| Moncong | Ukuran & posisi dari hasil ukur referensi, tepi tegas | `SHAPE.snout`: `y` 0.287, `rx` 0.342, `ry` 0.444, `dome` { `widest` 0.18, `nTop` 2.8, `nBottom` 2.3, `taper` 0.12 }; `SHAPE.nostril`: `x` ±0.142, `y` 0.017, `rx` 0.06, `ry` 0.047, `tilt` 25; filter `capybaraSnoutEdge` blur 0.5 |
+| Jeruk | Bulat sedikit gepeng seperti mandarin (tinggi ÷ lebar 0.76), bagian bawah tenggelam di kepala dan dipotong rata di garis duduknya, tanpa gerakan sendiri & selalu solid (5.14) | `SHAPE.orange`: `y` −1.104, `rx` 0.297, `ry` 0.276, `dome` { `nTop` 2.2, `nBottom` 2, `flatBase` 0.726 }. Digambar oleh `CapybaraOrange` setelah lapisan tipis badan |
+| Tangkai & daun | Daun lebar, pangkal menempel ke batang, sisi bawah rebah di kulit atas jeruk | `SHAPE.stem`: titik `[0, −0.234]` → `[−0.014, −0.408]`, `width` 0.056; `SHAPE.leaf`: `base` [0.012, −0.245], `top` [[0.06, −0.431], [0.264, −0.467], [0.36, −0.299]], `bottom` [[0.252, −0.179], [0.096, −0.185]]. Titik relatif ke tengah jeruk |
+| Warna turunan | Telinga, moncong, sabit, jeruk ikut warna dasar; lebih gelap tanpa kusam (5.11) | `capybara.config.js` → `shade`: telinga −0.18, sabit −0.45, moncong −0.22, lubang hidung −0.6, jeruk +0.25. `_core/derivedColor.js` → `SATURATION_BOOST` 0 |
+
+Bagian lain (mata, mulut, alis, pipi, partikel, pose) ditambahkan ke tabel ini setelah
+disetujui user di langkah berikutnya.
 
 Di luar Fase 1:
 
@@ -436,7 +466,7 @@ Cetakan punya konsep "bagian bergerak": layer bernama di dalam badan yang bisa
 dianimasikan sendiri per mood.
 
 - Mochi: tangan
-- Capybara: telinga, jeruk
+- Capybara: telinga (jeruk **bukan** bagian bergerak, lihat 5.14)
 
 Daftar mood menyebut gerakan tiap bagian. Semua gerakan bagian wajib ikut
 **mode seek**, supaya hasil export sama dengan preview.
@@ -465,13 +495,14 @@ Setiap bagian badan memakai salah satu dari tiga jenis warna:
 | Jenis | `paint` | Arti |
 |---|---|---|
 | Ikut warna dasar | `"base"` | Sama dengan warna dasar pilihan user |
-| Turunan warna dasar | `"derived"` | Lebih gelap/terang dari warna dasar. Otomatis balik arah kalau warna dasar sangat terang/gelap, supaya tetap terlihat beda |
+| Turunan warna dasar | `"derived"` | Lebih gelap/terang dari warna dasar. Menggelapkan = kecerahan turun dengan kepekatan warna tetap (bukan dicampur hitam), jadi tetap hidup, tidak cokelat/abu kusam. Otomatis balik arah kalau warna dasar sangat terang/gelap, supaya tetap terlihat beda |
 | Warna tetap | `"fixed"` | Tidak ikut warna user |
 
 Capybara:
 
-- Badan dan telinga: ikut warna dasar.
-- Moncong, dalam telinga, dan jeruk: turunan warna dasar. Jeruk **harus tetap
+- Badan: ikut warna dasar.
+- Telinga, moncong, dalam telinga, dan jeruk: turunan warna dasar. Telinga sedikit
+  lebih gelap dari kepala, seperti di gambar referensi. Jeruk **harus tetap
   terbedakan dari kepala** di warna dasar apa pun.
 - Daun: warna tetap hijau.
 - Warna dasar awal (`defaultColor`): oranye seperti referensi, diambil dari gambar
@@ -496,3 +527,17 @@ dengan `docs/reference/capybara-moods.jpg` (potongan per mood di
 Tidak ada SVG Figma. Semua bentuk dibuat dari gambar referensi dan dicek kemiripannya
 dengan halaman pembanding `/alat/pembanding` (B18.0). Keputusan ini menggantikan
 rujukan ke `docs/reference/capybara.svg` di 3.5, B18.1, dan 5.11.
+
+### 5.14 Jeruk Capybara tidak bergerak sendiri dan selalu solid
+
+Jeruk (beserta tangkai dan daunnya) **tidak punya gerakan sendiri**. Jeruk selalu
+menempel di kepala dan ikut gerak badan di semua mood; gerakan memantul (`bounce`)
+di mood love dihapus. Bagian bergerak Capybara hanya telinga.
+
+Jeruk, tangkai, dan daun selalu **solid (tidak tembus pandang)** di semua mood.
+Lapisan tipis mood (3.3) tetap menimpa jeruk, tapi digambar dengan urutan yang benar:
+setiap lapisan tipis digambar tepat setelah bentuknya sendiri, sebelum bentuk lain
+yang menimpanya. Karena itu jeruk digambar **setelah** lapisan tipis badan
+(komponen `CapybaraOrange` di `CapybaraBody.jsx`), dan daun digambar setelah lapisan
+tipis jeruk. Kalau urutannya terbalik, lapisan transparan badan ikut menimpa bagian
+bawah jeruk, sehingga garis kepala terlihat "tembus" di jeruk.
