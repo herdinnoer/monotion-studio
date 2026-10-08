@@ -58,13 +58,15 @@ function smoothTaper(v) {
  * - taper:   seberapa menyempit ke atas (0 = tidak, 0.2 = puncak 20% lebih sempit)
  * - flatBase: kalau diisi, bentuk dipotong rata di garis ini (relatif ke ry dari cy).
  *     Untuk benda yang bagian bawahnya tenggelam/duduk di benda lain (jeruk di kepala).
+ * - warp:    kalau diisi, fungsi ([x, y]) => [x, y] yang menggeser tiap titik tepi
+ *     (pose badan per mood, lihat _core/poses.js). Kosong = bentuk asli, tidak berubah.
  */
 export function generateDomePath(
   cx,
   cy,
   rx,
   ry,
-  { widest = 0, nTop = 2, nBottom = 2, bottomCurve = null, taper = 0, flatBase = null } = {},
+  { widest = 0, nTop = 2, nBottom = 2, bottomCurve = null, taper = 0, flatBase = null, warp = null } = {},
   segments = 160,
 ) {
   const widestY = cy + widest * ry;
@@ -127,7 +129,7 @@ export function generateDomePath(
   }
 
   return (
-    points
+    (warp ? points.map(warp) : points)
       .map(([x, y], i) => `${i === 0 ? "M" : "L"} ${x.toFixed(2)} ${Math.min(y, baseY).toFixed(2)}`)
       .join(" ") + " Z"
   );

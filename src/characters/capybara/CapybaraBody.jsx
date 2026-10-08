@@ -92,7 +92,11 @@ function useUniqueId() {
 // - tintFill/tintColor: lapisan tipis mood (null = mood tanpa nuansa warna).
 //   Lapisan tipis untuk badan digambar CapybaraMaster di atas mata & pipi;
 //   untuk telinga digambar di sini supaya ikut bergerak bersama telinga.
-export function CapybaraBody({ bodyPath, cx, cy, rx, ry, baseFill, baseColor, stroke, tintFill, tintColor, partMotions = {}, timeline }) {
+// - snoutY: geser moncong & lubang hidung naik/turun (piksel), dari pose mood
+//   (kepala mendongak, lihat _core/poses.js). 0 = posisi asli.
+// - shading: bayangan volume pipi dari pose mood (capybaraConfig.poses.*.shading, ditambah
+//   `cheek` = bola pipi pose), null = tanpa bayangan (semua mood kecuali yang posenya punya shading).
+export function CapybaraBody({ bodyPath, cx, cy, rx, ry, baseFill, baseColor, stroke, tintFill, tintColor, partMotions = {}, timeline, snoutY = 0, shading = null }) {
   const originOf = (partId) => ({ x: cx + parts[partId].origin.x * rx, y: cy + parts[partId].origin.y * ry });
 
   const uid = useUniqueId();
@@ -148,7 +152,7 @@ export function CapybaraBody({ bodyPath, cx, cy, rx, ry, baseFill, baseColor, st
   // Lubang hidung kiri & kanan
   const renderNostril = (side) => {
     const nx = cx + side * SHAPE.nostril.x * rx;
-    const ny = cy + SHAPE.nostril.y * ry;
+    const ny = cy + snoutY + SHAPE.nostril.y * ry;
     return (
       <ellipse
         cx={nx}
@@ -163,7 +167,7 @@ export function CapybaraBody({ bodyPath, cx, cy, rx, ry, baseFill, baseColor, st
 
   const snoutPath = generateDomePath(
     cx + SHAPE.snout.x * rx,
-    cy + SHAPE.snout.y * ry,
+    cy + snoutY + SHAPE.snout.y * ry,
     SHAPE.snout.rx * rx,
     SHAPE.snout.ry * ry,
     SHAPE.snout.dome,
@@ -209,12 +213,136 @@ export function CapybaraBody({ bodyPath, cx, cy, rx, ry, baseFill, baseColor, st
 
       <path d={bodyPath} fill={paintOf("body", baseFill, baseColor)} stroke={stroke} strokeWidth={0.1} />
 
+      {/* Bayangan volume pipi (pose dengan shading, misalnya proud), di bawah moncong */}
+      {shading && (
+        <CheekShading shading={shading} bodyPath={bodyPath} cx={cx} cy={cy} rx={rx} ry={ry} baseColor={baseColor} uid={uid} />
+      )}
+
       {/* Moncong & lubang hidung (warna turunan) */}
       <path d={snoutPath} fill={`url(#${snoutGradId})`} filter="url(#capybaraSnoutEdge)" />
       {renderNostril(-1)}
       {renderNostril(1)}
     </>
   );
+}
+
+// Bayangan volume pipi untuk pose yang menggembungkan pipi (proud, pose "puffed").
+// Per pipi: sabit bayangan lembut di bawah & sisi luar bola pipi, sorotan tipis di atasnya,
+// dan lipatan dari bawah moncong yang melengkung ke luar di bawah gembungan.
+// Warnanya turunan warna dasar (5.11), jadi bekerja di warna apa pun (bukan pink, 5.15).
+// Tidak beranimasi sendiri (ikut gerak badan), jadi preview, seek, dan export sama.
+// Semua dipotong bentuk badan supaya tidak keluar dari kepala.
+function CheekShading({ shading, bodyPath, cx, cy, rx, ry, baseColor, uid }) {
+  const { cheek, shadow, highlight, crease } = shading;
+  const clipId = `capybaraCheekClip${uid}`;
+  const maskId = (side) => `capybaraCheekShadow${side < 0 ? "L" : "R"}${uid}`;
+  const shadowBlurId = `capybaraCheekShadowBlur${uid}`;
+  const highlightBlurId = `capybaraCheekHighlightBlur${uid}`;
+  const creaseBlurId = `capybaraCheekCreaseBlur${uid}`;
+  const shadowColor = deriveColor(baseColor, shadow.shade);
+  const highlightColor = deriveColor(baseColor, highlight.shade);
+  const creaseColor = crease && deriveColor(baseColor, crease.shade);
+
+  const renderCheek = (side) => {
+    const ex = cx + side * cheek.x * rx;
+    const ey = cy + cheek.y * ry;
+    const hx = cx + side * highlight.x * rx;
+    const hy = cy + highlight.y * ry;
+    return (
+      <g key={side}>
+        {/* Sabit = gembungan dikurangi salinannya yang digeser ke dalam & ke atas */}
+        <mask id={maskId(side)}>
+          <ellipse cx={ex} cy={ey} rx={cheek.rx * rx} ry={cheek.ry * ry} fill="#FFFFFF" />
+          <ellipse
+            cx={ex - side * shadow.shiftX * rx}
+            cy={ey + shadow.shiftY * ry}
+            rx={cheek.rx * rx}
+            ry={cheek.ry * ry}
+            fill="#000000"
+          />
+        </mask>
+        <g filter={`url(#${shadowBlurId})`}>
+          <ellipse
+            cx={ex}
+            cy={ey}
+            rx={cheek.rx * rx}
+            ry={cheek.ry * ry}
+            fill={shadowColor}
+            opacity={shadow.opacity}
+            mask={`url(#${maskId(side)})`}
+          />
+        </g>
+        <ellipse
+          cx={hx}
+          cy={hy}
+          rx={highlight.rx * rx}
+          ry={highlight.ry * ry}
+          transform={`rotate(${side * highlight.tilt} ${hx} ${hy})`}
+          fill={highlightColor}
+          opacity={highlight.opacity}
+          filter={`url(#${highlightBlurId})`}
+        />
+        {crease && (
+          <path d={creasePath(crease, side, cx, cy, rx, ry)} fill={creaseColor} opacity={crease.opacity} filter={`url(#${creaseBlurId})`} />
+        )}
+      </g>
+    );
+  };
+
+  return (
+    <g clipPath={`url(#${clipId})`} pointerEvents="none">
+      <defs>
+        <clipPath id={clipId}>
+          <path d={bodyPath} />
+        </clipPath>
+        <filter id={shadowBlurId} x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation={shadow.blur * rx} />
+        </filter>
+        <filter id={highlightBlurId} x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur stdDeviation={highlight.blur * rx} />
+        </filter>
+        {crease && (
+          <filter id={creaseBlurId} x="-20%" y="-50%" width="140%" height="200%">
+            <feGaussianBlur stdDeviation={crease.blur * rx} />
+          </filter>
+        )}
+      </defs>
+      {renderCheek(-1)}
+      {renderCheek(1)}
+    </g>
+  );
+}
+
+// Lipatan pipi: lengkung Bezier kuadrat yang lewat titik `via`, tebal di tengah & meruncing
+// ke kedua ujung. Titik ditulis untuk pipi kanan (x × rx, y × ry dari tengah badan).
+const CREASE_STEPS = 32;
+function creasePath({ from, via, to, width }, side, cx, cy, rx, ry) {
+  // Titik kendali supaya lengkung tepat lewat `via` di tengahnya
+  const ctrl = [2 * via[0] - (from[0] + to[0]) / 2, 2 * via[1] - (from[1] + to[1]) / 2];
+  const at = (t) => {
+    const u = 1 - t;
+    return [u * u * from[0] + 2 * u * t * ctrl[0] + t * t * to[0], u * u * from[1] + 2 * u * t * ctrl[1] + t * t * to[1]];
+  };
+  const upper = [];
+  const lower = [];
+  for (let i = 0; i <= CREASE_STEPS; i++) {
+    const t = i / CREASE_STEPS;
+    const [x, y] = at(t);
+    const [x2, y2] = at(Math.min(1, t + 0.01));
+    const [x1, y1] = at(Math.max(0, t - 0.01));
+    // Arah tegak lurus lengkung (dalam satuan kanvas)
+    const dx = (x2 - x1) * rx;
+    const dy = (y2 - y1) * ry;
+    const len = Math.hypot(dx, dy) || 1;
+    const half = ((width * rx) / 2) * Math.sin(Math.PI * t);
+    const px = cx + side * x * rx;
+    const py = cy + y * ry;
+    const nx = (-dy / len) * half * side;
+    const ny = (dx / len) * half;
+    upper.push(`${(px + nx).toFixed(2)} ${(py + ny).toFixed(2)}`);
+    lower.push(`${(px - nx).toFixed(2)} ${(py - ny).toFixed(2)}`);
+  }
+  return `M ${upper.join(" L ")} L ${lower.reverse().join(" L ")} Z`;
 }
 
 // Jeruk + tangkai + daun di atas kepala.

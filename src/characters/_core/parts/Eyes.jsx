@@ -48,7 +48,9 @@ const BIG_EYE_COLORS = {
 //   lidTop  — tambahan tebal kelopak di puncak mata (menipis ke samping)
 //   iris    — r = jari-jari iris; shift = geser ke dalam (putih mata tampak di sisi luar);
 //             glance = geser ke kanan untuk kedua mata (melirik)
-//   shine   — kilau bulat (null = tanpa kilau): x (positif = ke dalam; kalau iris punya glance: positif = ke kanan), y, r
+//   shine   — kilau bulat (null = tanpa kilau): x (positif = ke dalam; kalau iris punya glance: positif = ke kanan), y, r.
+//             x & y boleh ditulis [mata kiri, mata kanan] kalau di referensi berbeda.
+//             onTop = kilau tidak ikut terpotong cover (menumpang di atas batas pipi)
 //   sparkle — kilau bintang 4 sudut: x (positif = ke dalam), y, s = setengah tinggi
 //   cover   — bagian mata yang tertutup: side "top" (kelopak atas turun) atau "bottom"
 //             (bagian bawah tertutup pipi). y = garis potong dari tengah mata,
@@ -79,14 +81,21 @@ const BIG_EYES = {
     cover: { side: "top", y: 0.05, tilt: 10 },
     lid: { width: 0.2 },
   },
+  // Proud: dipasangkan dengan alis `smug` (Brows.jsx) = lengkung tebal di tepi atas mata.
+  // Diukur ulang dari docs/reference/capybara/proud.png setelah pose proud (B18.8):
+  // isi mata terpotong pipi lebih curam daripada lengkung alis (di bawah ekor luar
+  // lengkung langsung kulit): garis potong 0.17 di atas tengah mata, miring 28°
+  // (lewat tepi bawah iris referensi). Kilau = rata-rata kedua mata.
   smug: {
     outline: 0.08,
     lidTop: 0.14,
     // Di referensi tidak ada putih mata yang terlihat: iris memenuhi mata,
     // arah lirikan terlihat dari kilau yang bergeser ke kanan
     iris: { r: 1, glance: 0 },
-    shine: { x: 0.27, y: -0.33, r: 0.22 },
-    cover: { side: "bottom", y: -0.08, tilt: 16 },
+    // Kilau kiri (0.28, −0.30), kanan (0.16, −0.40), sama-sama di kanan tengah mata.
+    // Di referensi kilau mata kanan utuh walau sebagian di bawah batas pipi
+    shine: { x: [0.28, 0.16], y: [-0.3, -0.4], r: 0.21, onTop: true },
+    cover: { side: "bottom", y: -0.17, tilt: 28 },
   },
 };
 
@@ -270,7 +279,12 @@ function BigEye({ variant, side, cx, cy, size: R, track, clipId }) {
   const glance = style.iris.glance;
   const irisX = glance != null ? cx + glance * R : cx + inward * style.iris.shift * R;
   const shine = style.shine;
-  const shineX = shine && (glance != null ? cx + shine.x * R : cx + inward * shine.x * R);
+  // Angka kilau boleh beda per mata: [kiri, kanan]
+  const perEye = (v) => (Array.isArray(v) ? v[side < 0 ? 0 : 1] : v);
+  const shineX = shine && (glance != null ? cx + perEye(shine.x) * R : cx + inward * perEye(shine.x) * R);
+  const shineDot = shine && (
+    <circle cx={shineX} cy={cy + perEye(shine.y) * R} r={shine.r * R} fill={BIG_EYE_COLORS.shine} />
+  );
 
   // Garis potong (heavy/smug), diputar supaya sisi dalam lebih rendah
   const cover = style.cover;
@@ -287,7 +301,7 @@ function BigEye({ variant, side, cx, cy, size: R, track, clipId }) {
         <motion.g style={{ x: track.x, y: track.y }}>
           <circle cx={irisX} cy={cy} r={style.iris.r * R} fill="url(#eyeIrisGrad)" />
           {style.heart && <path d={heartPath(cx + inward * EYE_HEART.x * R, cy, R)} fill="url(#eyeHeartGrad)" />}
-          {shine && <circle cx={shineX} cy={cy + shine.y * R} r={shine.r * R} fill={BIG_EYE_COLORS.shine} />}
+          {shine && !(cover && shine.onTop) && shineDot}
           {style.sparkle && (
             <path
               d={sparklePath(cx + inward * style.sparkle.x * R, cy + style.sparkle.y * R, style.sparkle.s * R)}
@@ -315,6 +329,11 @@ function BigEye({ variant, side, cx, cy, size: R, track, clipId }) {
         <rect {...keep} transform={coverRotate} />
       </clipPath>
       <g clipPath={`url(#${clipId}cover)`}>{eye}</g>
+      {shine?.onTop && (
+        <g clipPath={`url(#${clipId}in)`}>
+          <motion.g style={{ x: track.x, y: track.y }}>{shineDot}</motion.g>
+        </g>
+      )}
       {style.lid && (
         <line
           x1={cx - R}

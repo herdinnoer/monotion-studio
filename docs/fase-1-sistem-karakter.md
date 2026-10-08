@@ -125,6 +125,7 @@ src/characters/
 │   ├── useEyeTracking.js
 │   ├── motions.js           ← preset gerakan (float, dance, wave, droop, bounce)
 │   │                          semuanya punya versi seek (dihitung dari progress)
+│   ├── poses.js             ← pose badan per mood (B18.7), dihitung dari progress
 │   ├── moodTint.js          ← kekuatan lapisan tipis warna mood (SATU angka)
 │   ├── shapes.js            ← superellipse, spiral
 │   ├── sharedDefs.jsx       ← gradient & filter umum
@@ -274,7 +275,7 @@ export const capybaraConfig = {
     badge: { x: -0.90, y: -0.95 },
     mouth: { x: 0,     y: 0.151 },  // pangkal mulut, di bawah hidung (B18.3)
     anger: { x: 0.594, y: -0.557 }, // pusat tanda marah di dahi (B18.6)
-    twinkle: { x: 0,   y: -0.379 }, // tengah sebaran kilau (B18.6)
+    twinkle: { x: 0,   y: -0.484 }, // tengah sebaran kilau (B18.6, dicek ulang B18.8)
   },
 
   allowedAccessories: ["glasses"],  // topi bentrok dengan jeruk
@@ -292,6 +293,8 @@ export const capybaraMoods = [
     blush: "none", tint: "pink", glow: "pink" },              // tanpa badge, hati hanya di mata
   { id: "annoyed",  label: "Annoyed",  motion: "float", eyes: "heavy", brows: "angry",
     mouth: "frown", blush: "none", tint: "red", particles: "anger" }, // dimajukan ke B18.5
+  { id: "proud",    label: "Proud",    motion: "float", pose: "puffed", eyes: "smug", brows: "smug",
+    mouth: "smirk", blush: "none", tint: "mint", particles: "twinkle" },   // B18.7–B18.8
 ];
 ```
 
@@ -376,10 +379,10 @@ referensi dan dicek dengan halaman pembanding (B18.0). Lihat 5.13.
 | B18.2 | **Kepala kubah:** bentuk badan baru di `_core/shapes.js`, telinga & moncong digambar ulang, halus bergradient tanpa bulu. **Tidak menunggu SVG Figma lagi:** bentuk dibuat dari gambar referensi (`docs/reference/capybara/`) dan dicek dengan halaman pembanding (B18.0) sampai semirip mungkin. **Status: selesai, disetujui user.** Angka final ada di daftar "Bentuk yang sudah disetujui" di bawah tabel ini | semua | 5.10, 5.13 |
 | B18.3 | **Laci mulut:** `_core/parts/Mouth.jsx` + titik tempel `mouth` + kunci `mouth` di daftar mood. Isi awal: `w` (ω), `frown` (cemberut), `smirk` (senyum puas). **Status: selesai, disetujui user.** Catatan di bawah tabel | idle, annoyed, proud | 5.3 |
 | B18.4 | **Mata baru:** `iris` (cokelat besar + kilau), setengah tertutup `heavy` (kesal) dan `smug` (melirik). Tetap ikut mouse & bisa kedip. **Status: selesai, disetujui user** (termasuk mata love `iris-heart` dan mata tidur `closed` yang ditambahkan saat koreksi). Catatan di bawah tabel | idle, annoyed, proud | 5.3 |
-| B18.5 | **Laci alis:** `_core/parts/Brows.jsx`. Isi: `angry` (kerutan dahi). `smug` **tidak dibuat**: referensi proud tidak punya alis maupun kerutan. **Status: selesai, disetujui user.** Catatan di bawah tabel | annoyed | 5.3 |
-| B18.6 | **Partikel baru:** `anger` (tanda marah) dan `twinkle` (kilau diam berkelip) + titik tempel barunya (`anger`, `twinkle`). Wajib ikut mode seek. Sekalian: Zzz Capybara dirapikan jadi `zzz-bold` (lebih besar, tebal, mauve kecokelatan seperti referensi sleeping). **Status: selesai, disetujui user** (`twinkle` dicek ulang setelah proud dipasang). Catatan di bawah tabel | annoyed, proud, sleeping | 5.4, 5.7 |
-| B18.7 | **Pose badan per mood:** kunci `pose` di mood (contoh proud: badan sedikit melebar/gepeng, kepala mendongak). Capybara membaca `motion` dari mood. Wajib ikut mode seek | proud | 5.7 |
-| B18.8 | **Pasang mood** idle, annoyed, proud di `capybara.moods.js` (sleeping & love tetap). **Urutan diubah:** idle (mata `iris` + mulut `w`) sudah dipasang lebih awal, tepat setelah B18.4, dan annoyed (mata `heavy`, alis `angry`, mulut `frown`, partikel `anger`) **sudah terpasang** di B18.5, supaya bagian barunya bisa dicek di halaman pembanding. Tinggal proud yang dipasang di langkah ini (menunggu B18.7). **Status: idle & annoyed terpasang, proud belum** | — | 5.1 |
+| B18.5 | **Laci alis:** `_core/parts/Brows.jsx`. Isi: `angry` (kerutan dahi). `smug` semula tidak dibuat, lalu **ditambahkan di B18.8 atas permintaan user** sebagai lengkung tebal di atas mata (lihat catatan B18.7 & B18.8). **Status: `angry` selesai, disetujui user.** Catatan di bawah tabel | annoyed, proud | 5.3 |
+| B18.6 | **Partikel baru:** `anger` (tanda marah) dan `twinkle` (kilau diam berkelip) + titik tempel barunya (`anger`, `twinkle`). Wajib ikut mode seek. Sekalian: Zzz Capybara dirapikan jadi `zzz-bold` (lebih besar, tebal, mauve kecokelatan seperti referensi sleeping). **Status: selesai, disetujui user** (`twinkle` dicek ulang & disetujui setelah proud dipasang di B18.8). Catatan di bawah tabel | annoyed, proud, sleeping | 5.4, 5.7 |
+| B18.7 | **Pose badan per mood:** kunci `pose` di mood (contoh proud: badan sedikit melebar/gepeng, kepala mendongak). Capybara membaca `motion` dari mood. Wajib ikut mode seek. **Status: selesai, disetujui user.** Catatan di bawah tabel | proud | 5.7 |
+| B18.8 | **Pasang mood** idle, annoyed, proud di `capybara.moods.js` (sleeping & love tetap). **Urutan diubah:** idle (mata `iris` + mulut `w`) sudah dipasang lebih awal, tepat setelah B18.4, dan annoyed (mata `heavy`, alis `angry`, mulut `frown`, partikel `anger`) **sudah terpasang** di B18.5, supaya bagian barunya bisa dicek di halaman pembanding. Proud dipasang di langkah ini setelah B18.7. **Status: selesai, semua terpasang; proud disetujui user** (siluet, mata, alis, mulut, kilau, lipatan & bayangan pipi) | — | 5.1 |
 | B18.9 | **Tes akhir:** 5 mood × warna dasar putih, hitam, oranye, satu warna terang. Jeruk selalu terbedakan dari kepala. Export GIF/WebM sama dengan preview. Mochi tidak berubah | — | 5.10, 5.11 |
 
 Setiap langkah tetap memakai tes wajib 4.1.
@@ -459,7 +462,7 @@ kanvas, sesuai posisi bawaan halaman pembanding).
 **Catatan B18.5 & B18.6 (hasil ukur)**
 
 B18.5 & B18.6 sudah disetujui user. Alis/kerutan dahi `angry`, tanda marah `anger`, dan Zzz
-`zzz-bold` masuk daftar "Bentuk yang sudah disetujui". Kilau `twinkle` belum masuk daftar karena
+`zzz-bold` masuk daftar "Bentuk yang sudah disetujui". Kilau `twinkle` sempat belum masuk daftar karena
 baru bisa dilihat di halaman pembanding setelah mood proud dipasang (B18.7–B18.8). Mood annoyed
 sudah terpasang (dimajukan dari B18.8); mata `heavy` & mulut `frown`-nya belum masuk daftar.
 
@@ -477,8 +480,9 @@ dicek dengan render kode yang ditumpuk di atas referensi.
   (sin^0.6), warna turunan warna dasar `shade` −0.4 (opacity 0.85), tepi terang `shade`
   +0.12 digeser 0.14 ke atas (tebal 0.1, opacity 0.6), blur 0.7. Kerutan kiri & kanan di
   referensi sama posisinya (kanan lebih samar karena cahaya); kode dibuat simetris.
-- **Alis `smug` tidak dibuat:** referensi proud tidak punya alis maupun kerutan. Kalau
-  nanti tetap mau ada alis, perlu keputusan desain baru (bukan dari referensi).
+- **Alis `smug`:** semula tidak dibuat (referensi proud tidak punya alis maupun kerutan).
+  Di B18.8 user meminta alis smug; dibuat sebagai lengkung tebal di atas mata (lihat
+  catatan B18.7 & B18.8).
 - **Tanda marah `anger`** (`_core/parts/Particles.jsx`): 4 lengkung tebal yang cembung ke
   arah tengah, di dahi kanan atas. Titik tempel `anger` (0.594, −0.557). Tiap lengkung 4 titik
   (dikali `rx`, dari pusat tanda) digambar sebagai garis halus. Tebal 0.04 `rx`, warna
@@ -504,7 +508,71 @@ dicek dengan render kode yang ditumpuk di atas referensi.
   per jenis partikel. Pemanggilan di `MochiMaster.jsx` ikut disesuaikan (hasil gambar Mochi
   tidak berubah, sudah dicek).
 
-**Bentuk yang sudah disetujui (B18.2–B18.6)**
+**Catatan B18.7 & B18.8 (hasil ukur)**
+
+B18.7 & B18.8 sudah disetujui user. Semua bagian mood proud masuk daftar "Bentuk yang sudah disetujui".
+
+Diukur dari `docs/reference/capybara/proud.png` dibanding `idle.png` (piksel dibaca dengan skrip,
+lalu render kode ditumpuk di atas referensi). Gambar proud bergeser ±7.5 piksel referensi ke kiri
+dibanding idle (posisi gambar, bukan pose), jadi semua angka dibandingkan setelah geseran itu.
+
+- **Pose (`_core/poses.js`, kunci `pose` di mood, angka di `capybara.config.js` → `poses`):**
+  rumus bersama untuk semua karakter. Mood tanpa `pose` memakai bentuk asli; sudah dicek bahwa
+  gambar idle, sleeping, love, annoyed (warna bawaan & biru) **sama persis** dengan sebelum
+  B18.7. `generateDomePath` (`_core/shapes.js`) mendapat opsi `warp` (kosong = tidak berubah).
+- **Pose `puffed` (proud):** kepala atas, telinga, dan jeruk di referensi sama persis dengan idle.
+  **Koreksi (permintaan user):** model lama (lebar dikali kurva lonceng) membuat garis luar satu
+  lengkungan mulus, sehingga pipi terbaca seperti kepala gepeng. Sekarang bentuknya = **kubah kepala +
+  dua bola pipi digabung**: di setiap ketinggian, garis luar = yang terlebar antara kubah dan bola
+  pipi, jadi sambungannya meninggalkan lekukan seperti pelipis. Di referensi lekukan ada di
+  setinggi mata (kemiringan garis luar melonjak dari 2 ke 4 piksel per 4 baris di y ≈ −0.27 ry),
+  bola pipi terlebar +17 piksel referensi tiap sisi di y ≈ 0.16 ry. Angka: `cheeks` { `x` 0.73,
+  `y` 0.159, `rx` 0.336, `ry` 0.485, `blend` 0.022 } (pusat & jari-jari bola pipi kanan; `blend` =
+  kehalusan lekukan), `lift` { `amount` 0.028, `from` −0.376 } (dasar naik), `face` { `eyesY` −0.04,
+  `eyeSpacing` −0.04, `eyeScale` 0.95, `snoutY` −0.088 } (moncong/hidung/mulut naik 15.5 piksel, mata
+  naik 7, merapat 9 tiap sisi, jari-jari 40.9 vs 43.1). Selisih garis luar render kode dengan
+  referensi rata-rata 0.56 piksel referensi (maks 1.5; model lama 1.5, maks 3.8).
+- **Mode seek:** pose dihitung langsung dari `progress` (tanpa animasi framer-motion). `pulse`
+  (pipi ikut napas) tersedia di rumus, tapi untuk proud diisi **0 (pose diam)** atas keputusan
+  user; gerakan detail per mood dikerjakan di Fase 4.
+- **Bayangan volume pipi** (`capybara.config.js` → `poses.puffed.shading`, digambar komponen
+  `CheekShading` di `CapybaraBody.jsx`, tepat setelah badan dan sebelum moncong): di referensi proud
+  pusat gembungan pipi lebih terang (+18 kecerahan dibanding idle), sisi luar & bawahnya lebih gelap
+  (−30 sampai −45), dan ada lipatan samar (kecerahan −5 sampai −8). Per pipi:
+  - sabit bayangan di bawah & sisi luar **bola pipi** (`cheeks`, jadi ikut bentuk baru): bola dikurangi
+    salinannya yang digeser 0.1 ke dalam & 0.14 ke atas; `shade` −0.35, opacity 0.5, blur 0.05 `rx`;
+  - sorotan oval tipis di atas pipi: pusat (±0.56, 0.2), 0.2 × 0.08, miring 18°; `shade` +0.3,
+    opacity 0.4, blur 0.04 `rx`;
+  - **lipatan** dari bawah sisi moncong melengkung turun ke luar di bawah gembungan: lengkung dari
+    (±0.3, 0.5) (tersembunyi di bawah moncong) lewat (±0.56, 0.63) ke tepi kepala (±0.82, 0.68),
+    diukur dari titik tergelap per kolom di referensi (rata-rata kiri & kanan); tebal 0.06 `rx` di
+    tengah & meruncing ke ujung, `shade` −0.35, opacity 0.35, blur 0.022 `rx`.
+
+  Warna turunan warna dasar (5.11), bukan pink (5.15); di warna sangat gelap arahnya otomatis
+  dibalik. Dipotong bentuk badan. Hanya muncul di pose yang punya `shading` (sekarang hanya
+  `puffed`); tidak beranimasi sendiri, jadi seek & export sama. Dicek di warna bawaan, putih,
+  hitam, biru.
+- **`motion` dari mood:** semua mood Capybara menulis `motion: "float"`; `CapybaraMaster`
+  membacanya (dulu tertulis tetap di kode).
+- **Mata `smug`** (`_core/parts/Eyes.jsx`): isi mata dipotong pipi 0.17 di atas tengah mata,
+  miring 28° (lewat tepi bawah iris referensi). Kilau melirik ke kanan, beda per mata: kiri
+  (0.28, −0.30), kanan (0.16, −0.40), r 0.21, digambar di atas batas pipi (`onTop`) karena di
+  referensi kilau mata kanan utuh.
+- **Alis `smug`** (`_core/parts/Brows.jsx`): di referensi tidak ada garis alis terpisah di dahi;
+  yang terbaca sebagai "alis smug" adalah lengkung cokelat tua tebal yang memeluk sisi atas mata.
+  Atas permintaan user, lengkung ini dibuat sebagai alis `smug` (tetap terlihat saat kedip).
+  Angka (dikali jari-jari mata, sudut 180 = sisi luar, 270 = puncak): garis tengah 0.82, tebal
+  0.36 (+0.1 di puncak), dari 200° sampai 368°; 25° terakhir di sisi luar menipis jadi ekor runcing
+  dan melebar keluar 0.16; ujung dalam membulat. Warna `#5A1E10` (sama dengan garis mata).
+- **Mulut `smirk`:** setelah ikut naik bersama moncong, sudah cocok dengan referensi (selisih ≤ 3
+  piksel referensi), angka tidak diubah.
+- **Kilau `twinkle`:** titik tempel `twinkle` y −0.379 → −0.484 (naik 18.5 piksel referensi; dulu
+  diukur dari hidung yang di pose proud ikut naik). Posisi ketiga bintang yang terang sekarang
+  selisih ≤ 2.5 piksel referensi.
+- Proud memakai lapisan tipis `mint` seperti proud Mochi (dipertahankan atas keputusan user,
+  sesuai 5.6). Kekuatannya sama dengan mood lain karena memakai `MOOD_TINT_OPACITY` (0.12) yang sama.
+
+**Bentuk yang sudah disetujui (B18.2–B18.8)**
 
 Bagian di bawah ini sudah dicek user di halaman pembanding dan disetujui. **Jangan
 diubah tanpa diminta.** Setiap kali mengubah bentuk Capybara (termasuk mengubah rumus
@@ -534,8 +602,14 @@ kecuali disebut lain. Kanvas 400 × 400, badan di `cx` 200, `cy` 212, `R` 95
 | Alis & kerutan dahi (annoyed, B18.5) | Tidak ada garis alis terpisah (kelopak tebal mata `heavy` berperan sebagai alis). Kerutan: alur gelap miring di atas sudut dalam mata, meruncing ke kedua ujung, tepi terang di sisi atasnya, lembut (blur). Warna ikut warna dasar. Kiri-kanan simetris | `_core/parts/Brows.jsx` → `BROWS.angry.crease` (dikali jari-jari mata, x positif = ke arah hidung, dari tengah mata): `from` [0.87, −0.69], `to` [1.49, −0.18], `width` 0.18, `shade` −0.4, `opacity` 0.85, `highlight` { `offset` 0.14, `width` 0.1, `shade` 0.12, `opacity` 0.6 }, `blur` 0.7; `CREASE_STEPS` 24, `CREASE_TAPER` 0.6. Posisi ikut `anatomy.eyeSize` dan `eyeSpacing`/`face` mata iris |
 | Tanda marah (annoyed, B18.6) | 4 lengkung tebal cembung ke arah tengah di dahi kanan atas, cokelat kemerahan tua + kilap tipis di sisi atas, berdenyut 2× per putaran | `capybara.config.js` → `anchors.anger` (0.594, −0.557). `_core/parts/Particles.jsx` → `ANGER` (dikali `rx`, dari pusat tanda): `strokes` atas [[−0.061, −0.126], [−0.026, −0.08], [0.014, −0.068], [0.066, −0.086]], kiri [[−0.108, −0.097], [−0.073, −0.051], [−0.079, −0.005], [−0.111, 0.03]], kanan [[0.113, −0.028], [0.072, 0.007], [0.083, 0.059], [0.118, 0.088]], bawah [[−0.073, 0.088], [−0.026, 0.065], [0.026, 0.077], [0.066, 0.129]]; `width` 0.04, `color` #6E160B, `shine` { `color` #A04A3A, `width` 0.35, `lift` 0.22, `opacity` 0.55 }, `pulse` { `times` 2, `scale` 0.12 } |
 | Zzz (sleeping, B18.6) | Z besar + z kecil di kanan atas kepala, garis tebal berujung bulat, mauve kecokelatan, naik-turun pelan bergantian. Mochi tetap memakai Zzz lama (`zzz`) | `capybara.config.js` → `anchors.zzz` (1.058, −0.667) = tengah Z besar. `_core/parts/Particles.jsx` → `ZZZ_BOLD` (dikali `rx`, dari titik tempel): Z besar `pts` [[−0.039, −0.096], [0.081, −0.055], [−0.1, 0.047], [0.058, 0.103]], `width` 0.044, `phase` 0; z kecil `pts` [[−0.146, 0.126], [−0.063, 0.154], [−0.179, 0.214], [−0.09, 0.251]], `width` 0.032, `phase` 0.35; `colors` #CBA3A8 → #B07F86; `bob` 0.055 (× `ry`) |
+| Pose proud `puffed` (B18.7) | Kepala kubah + dua bola pipi di kiri-kanan bawah, lekukan seperti pelipis setinggi mata di sambungannya; dasar sedikit naik; kepala mendongak (moncong, hidung, mulut naik; mata naik, merapat & sedikit mengecil). Kepala atas, telinga, jeruk sama dengan idle. Pose diam (`pulse` 0). Hanya mood proud; mood lain bentuk asli | `_core/poses.js` (rumus bersama), `_core/shapes.js` → opsi `warp`. `capybara.config.js` → `poses.puffed`: `cheeks` { `x` 0.73, `y` 0.159, `rx` 0.336, `ry` 0.485, `blend` 0.022 }, `lift` { `amount` 0.028, `from` −0.376 }, `face` { `eyesY` −0.04, `eyeSpacing` −0.04, `eyeScale` 0.95, `snoutY` −0.088 }, `pulse` 0 |
+| Bayangan & lipatan pipi proud (B18.8) | Sabit bayangan lembut di bawah & sisi luar bola pipi, sorotan tipis di atas pipi, lipatan samar dari bawah sisi moncong melengkung ke luar di bawah gembungan. Warna turunan warna dasar (bukan pink), dipotong bentuk badan, hanya di pose `puffed` | `capybara.config.js` → `poses.puffed.shading`: `shadow` { `shade` −0.35, `opacity` 0.5, `shiftX` 0.1, `shiftY` −0.14, `blur` 0.05 }, `highlight` { `x` 0.56, `y` 0.2, `rx` 0.2, `ry` 0.08, `tilt` −18, `shade` 0.3, `opacity` 0.4, `blur` 0.04 }, `crease` { `from` [0.3, 0.5], `via` [0.56, 0.63], `to` [0.82, 0.68], `width` 0.06, `shade` −0.35, `opacity` 0.35, `blur` 0.022 }. Digambar `CheekShading` di `CapybaraBody.jsx` (setelah badan, sebelum moncong) |
+| Mata smug (proud, B18.8) | Iris tanpa putih mata, terpotong pipi miring (sisi dalam lebih rendah), kilau melirik ke kanan beda per mata, kilau tidak ikut terpotong pipi | `_core/parts/Eyes.jsx` → `BIG_EYES.smug`: `outline` 0.08, `lidTop` 0.14, `iris` { `r` 1, `glance` 0 }, `shine` { `x` [0.28, 0.16], `y` [−0.3, −0.4], `r` 0.21, `onTop` true }, `cover` { `side` "bottom", `y` −0.17, `tilt` 28 }. Ukuran & posisi ikut pose `face` |
+| Alis smug (proud, B18.8) | Lengkung cokelat tua tebal memeluk sisi atas mata, lebih tebal di puncak, ekor runcing keluar di sisi luar, ujung dalam membulat di garis pipi. Tetap terlihat saat kedip | `_core/parts/Brows.jsx` → `BROWS.smug.arch` (dikali jari-jari mata): `radius` 0.82, `width` 0.36, `topExtra` 0.1, `from` 200°, `to` 368°, `tail` { `span` 25, `out` 0.16 }; `ARCH_STEPS` 48; `ARCH_COLOR` #5A1E10 |
+| Mulut proud (B18.3, dicek B18.8) | ω lebih lebar dengan sudut lebih naik (senyum puas), ikut naik bersama moncong | `_core/parts/Mouth.jsx` → `MOUTHS.smirk`: `philtrum` 0.58, `lobes` { `cx` 0.499, `cy` 0.076, `r` 0.709, `endX` 1.0 }. Posisi = `anchors.mouth` + pose `face.snoutY` |
+| Kilau proud (B18.6, dicek B18.8) | 4 bintang 4 sudut gemuk emas lembut di kiri-kanan kepala, diam di tempat, berkelip 2× per putaran, tiap bintang beda waktu | `capybara.config.js` → `anchors.twinkle` (0, −0.484). `_core/parts/Particles.jsx` → `TWINKLE`: bintang (dx × `rx`, dy × `ry`, ukuran × `rx`) kiri (−0.962, −0.127, 0.095), kiri bawah (−1.069, 0.098, 0.076), kanan atas (0.939, −0.084, 0.05), kanan bawah (1.046, 0.115, 0.07); `colors` #FFD48C → #F6B562, tepi #F2B062, cahaya #FFDDA6; `times` 2; `dim` { `scale` 0.7, `opacity` 0.18 } |
 
-Bagian lain (mata, mulut, alis, pipi, partikel, pose) ditambahkan ke tabel ini setelah
+Bagian lain (misalnya mata `heavy` & mulut `frown` annoyed) ditambahkan ke tabel ini setelah
 disetujui user di langkah berikutnya.
 
 Di luar Fase 1:
@@ -552,6 +626,10 @@ Di luar Fase 1:
   terbuka + lidah, mulut "x", mulut menguap + air liur; mata putih + pupil, wink mata
   kanan (mata hati tanpa emoji sudah dimajukan ke koreksi 2 B18.4); partikel pusaran & hati melayang.
   Zzz Capybara sudah dirapikan di B18.6 (`zzz-bold`).
+- **Fase 4, gerakan detail per mood:** ide dari B18.8: **pipi membusung saat proud** (pipi
+  menggembung sedikit lebih besar di tengah putaran, ikut napas). Rumusnya sudah ada (`pulse`
+  di pose, `_core/poses.js`, membesarkan bola pipi); tinggal diisi angka > 0 di
+  `poses.puffed.pulse` dan dicek. Bayangan pipi belum ikut membesar, perlu dicek saat itu.
 
 ---
 

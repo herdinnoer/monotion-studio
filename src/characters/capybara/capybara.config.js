@@ -71,8 +71,44 @@ export const capybaraConfig = {
     // Pusat tanda marah (annoyed), di dahi kanan atas. Diukur dari referensi (B18.6)
     anger: { x: 0.594, y: -0.557 },
     // Tengah sebaran kilau (proud), setinggi bintang-bintang di kiri & kanan kepala.
-    // Diukur dari referensi (B18.6)
-    twinkle: { x: 0, y: -0.379 },
+    // Diukur dari referensi (B18.6), dinaikkan 18.5 piksel referensi setelah pose proud
+    // dipasang (B18.8): semula diukur dari hidung, yang di pose proud ikut naik
+    twinkle: { x: 0, y: -0.484 },
+  },
+
+  // Pose badan per mood (lihat _core/poses.js), dipilih lewat kunci `pose` di capybara.moods.js.
+  // Mood tanpa pose memakai bentuk asli di atas, tidak berubah.
+  poses: {
+    // Bangga (proud): kepala kubah + dua bola pipi di kiri-kanan bawah (lekukan seperti pelipis
+    // di sambungannya), dasar sedikit naik (gepeng), kepala mendongak (wajah naik, mata sedikit
+    // merapat & mengecil). Diukur dari docs/reference/capybara/proud.png dibanding idle.png
+    // (B18.7–B18.8): kepala atas, telinga, dan jeruk sama persis dengan idle; garis luar mulai
+    // menggembung di setinggi mata (lekukan, kemiringan melonjak 2× di y ≈ −0.27 ry), bola pipi
+    // terlebar +17 piksel referensi tiap sisi; dasar naik; moncong/hidung/mulut naik 15.5 piksel,
+    // mata naik 7, merapat 9 tiap sisi, jari-jari 40.9 vs 43.1. Selisih garis luar dengan
+    // referensi rata-rata 0.6 piksel referensi.
+    puffed: {
+      cheeks: { x: 0.73, y: 0.159, rx: 0.336, ry: 0.485, blend: 0.022 },
+      lift: { amount: 0.028, from: -0.376 },
+      face: { eyesY: -0.04, eyeSpacing: -0.04, eyeScale: 0.95, snoutY: -0.088 },
+      // Pipi ikut napas: belum dipakai (0 = pose diam). Ide untuk Fase 4
+      pulse: 0,
+      // Bayangan volume pipi (digambar CapybaraBody, hanya di pose ini). Tanpa ini pipi yang
+      // menggembung terbaca seperti kepala gepeng. Diukur dari kecerahan proud.png vs idle.png:
+      // pusat gembungan lebih terang, sisi luar & bawahnya lebih gelap, dan ada lipatan tipis
+      // dari bawah moncong melengkung ke luar di bawah gembungan.
+      //   shadow    — sabit di bawah & sisi luar bola pipi (`cheeks` di atas): bola dikurangi
+      //               salinannya yang digeser ke dalam (shiftX) & ke atas (shiftY)
+      //   highlight — sorotan tipis oval di bagian atas pipi: x, y, rx, ry, tilt (derajat)
+      //   crease    — lipatan: lengkung dari `from` (tersembunyi di bawah moncong) lewat `via`
+      //               ke `to` (tepi kepala), tebal `width` di tengah & meruncing ke ujung
+      //   shade     — warna turunan warna dasar (5.11); blur = kelembutan tepi (× rx)
+      shading: {
+        shadow: { shade: -0.35, opacity: 0.5, shiftX: 0.1, shiftY: -0.14, blur: 0.05 },
+        highlight: { x: 0.56, y: 0.2, rx: 0.2, ry: 0.08, tilt: -18, shade: 0.3, opacity: 0.4, blur: 0.04 },
+        crease: { from: [0.3, 0.5], via: [0.56, 0.63], to: [0.82, 0.68], width: 0.06, shade: -0.35, opacity: 0.35, blur: 0.022 },
+      },
+    },
   },
 
   // Aksesori yang boleh dipakai Capybara. Topi bentrok dengan jeruk, jadi hanya kacamata.

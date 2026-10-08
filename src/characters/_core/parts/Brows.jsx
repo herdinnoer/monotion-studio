@@ -8,12 +8,15 @@ import { deriveColor } from "../derivedColor";
 //
 // Jenis yang tersedia:
 //   angry — kerutan dahi miring di atas sudut dalam mata: kesal (Capybara annoyed)
+//   smug  — lengkung tebal cokelat tua yang memeluk sisi atas mata, ekornya runcing di
+//           sisi luar, ujung dalamnya membulat di garis pipi: puas (Capybara proud,
+//           pasangan mata `smug`)
 //   none  — tanpa alis (bawaan)
 //
-// Di referensi Capybara tidak ada garis alis terpisah: kelopak atas tebal mata `heavy`
-// sudah berperan sebagai alis. Yang tampil di dahi hanya kerutan (alur gelap + tepi
-// terang di sisi atasnya). Referensi proud tidak punya alis maupun kerutan, jadi jenis
-// `smug` tidak dibuat (lihat catatan B18.5 di docs/fase-1-sistem-karakter.md).
+// Di referensi Capybara tidak ada garis alis terpisah di dahi: kelopak atas tebal
+// berperan sebagai alis. Annoyed: yang tampil di dahi hanya kerutan (alur gelap + tepi
+// terang di sisi atasnya). Proud: lengkung kelopak tebal di atas mata (alis `smug`),
+// digambar di sini supaya tetap terlihat saat mata berkedip.
 //
 // Posisi & ukuran sama dengan mata:
 //   leftX, rightX, y — tengah mata kiri & kanan
@@ -22,7 +25,7 @@ import { deriveColor } from "../derivedColor";
 //
 // Warna kerutan = turunan warna dasar (seperti moncong), jadi ikut warna pilihan user.
 //
-// Angka diukur dari docs/reference/capybara/annoyed.png (keputusan 5.13).
+// Angka diukur dari docs/reference/capybara/annoyed.png & proud.png (keputusan 5.13).
 // Kerutan `angry` sudah disetujui user: jangan diubah tanpa diminta.
 
 // Tiap kerutan = alur lurus dari ujung luar-atas ke ujung dalam-bawah, meruncing di kedua ujung
@@ -44,7 +47,23 @@ const BROWS = {
       blur: 0.7,
     },
   },
+  // Lengkung smug (dikali size, dari tengah mata; sudut dalam derajat: 180 = sisi luar,
+  // 270 = puncak, 360 = sisi dalam/hidung, lebih dari 360 = turun di sisi dalam).
+  // Diukur dari docs/reference/capybara/proud.png (mata kiri, dicek dengan mata kanan).
+  //   radius   — jarak garis tengah lengkung dari tengah mata (tepi luarnya = tepi mata)
+  //   width    — tebal lengkung di samping; topExtra = tambahan tebal di puncak
+  //   from, to — sudut ekor luar & ujung dalam (ujung dalam membulat, tepat di garis
+  //              potong pipi mata `smug`)
+  //   tail     — ekor luar: sepanjang `span` derajat terakhir lengkung menipis sampai
+  //              runcing dan melebar keluar sejauh `out` (di referensi ekornya
+  //              keluar dari lingkaran mata, hampir mendatar)
+  smug: {
+    arch: { radius: 0.82, width: 0.36, topExtra: 0.1, from: 200, to: 368, tail: { span: 25, out: 0.16 } },
+  },
 };
+
+// Warna lengkung smug = warna garis mata besar (BIG_EYE_COLORS.line di Eyes.jsx)
+const ARCH_COLOR = "#5A1E10";
 
 // Kerutan meruncing di kedua ujung (tebal = width × sin(posisi)^taper), seperti di referensi
 const CREASE_STEPS = 24;
@@ -75,9 +94,52 @@ function creasePath({ from, to }, width, shift, size, side, cx, cy) {
   return `M ${upper.join(" L ")} L ${lower.reverse().join(" L ")} Z`;
 }
 
+// Lengkung smug satu mata. side: -1 = mata kiri, +1 = mata kanan (dalam = ke arah hidung)
+const ARCH_STEPS = 48;
+function archPath({ radius, width, topExtra, from, to, tail }, cx, cy, R, side) {
+  const inward = -side;
+  const outer = [];
+  const inner = [];
+  let end = null;
+  for (let i = 0; i <= ARCH_STEPS; i++) {
+    const deg = from + ((to - from) * i) / ARCH_STEPS;
+    const th = (deg * Math.PI) / 180;
+    // Ekor: k = 0 di ujung ekor, 1 setelah `span` derajat
+    const k = Math.min(1, (deg - from) / tail.span);
+    const r = radius + tail.out * (1 - k) ** 2;
+    const w = (width + topExtra * Math.max(0, -Math.sin(th))) * Math.sqrt(k);
+    const at = (rr) => [cx + inward * rr * Math.cos(th) * R, cy + rr * Math.sin(th) * R];
+    outer.push(at(r + w / 2));
+    inner.push(at(r - w / 2));
+    if (i === ARCH_STEPS) end = { x: at(r)[0], y: at(r)[1], r: (w / 2) * R };
+  }
+  const pts = [...outer, ...inner.reverse()].map(([x, y]) => `${x.toFixed(2)} ${y.toFixed(2)}`);
+  return { d: `M ${pts.join(" L ")} Z`, end };
+}
+
+function SmugArch({ arch, cx, cy, R, side }) {
+  const { d, end } = archPath(arch, cx, cy, R, side);
+  return (
+    <>
+      <path d={d} fill={ARCH_COLOR} />
+      {/* Ujung dalam membulat */}
+      <circle cx={end.x} cy={end.y} r={end.r} fill={ARCH_COLOR} />
+    </>
+  );
+}
+
 export function Brows({ variant = "none", leftX, rightX, y, size, baseColor }) {
   const style = BROWS[variant];
   if (!style) return null;
+
+  if (style.arch) {
+    return (
+      <g pointerEvents="none">
+        <SmugArch arch={style.arch} cx={leftX} cy={y} R={size} side={-1} />
+        <SmugArch arch={style.arch} cx={rightX} cy={y} R={size} side={1} />
+      </g>
+    );
+  }
 
   const { crease } = style;
   const grooveColor = deriveColor(baseColor, crease.shade);

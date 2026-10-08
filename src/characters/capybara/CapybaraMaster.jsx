@@ -9,6 +9,7 @@ import { useTimeline } from "../_core/useTimeline";
 import { useBlink } from "../_core/useBlink";
 import { useEyeTracking } from "../_core/useEyeTracking";
 import { MOTIONS, getLoopAnimation } from "../_core/motions";
+import { getPoseWarp, getPoseFace } from "../_core/poses";
 import { Eyes } from "../_core/parts/Eyes";
 import { Blush } from "../_core/parts/Blush";
 import { Mouth } from "../_core/parts/Mouth";
@@ -27,15 +28,16 @@ import {
   getMoodColors,
 } from "../_core/moodTint";
 
-const { anatomy, anchors, allowedAccessories, defaultColor } = capybaraConfig;
+const { anatomy, anchors, allowedAccessories, defaultColor, poses } = capybaraConfig;
 
 // Garis tepi badan (tipis). Nuansa mood datang dari lapisan tipis, bukan dari sini.
 const BODY_STROKE = mixColor(defaultColor, -0.45);
 
-// Bentuk badan Capybara (tidak bisa diganti user): kepala kubah, atur di anatomy.head
+// Bentuk badan Capybara (tidak bisa diganti user): kepala kubah, atur di anatomy.head.
+// Mood boleh mengubahnya sedikit lewat pose (kunci `pose`, angka di capybaraConfig.poses).
 
-// Gerakan badan: semua mood Capybara pakai napas naik-turun
-const BODY_MOTION = "float";
+// Gerakan badan dibaca dari mood (kunci `motion`); mood tanpa motion pakai napas naik-turun
+const DEFAULT_MOTION = "float";
 
 export function CapybaraMaster({
   state = "idle",
@@ -58,14 +60,18 @@ export function CapybaraMaster({
 
   const bodyControls = useAnimationControls();
 
+  const mood = getCapybaraMood(state);
+  const bodyMotion = MOTIONS[mood.motion] ? mood.motion : DEFAULT_MOTION;
+  const pose = poses[mood.pose] ?? null;
+
   // Animasi preview normal (hanya saat PLAY dan TIDAK sedang EXPORT)
   useEffect(() => {
     if (timeline.isPlaying && !timeline.isExporting) {
-      bodyControls.start(getLoopAnimation(BODY_MOTION));
+      bodyControls.start(getLoopAnimation(bodyMotion));
     } else {
       bodyControls.stop();
     }
-  }, [timeline.isPlaying, timeline.isExporting, state, bodyControls]);
+  }, [timeline.isPlaying, timeline.isExporting, state, bodyMotion, bodyControls]);
 
   const cx = 200;
   const cy = 212;
@@ -73,22 +79,36 @@ export function CapybaraMaster({
   const rx = anatomy.rx * R;
   const ry = anatomy.ry * R;
 
+  // Pose frame deterministik saat EXPORT maupun SCRUBBING, dihitung dari progress
+  const p = timeline.progress % 1;
+  const seekBodyPose = MOTIONS[bodyMotion].seek(p);
+
+  // Pose mood: geser letak wajah (kepala mendongak). Mood tanpa pose: semua 0
+  const face = getPoseFace(pose, { rx, ry });
+
   // Titik tempel (aksesori, Zzz, bintang, badge) dalam koordinat kanvas
   const points = resolveAnchors(anchors, { cx, cy, rx, ry });
 
-  const eyeOffset = anatomy.eyeSpacing * rx;
+  const eyeOffset = anatomy.eyeSpacing * rx + face.eyeSpacing;
   const eyeLeftX = points.face.x - eyeOffset;
   const eyeRightX = points.face.x + eyeOffset;
-  const eyeBaseY = points.face.y;
+  const eyeBaseY = points.face.y + face.eyesY;
+  const eyeSize = anatomy.eyeSize * rx * face.eyeScale;
 
   const blushLeftX = cx - anatomy.blushSpacing * rx;
   const blushRightX = cx + anatomy.blushSpacing * rx;
   const blushY = cy + anatomy.blushY * ry;
   const blushSize = { rx: anatomy.blush.rx * rx, ry: anatomy.blush.ry * rx };
 
-  const bodyPath = useMemo(() => generateDomePath(cx, cy, rx, ry, anatomy.head), [cx, cy, rx, ry]);
+  // Bentuk badan + pose mood (pipi menggembung, dll). Pose dihitung dari progress p,
+  // jadi preview, pause/scrub, dan export memakai bentuk yang sama di frame yang sama
+  // (mood tanpa pose/pulse tidak dihitung ulang tiap frame).
+  const poseP = pose?.pulse ? p : 0;
+  const bodyPath = useMemo(
+    () => generateDomePath(cx, cy, rx, ry, { ...anatomy.head, warp: getPoseWarp(pose, { cx, cy, rx, ry }, poseP) }),
+    [cx, cy, rx, ry, pose, poseP],
+  );
 
-  const mood = getCapybaraMood(state);
   // Lapisan 1: warna dasar (gradient cokelat bawaan, atau warna pilihan user)
   const baseFill = color ? "url(#capybaraCustomGrad)" : "url(#capybaraBaseGrad)";
   // Warna dasar dalam kode hex, untuk menghitung bagian ber-paint "derived"
@@ -96,10 +116,6 @@ export function CapybaraMaster({
   // Lapisan 3 & 4: nuansa mood (lapisan tipis + glow), dari _core/moodTint.js
   const moodColors = getMoodColors(mood);
   const tintFill = moodColors.tint ? "url(#capybaraMoodTintGrad)" : null;
-
-  // Pose frame deterministik saat EXPORT maupun SCRUBBING, dihitung dari progress
-  const p = timeline.progress % 1;
-  const seekBodyPose = MOTIONS[BODY_MOTION].seek(p);
 
   return (
     <div
@@ -230,6 +246,8 @@ export function CapybaraMaster({
           tintColor={moodColors.tint}
           partMotions={mood.parts}
           timeline={timeline}
+          snoutY={face.snoutY}
+          shading={pose?.shading ? { ...pose.shading, cheek: pose.cheeks } : null}
         />
 
         <Blush variant={mood.blush} leftX={blushLeftX} rightX={blushRightX} y={blushY} size={blushSize} />
@@ -243,7 +261,7 @@ export function CapybaraMaster({
           eyeTrackX={eyeTrackX}
           eyeTrackY={eyeTrackY}
           p={p}
-          size={anatomy.eyeSize * rx}
+          size={eyeSize}
         />
 
         <Brows
@@ -251,11 +269,11 @@ export function CapybaraMaster({
           leftX={eyeLeftX}
           rightX={eyeRightX}
           y={eyeBaseY}
-          size={anatomy.eyeSize * rx}
+          size={eyeSize}
           baseColor={baseColor}
         />
 
-        <Mouth variant={mood.mouth} x={points.mouth.x} y={points.mouth.y} size={anatomy.mouthSize * rx} />
+        <Mouth variant={mood.mouth} x={points.mouth.x} y={points.mouth.y + face.snoutY} size={anatomy.mouthSize * rx} />
 
         {/* Lapisan tipis mood: menimpa badan, garis tepi, mata, alis, mulut, pipi & moncong */}
         {tintFill && (
