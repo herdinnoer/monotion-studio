@@ -4,6 +4,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { ColorInput } from "@/components/UI/ColorInput";
 import { mochiMoods } from "@/characters/mochi/mochi.moods";
+import { mochiConfig, mochiDefaultShape } from "@/characters/mochi/mochi.config";
 import { ChevronDown } from "lucide-react";
 import { Switch } from "@heroui/react";
 
@@ -21,9 +22,9 @@ export const RightSidebar = ({ config, onConfigChange }) => {
     onConfigChange({ ...config, color });
   };
 
-  // Reset warna body karakter ke putih (#FFFFFF)
+  // Reset warna body karakter ke warna dasar awal karakter
   const handleResetColor = () => {
-    onConfigChange({ ...config, color: "#FFFFFF" });
+    onConfigChange({ ...config, color: mochiConfig.defaultColor });
   };
 
   const handleBgChange = (bgColor) => {
@@ -59,17 +60,13 @@ export const RightSidebar = ({ config, onConfigChange }) => {
             Shape Preset
           </h3>
           <div className="grid grid-cols-3 gap-2">
-            {[
-              { id: "mochi", label: "Mochi" },
-              { id: "round", label: "Round" },
-              { id: "boxy", label: "Boxy" },
-            ].map((preset) => (
+            {mochiConfig.shapePresets.map((preset) => (
               <button
                 key={preset.id}
                 onClick={() => handleShapePresetChange(preset.id)}
                 className={cn(
                   "px-2 py-2 text-xs font-medium rounded-lg border transition-all text-center",
-                  (config.shapePreset || "mochi") === preset.id
+                  (config.shapePreset || mochiDefaultShape) === preset.id
                     ? "bg-[#0E89F8] text-white border-blue-600 shadow-sm"
                     : "bg-[#ECECEF] dark:bg-[#212025] border-divider text-foreground hover:border-gray-400"
                 )}
@@ -172,7 +169,7 @@ export const RightSidebar = ({ config, onConfigChange }) => {
               Reset
             </button>
           </div>
-          <ColorInput value={config.color || "#FFFFFF"} onChange={handleColorChange} />
+          <ColorInput value={config.color || mochiConfig.defaultColor} onChange={handleColorChange} />
         </div>
       </div>
     </aside>

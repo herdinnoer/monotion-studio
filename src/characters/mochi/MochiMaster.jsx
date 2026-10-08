@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, useSpring, useAnimationControls } from "framer-motion";
+import { mochiConfig } from "./mochi.config";
+
+const { anatomy } = mochiConfig;
 
 /**
  * Superellipse generator: |x/rx|^n + |y/ry|^n = 1
@@ -156,18 +159,18 @@ const shouldUseSeekPose = !timeline.isPlaying || timeline.isExporting;
   const cx = 200;
   const cy = 205;
   const R = 95;
-  const rx = 1.14 * R;
-  const ry = 0.88 * R;
+  const rx = anatomy.rx * R;
+  const ry = anatomy.ry * R;
 
   const badgeX = cx - 0.96 * rx;
   const badgeY = cy - 1.0 * ry;
 
-  const eyeLeftX = cx - 0.37 * rx;
-  const eyeRightX = cx + 0.37 * rx;
+  const eyeLeftX = cx - anatomy.eyeSpacing * rx;
+  const eyeRightX = cx + anatomy.eyeSpacing * rx;
   const eyeBaseY = cy - 0.02 * ry;
 
-  const blushLeftX = cx - 0.52 * rx;
-  const blushRightX = cx + 0.52 * rx;
+  const blushLeftX = cx - anatomy.blushSpacing * rx;
+  const blushRightX = cx + anatomy.blushSpacing * rx;
   const blushY = cy + 0.24 * ry;
 
   const bodyPath = useMemo(() => {

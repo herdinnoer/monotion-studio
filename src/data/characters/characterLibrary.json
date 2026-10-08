@@ -8,8 +8,7 @@
       "thumbnail": "⚪",
       "customizable": {
         "color": true,
-        "backgroundColor": true,
-        "text": false
+        "backgroundColor": true
       }
     }
   ]

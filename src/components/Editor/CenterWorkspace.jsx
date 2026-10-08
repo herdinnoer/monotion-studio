@@ -2,6 +2,7 @@
 
 import React from "react";
 import { MochiMaster } from "@/characters/mochi/MochiMaster";
+import { mochiConfig, mochiDefaultShape, isMochiDefaultColor } from "@/characters/mochi/mochi.config";
 import { cn } from "@/lib/utils";
 
 export const CenterWorkspace = ({ config }) => {
@@ -22,9 +23,9 @@ export const CenterWorkspace = ({ config }) => {
         }}
       >
         <MochiMaster
-          state={config.mood || "idle"}
-          shapePreset={config.shapePreset || "mochi"}
-          color={config.color !== "#ffffff" && config.color !== "#FFFFFF" ? config.color : null}
+          state={config.mood || mochiConfig.defaultMood}
+          shapePreset={config.shapePreset || mochiDefaultShape}
+          color={isMochiDefaultColor(config.color) ? null : config.color}
           size={500}
         />
       </div>

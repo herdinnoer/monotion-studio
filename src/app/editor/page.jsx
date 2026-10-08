@@ -9,7 +9,13 @@ import { CenterWorkspace } from "@/components/Editor/CenterWorkspace";
 import { RightSidebar } from "@/components/Editor/RightSidebar";
 import { ExportModal } from "@/components/Editor/ExportModal";
 import { AnimationPlayerBar } from "@/components/Editor/AnimationPlayerBar";
-import { getMochiMoodDuration } from "@/characters/mochi/mochi.moods";
+import { getMochiMoodDuration, mochiMoods } from "@/characters/mochi/mochi.moods";
+import { mochiConfig, mochiDefaultShape } from "@/characters/mochi/mochi.config";
+
+// Mood dipertahankan kalau karakter punya mood itu; kalau tidak, pakai mood default karakter.
+function pickMood(currentMood) {
+  return mochiMoods.some((m) => m.id === currentMood) ? currentMood : mochiConfig.defaultMood;
+}
 
 const emptySubscribe = () => () => {};
 function useMounted() {
@@ -20,17 +26,16 @@ export default function EditorPage() {
   const mounted = useMounted();
   const { characters } = useCharacterTemplates();
   const [isExportOpen, setIsExportOpen] = useState(false);
-  const [currentDurationMs, setCurrentDurationMs] = useState(() => getMochiMoodDuration("idle")); // State untuk menyimpan duration aktual dari AnimationPlayerBar
+  const [currentDurationMs, setCurrentDurationMs] = useState(() => getMochiMoodDuration(mochiConfig.defaultMood)); // State untuk menyimpan duration aktual dari AnimationPlayerBar
 
   // State Riwayat Undo / Redo
   const [history, setHistory] = useState([
     {
-      selectedCharacterId: "mochi",
+      selectedCharacterId: mochiConfig.id,
       config: {
-        mood: "idle",
-        shapePreset: "mochi",
-        color: "#ffffff",
-        text: "Hello!",
+        mood: mochiConfig.defaultMood,
+        shapePreset: mochiDefaultShape,
+        color: mochiConfig.defaultColor,
         backgroundColor: "#f5f5f7",
         isBgRemoved: false,
       },
@@ -66,9 +71,9 @@ export default function EditorPage() {
   const handleSelectCharacter = (id) => {
     const newConfig = {
       ...config,
-      mood: "idle",
-      shapePreset: "mochi",
-      color: "#ffffff",
+      mood: pickMood(config.mood),
+      shapePreset: mochiDefaultShape,
+      color: mochiConfig.defaultColor,
     };
     pushState(id, newConfig);
   };
