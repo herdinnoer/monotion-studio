@@ -152,8 +152,14 @@
   .toggle-button-group--detached .toggle-button {
     @apply rounded-button;
   }
-  .button--icon-only {
-    @apply rounded-lg;
+  /* Tombol ikon: 32×32 di semua lebar layar, nonaktif opacity 40% (DESIGN.md bagian 8) */
+  .button--icon-only,
+  .button--icon-only.button--sm {
+    @apply size-8 rounded-lg;
+  }
+  .button--icon-only:disabled,
+  .button--icon-only[aria-disabled="true"] {
+    opacity: 0.4;
   }
   .toggle-button-group--horizontal .toggle-button:first-child {
     @apply rounded-s-button;
@@ -169,6 +175,55 @@
   }
   .toggle-button-group .toggle-button:first-child:last-child {
     @apply rounded-button;
+  }
+
+  /* Segmented (DESIGN.md bagian 8): ToggleButtonGroup + class "segmented".
+     Grup surface-raised 12px padding 4px, item 6px, terpilih surface + shadow-sm.
+     Selektor :first-child/:last-child ditulis ulang supaya menang dari aturan radius di atas. */
+  .toggle-button-group.segmented {
+    @apply gap-1 rounded-xl bg-surface-secondary p-1;
+  }
+  .toggle-button-group.segmented .toggle-button,
+  .toggle-button-group.segmented .toggle-button:first-child,
+  .toggle-button-group.segmented .toggle-button:last-child {
+    @apply rounded-md;
+    --toggle-button-bg: transparent;
+    --toggle-button-bg-hover: var(--surface-hover);
+    --toggle-button-bg-pressed: var(--surface-hover);
+    --toggle-button-fg: var(--muted);
+    --toggle-button-bg-selected: var(--surface);
+    --toggle-button-bg-selected-hover: var(--surface);
+    --toggle-button-bg-selected-pressed: var(--surface);
+    --toggle-button-fg-selected: var(--foreground);
+  }
+  .toggle-button-group.segmented .toggle-button[data-selected="true"] {
+    @apply shadow-sm;
+  }
+  .toggle-button-group.segmented .toggle-button--icon-only {
+    @apply size-8;
+  }
+
+  /* Input "inline" (nama proyek, DESIGN.md bagian 8): Input HeroUI + class "inline-field".
+     Diam: tanpa latar & garis tepi. Hover & fokus: surface-raised, tanpa ring.
+     Selektor ditulis setara/lebih kuat dari aturan .input HeroUI supaya menang. */
+  .input.inline-field {
+    @apply text-center;
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+  }
+  @media (hover: hover) {
+    .input.inline-field:hover:not(:focus):not(:focus-visible),
+    .input.inline-field[data-hovered="true"]:not([data-focused="true"]):not([data-focus-visible="true"]) {
+      @apply bg-surface-secondary;
+      border-color: transparent;
+    }
+  }
+  .input.inline-field:focus,
+  .input.inline-field[data-focused="true"] {
+    @apply bg-surface-secondary;
+    border-color: transparent;
+    box-shadow: none;
   }
 
   /* Segmented (Tabs): grup 12px, item & penanda terpilih 6px */

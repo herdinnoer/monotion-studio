@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Play, Pause, RotateCcw, Repeat, Gauge } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { IconButton } from "@/components/UI/IconButton";
 import { isPressableTarget, isTypingTarget } from "@/lib/keyboard";
 import { TIMELINE_EVENT, dispatchTimeline } from "@/characters/_core/useTimeline";
 
@@ -183,21 +184,23 @@ export function AnimationPlayerBar({
 
   return (
     <div className="w-full bg-surface border border-border rounded-2xl px-4 py-2.5 flex items-center gap-3 select-none">
-      <button
-        type="button"
-        onClick={() => setIsPlaying(!isPlaying)}
-        className="p-2 rounded-xl bg-surface-secondary hover:bg-surface-hover text-foreground transition-all cursor-pointer shrink-0"
+      <IconButton
+        label={isPlaying ? "Pause" : "Play"}
+        tooltip={isPlaying ? "Pause (Space)" : "Play (Space)"}
+        variant="tertiary"
+        onPress={() => setIsPlaying(!isPlaying)}
+        className="text-foreground shrink-0"
       >
         {isPlaying ? <Pause size={16} /> : <Play size={16} className="ml-0.5" />}
-      </button>
+      </IconButton>
 
-      <button
-        type="button"
-        onClick={handleReset}
-        className="p-2 rounded-xl text-subtle hover:text-foreground hover:bg-surface-secondary transition-colors cursor-pointer shrink-0"
+      <IconButton
+        label="Restart"
+        onPress={handleReset}
+        className="text-muted hover:text-foreground shrink-0"
       >
-        <RotateCcw size={15} />
-      </button>
+        <RotateCcw size={16} />
+      </IconButton>
 
       <div className="text-[11px] font-mono font-medium tabular-nums text-muted shrink-0 min-w-[70px] text-center">
         <span>{currentTimeSec}s</span> / <span>{totalTimeSec}s</span>
@@ -216,16 +219,18 @@ export function AnimationPlayerBar({
         />
       </div>
 
-      <button
-        type="button"
-        onClick={() => setIsLooping(!isLooping)}
+      <IconButton
+        label="Loop"
+        tooltip={isLooping ? "Loop: on" : "Loop: off"}
+        aria-pressed={isLooping}
+        onPress={() => setIsLooping(!isLooping)}
         className={cn(
-          "p-2 rounded-xl transition-colors cursor-pointer shrink-0",
+          "shrink-0",
           isLooping ? "text-accent bg-accent-soft" : "text-muted hover:text-foreground"
         )}
       >
-        <Repeat size={15} />
-      </button>
+        <Repeat size={16} />
+      </IconButton>
 
       <div className="relative shrink-0">
         <button

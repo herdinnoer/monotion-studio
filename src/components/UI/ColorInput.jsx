@@ -13,6 +13,7 @@ import {
 } from "@heroui/react";
 import { Shuffle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { IconButton } from "@/components/UI/IconButton";
 import { DEFAULT_BACKGROUND } from "@/lib/editorState";
 
 // Dua jenis perubahan (Fase 2 A3):
@@ -97,16 +98,16 @@ export function ColorInput({ value = DEFAULT_BACKGROUND, onChange, onChangeEnd, 
           </span>
         </ColorPicker.Trigger>
 
-        <div className="h-full flex items-center border-l border-border px-2.5">
-          <button
-            type="button"
-            onClick={shuffleColor}
-            disabled={isDisabled}
-            className="p-1.5 text-muted hover:text-foreground hover:bg-surface-hover rounded-lg transition-colors disabled:cursor-not-allowed disabled:pointer-events-none"
-            title="Shuffle color"
+        <div className="h-full flex items-center border-l border-border px-1.5">
+          {/* Tombol di atas surface-raised, jadi hover-nya satu tingkat lebih terang (surface-hover) */}
+          <IconButton
+            label="Shuffle color"
+            onPress={shuffleColor}
+            isDisabled={isDisabled}
+            className="text-muted hover:text-foreground hover:bg-surface-hover"
           >
             <Shuffle size={14} />
-          </button>
+          </IconButton>
         </div>
       </div>
 

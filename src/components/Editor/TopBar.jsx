@@ -9,7 +9,9 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
+import { Input, ToggleButton, ToggleButtonGroup } from "@heroui/react";
 import { GlossyButton } from "@/components/UI/GlossyButton";
+import { IconButton } from "@/components/UI/IconButton";
 
 export const TopBar = ({
   projectName = "",
@@ -45,84 +47,63 @@ export const TopBar = ({
 
         {/* Tombol Undo & Redo */}
         <div className="flex items-center gap-1 border-l border-border pl-3">
-          <button
-            type="button"
-            onClick={onUndo}
-            disabled={!canUndo}
-            title="Undo (Ctrl+Z / Cmd+Z)"
-            className={cn(
-              "p-2 rounded-lg transition-all text-foreground",
-              canUndo
-                ? "hover:bg-surface-secondary cursor-pointer"
-                : "opacity-40 cursor-not-allowed"
-            )}
+          <IconButton
+            label="Undo"
+            tooltip="Undo (Ctrl+Z)"
+            onPress={onUndo}
+            isDisabled={!canUndo}
           >
             <Undo2 size={16} />
-          </button>
-          <button
-            type="button"
-            onClick={onRedo}
-            disabled={!canRedo}
-            title="Redo (Ctrl+Y / Cmd+Shift+Z)"
-            className={cn(
-              "p-2 rounded-lg transition-all text-foreground",
-              canRedo
-                ? "hover:bg-surface-secondary cursor-pointer"
-                : "opacity-40 cursor-not-allowed"
-            )}
+          </IconButton>
+          <IconButton
+            label="Redo"
+            tooltip="Redo (Ctrl+Y)"
+            onPress={onRedo}
+            isDisabled={!canRedo}
           >
             <Redo2 size={16} />
-          </button>
+          </IconButton>
         </div>
       </div>
 
-      {/* Center */}
+      {/* Center: nama proyek (dipakai sebagai nama file export, tidak ikut undo) */}
       <div className="justify-self-center w-full max-w-[220px]">
-        <input
-          type="text"
+        <Input
+          fullWidth
           value={projectName}
           placeholder="Untitled"
-          aria-label="Nama proyek"
+          aria-label="Project name"
           onChange={(e) => onProjectNameChange?.(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.currentTarget.blur();
             }
           }}
-          className={cn(
-            "w-full px-3 py-1.5 rounded-lg text-center font-medium text-foreground bg-transparent",
-            "hover:bg-surface-secondary focus:bg-surface-secondary",
-            "focus:outline-none focus:ring-1 focus:ring-focus transition-all cursor-text",
-          )}
+          className="inline-field font-medium"
         />
       </div>
 
       {/* Right */}
       <div className="flex items-center gap-3 justify-end">
-        <div className="flex items-center bg-surface-secondary dark:bg-surface border border-border rounded-lg p-1">
-          <button
-            onClick={() => setTheme("light")}
-            className={cn(
-              "p-1.5 rounded-md transition-all cursor-pointer",
-              theme === "light"
-                ? "bg-surface text-foreground shadow-sm"
-                : "text-muted hover:text-foreground",
-            )}
-          >
+        {/* Pengalih tema: segmented (gaya "segmented" di globals.css) */}
+        <ToggleButtonGroup
+          aria-label="Theme"
+          className="segmented"
+          selectionMode="single"
+          disallowEmptySelection
+          selectedKeys={theme ? [theme] : []}
+          onSelectionChange={(keys) => {
+            const [next] = keys;
+            if (next) setTheme(next);
+          }}
+        >
+          <ToggleButton id="light" isIconOnly size="sm" aria-label="Light mode">
             <Sun size={16} />
-          </button>
-          <button
-            onClick={() => setTheme("dark")}
-            className={cn(
-              "p-1.5 rounded-md transition-all cursor-pointer",
-              theme === "dark"
-                ? "bg-surface-hover text-foreground shadow"
-                : "text-muted hover:text-foreground",
-            )}
-          >
+          </ToggleButton>
+          <ToggleButton id="dark" isIconOnly size="sm" aria-label="Dark mode">
             <Moon size={16} />
-          </button>
-        </div>
+          </ToggleButton>
+        </ToggleButtonGroup>
 
         <GlossyButton onPress={onExportClick}>
           Export

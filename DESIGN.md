@@ -164,6 +164,7 @@ Gerakan UI harus nyaris tak terasa. Yang boleh "hidup" dan memantul hanya karakt
 | Segmented (format, resolusi, fps) | Grup `surface-raised` `rounded-xl` (12px) padding 4px, item `rounded-md` (6px). Item terpilih: `surface` + `shadow-sm`. |
 | Kartu karakter | `rounded-xl` (12px). Terpilih: latar `surface-raised` + garis tepi 2px `accent`. |
 | Input warna | Kotak warna 24px `rounded-md` (6px) + kode hex 12px kapital. |
+| Input nama proyek (top bar) | `Input` HeroUI + class `inline-field`, teks di tengah. Diam: tanpa latar, tanpa garis tepi. Hover: latar `surface-raised`. Fokus (sedang diketik): latar `surface-raised`, **tanpa ring fokus** (pengecualian dari aturan `focus-ring`; tanda fokusnya latar + kursor ketik). Supaya terbaca sebagai judul, bukan kolom isian. |
 | Modal | Lebar maks 480px, `surface`, `rounded-3xl` (24px), padding 24px, latar belakang `black/40` (terang) atau `black/60` (gelap) + blur. |
 | Progress export | Bar tinggi 6px `rounded-full`, isi `accent`, ada teks persen. |
 

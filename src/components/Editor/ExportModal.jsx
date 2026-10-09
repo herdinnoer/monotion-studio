@@ -5,6 +5,7 @@ import { X, Loader2 } from "lucide-react";
 import { Alert } from "@heroui/react";
 import { cn } from "@/lib/utils";
 import { GlossyButton } from "@/components/UI/GlossyButton";
+import { IconButton } from "@/components/UI/IconButton";
 import {
   exportAsGif,
   exportAsSvg,
@@ -148,14 +149,14 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
           <h2 className="text-base font-bold text-foreground tracking-wide">
             Export
           </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isExporting}
-            className="p-1 rounded-lg text-muted hover:text-foreground hover:bg-surface-secondary transition-colors cursor-pointer disabled:opacity-50"
+          <IconButton
+            label="Close"
+            onPress={onClose}
+            isDisabled={isExporting}
+            className="text-muted hover:text-foreground"
           >
-            <X size={18} />
-          </button>
+            <X size={16} />
+          </IconButton>
         </div>
 
         {/* Format Export (Side-by-side) */}
