@@ -4,7 +4,6 @@ import React from "react";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import {
-  Folder,
   Undo2,
   Redo2,
   Sun,
@@ -42,12 +41,7 @@ export const TopBar = ({
           />
         </div>
 
-        <div className="flex items-center border-l border-border pl-3 px-1">
-          <button className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-surface-secondary hover:text-foreground transition-all text-foreground cursor-pointer">
-            <Folder size={16} />
-            <span>Projects</span>
-          </button>
-        </div>
+        {/* Tombol Projects & avatar disembunyikan sampai ada fitur akun (Fase 6, DESIGN.md bagian 9) */}
 
         {/* Tombol Undo & Redo */}
         <div className="flex items-center gap-1 border-l border-border pl-3">
@@ -130,17 +124,9 @@ export const TopBar = ({
           </button>
         </div>
 
-        <GlossyButton colorScheme="blue" onPress={onExportClick}>
+        <GlossyButton onPress={onExportClick}>
           Export
         </GlossyButton>
-
-        <div className="w-9 h-9 bg-surface-secondary rounded-full overflow-hidden border border-border">
-          <img
-            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Herdin"
-            alt="User"
-            className="w-full h-full object-cover"
-          />
-        </div>
       </div>
     </header>
   );
