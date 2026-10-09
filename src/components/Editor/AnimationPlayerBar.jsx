@@ -182,11 +182,11 @@ export function AnimationPlayerBar({
   const totalTimeSec = (durationMs / 1000).toFixed(1);
 
   return (
-    <div className="w-full bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl px-4 py-2.5 shadow-sm flex items-center gap-3 select-none">
+    <div className="w-full bg-surface border border-border rounded-2xl px-4 py-2.5 shadow-sm flex items-center gap-3 select-none">
       <button
         type="button"
         onClick={() => setIsPlaying(!isPlaying)}
-        className="p-2 rounded-xl bg-gray-100 dark:bg-[#232328] hover:bg-gray-200 dark:hover:bg-[#2c2c32] text-foreground dark:text-white transition-all cursor-pointer shrink-0"
+        className="p-2 rounded-xl bg-surface-secondary hover:bg-surface-hover text-foreground transition-all cursor-pointer shrink-0"
       >
         {isPlaying ? <Pause size={16} /> : <Play size={16} className="ml-0.5" />}
       </button>
@@ -194,12 +194,12 @@ export function AnimationPlayerBar({
       <button
         type="button"
         onClick={handleReset}
-        className="p-2 rounded-xl text-gray-500 hover:text-foreground dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#232328] transition-colors cursor-pointer shrink-0"
+        className="p-2 rounded-xl text-subtle hover:text-foreground hover:bg-surface-secondary transition-colors cursor-pointer shrink-0"
       >
         <RotateCcw size={15} />
       </button>
 
-      <div className="text-[11px] font-mono text-gray-500 dark:text-gray-400 shrink-0 min-w-[70px] text-center">
+      <div className="text-[11px] font-mono text-muted shrink-0 min-w-[70px] text-center">
         <span>{currentTimeSec}s</span> / <span>{totalTimeSec}s</span>
         <span className="text-[10px] opacity-60 block">{currentFrame}/{totalFrames}f</span>
       </div>
@@ -212,7 +212,7 @@ export function AnimationPlayerBar({
           step="0.001"
           value={progress}
           onChange={handleSliderChange}
-          className="w-full h-1.5 bg-gray-200 dark:bg-[#232328] rounded-lg appearance-none cursor-pointer accent-blue-500 focus:outline-none"
+          className="w-full h-1.5 bg-surface-secondary rounded-lg appearance-none cursor-pointer accent-accent focus:outline-none"
         />
       </div>
 
@@ -221,7 +221,7 @@ export function AnimationPlayerBar({
         onClick={() => setIsLooping(!isLooping)}
         className={cn(
           "p-2 rounded-xl transition-colors cursor-pointer shrink-0",
-          isLooping ? "text-blue-500 bg-blue-500/10 dark:bg-blue-500/20" : "text-gray-400 hover:text-foreground dark:hover:text-white"
+          isLooping ? "text-accent bg-accent-soft" : "text-muted hover:text-foreground"
         )}
       >
         <Repeat size={15} />
@@ -231,14 +231,14 @@ export function AnimationPlayerBar({
         <button
           type="button"
           onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-          className="p-2 rounded-xl text-xs font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#232328] flex items-center gap-1 cursor-pointer"
+          className="p-2 rounded-xl text-xs font-semibold text-muted hover:bg-surface-secondary flex items-center gap-1 cursor-pointer"
         >
           <Gauge size={14} />
           <span>{speed}x</span>
         </button>
 
         {showSpeedMenu && (
-          <div className="absolute bottom-full mb-2 right-0 bg-white dark:bg-[#232328] border border-gray-200 dark:border-white/10 rounded-xl p-1 shadow-lg flex flex-col gap-0.5 z-20 min-w-[70px]">
+          <div className="absolute bottom-full mb-2 right-0 bg-surface dark:bg-surface-secondary border border-border rounded-xl p-1 shadow-lg flex flex-col gap-0.5 z-20 min-w-[70px]">
             {[0.5, 1, 1.5, 2].map((sp) => (
               <button
                 key={sp}
@@ -249,7 +249,7 @@ export function AnimationPlayerBar({
                 }}
                 className={cn(
                   "px-3 py-1 text-xs text-left rounded-lg transition-colors cursor-pointer",
-                  speed === sp ? "bg-blue-500 text-white font-bold" : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#2b2b30]"
+                  speed === sp ? "bg-accent text-accent-foreground font-bold" : "text-muted hover:bg-surface-secondary dark:hover:bg-surface-hover"
                 )}
               >
                 {sp}x

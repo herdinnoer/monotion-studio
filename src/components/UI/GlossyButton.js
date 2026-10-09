@@ -15,10 +15,10 @@ export function GlossyButton({
   // Mapping tema warna persis seperti di Arkana Edu
   const themes = {
     blue: {
-      bg: "bg-gradient-to-b from-[#0E89F8] to-[#1d4ed8]",
-      hoverBg: "hover:from-[#48A6FB] hover:to-[#1d4ed8]",
-      activeBg: "active:from-[#1e40af] active:to-[#1d4ed8]",
-      border: "border-[#003768]", // setara blue.400
+      bg: "bg-gradient-to-b from-(--glossy-top) to-(--glossy-bottom)",
+      hoverBg: "hover:from-(--glossy-top-hover) hover:to-(--glossy-bottom)",
+      activeBg: "active:from-(--glossy-top-pressed) active:to-(--glossy-bottom)",
+      border: "border-(color:--glossy-border)",
     },
     pink: {
       bg: "bg-gradient-to-b from-[#F165AE] to-[#d93c8d]",
@@ -44,9 +44,9 @@ export function GlossyButton({
       // Menggunakan cn() agar kelas kustom dari props (seperti fontSize & borderRadius)
       // berhasil menimpa bawaan internal HeroUI
       className={cn(
-        "relative text-white font-semibold h-9 px-4 min-w-0 transition-all duration-200 ease-in-out",
-        "shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_2px_4px_rgba(0,0,0,0.1)]",
-        "active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]",
+        "relative text-accent-foreground font-semibold h-9 px-4 min-w-0 transition-all duration-200 ease-in-out",
+        "shadow-(--glossy-shadow)",
+        "active:shadow-(--glossy-shadow-pressed)",
         "border",
         fontSize,
         borderRadius,

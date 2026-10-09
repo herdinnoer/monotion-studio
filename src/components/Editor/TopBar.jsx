@@ -27,7 +27,7 @@ export const TopBar = ({
     <header
       className={cn(
         "w-full h-16 px-4 transition-colors duration-200",
-        "bg-white dark:bg-[#111113] rounded-2xl border border-divider dark:shadow-xl",
+        "bg-surface rounded-2xl border border-border dark:shadow-xl",
         "grid grid-cols-3 items-center",
         "text-sm text-foreground",
       )}
@@ -42,15 +42,15 @@ export const TopBar = ({
           />
         </div>
 
-        <div className="flex items-center border-l border-divider pl-3 px-1">
-          <button className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#252525] hover:text-foreground transition-all text-foreground cursor-pointer">
+        <div className="flex items-center border-l border-border pl-3 px-1">
+          <button className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg hover:bg-surface-secondary hover:text-foreground transition-all text-foreground cursor-pointer">
             <Folder size={16} />
             <span>Projects</span>
           </button>
         </div>
 
         {/* Tombol Undo & Redo */}
-        <div className="flex items-center gap-1 border-l border-divider pl-3">
+        <div className="flex items-center gap-1 border-l border-border pl-3">
           <button
             type="button"
             onClick={onUndo}
@@ -59,7 +59,7 @@ export const TopBar = ({
             className={cn(
               "p-2 rounded-lg transition-all text-foreground",
               canUndo
-                ? "hover:bg-gray-100 dark:hover:bg-[#252525] cursor-pointer"
+                ? "hover:bg-surface-secondary cursor-pointer"
                 : "opacity-40 cursor-not-allowed"
             )}
           >
@@ -73,7 +73,7 @@ export const TopBar = ({
             className={cn(
               "p-2 rounded-lg transition-all text-foreground",
               canRedo
-                ? "hover:bg-gray-100 dark:hover:bg-[#252525] cursor-pointer"
+                ? "hover:bg-surface-secondary cursor-pointer"
                 : "opacity-40 cursor-not-allowed"
             )}
           >
@@ -97,22 +97,22 @@ export const TopBar = ({
           }}
           className={cn(
             "w-full px-3 py-1.5 rounded-lg text-center font-medium text-foreground bg-transparent",
-            "hover:bg-gray-100 dark:hover:bg-[#252525] focus:bg-gray-100 dark:focus:bg-[#252525]",
-            "focus:outline-none focus:ring-1 focus:ring-[#0E89F8] transition-all cursor-text",
+            "hover:bg-surface-secondary focus:bg-surface-secondary",
+            "focus:outline-none focus:ring-1 focus:ring-focus transition-all cursor-text",
           )}
         />
       </div>
 
       {/* Right */}
       <div className="flex items-center gap-3 justify-end">
-        <div className="flex items-center bg-gray-100 dark:bg-[#19191c] border border-divider rounded-lg p-1">
+        <div className="flex items-center bg-surface-secondary dark:bg-surface border border-border rounded-lg p-1">
           <button
             onClick={() => setTheme("light")}
             className={cn(
               "p-1.5 rounded-md transition-all cursor-pointer",
               theme === "light"
-                ? "bg-white text-foreground shadow-sm"
-                : "text-gray-400 hover:text-foreground",
+                ? "bg-surface text-foreground shadow-sm"
+                : "text-muted hover:text-foreground",
             )}
           >
             <Sun size={16} />
@@ -122,8 +122,8 @@ export const TopBar = ({
             className={cn(
               "p-1.5 rounded-md transition-all cursor-pointer",
               theme === "dark"
-                ? "bg-[#353535] text-white shadow"
-                : "text-gray-400 hover:text-foreground",
+                ? "bg-surface-hover text-foreground shadow"
+                : "text-muted hover:text-foreground",
             )}
           >
             <Moon size={16} />
@@ -134,7 +134,7 @@ export const TopBar = ({
           Export
         </GlossyButton>
 
-        <div className="w-9 h-9 bg-orange-500 rounded-full overflow-hidden border border-divider">
+        <div className="w-9 h-9 bg-surface-secondary rounded-full overflow-hidden border border-border">
           <img
             src="https://api.dicebear.com/7.x/avataaars/svg?seed=Herdin"
             alt="User"

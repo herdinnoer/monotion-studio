@@ -12,8 +12,7 @@ export const CenterWorkspace = ({ characterId, config }) => {
     <main
       className={cn(
         "flex-1 flex flex-col items-center justify-center overflow-hidden relative rounded-2xl p-8 transition-colors duration-200",
-        "bg-[none] dark:bg-[none]",
-        "bg-[radial-gradient(rgba(0,0,0,0.15)_1px,transparent_1px)] dark:bg-[radial-gradient(rgba(255,255,255,0.12)_1px,transparent_1px)]",
+        "bg-[radial-gradient(var(--canvas-dot)_1px,transparent_1px)]",
         "[background-size:20px_20px]"
       )}
     >

@@ -142,14 +142,14 @@ export default function EditorPage() {
   }, [handleUndo, handleRedo, isExportOpen]);
 
   if (!mounted) {
-    return <div className="h-screen w-screen bg-[#F5F5F7] dark:bg-[#1C1C1E]" />;
+    return <div className="h-screen w-screen bg-background" />;
   }
 
   return (
     <div
       className={cn(
         "h-screen w-screen p-2 flex flex-col gap-2 overflow-hidden transition-colors duration-200",
-        "bg-[#F5F5F7] dark:bg-[#1C1C1E] text-foreground font-sans select-none",
+        "bg-background text-foreground font-sans select-none",
       )}
     >
       <TopBar
