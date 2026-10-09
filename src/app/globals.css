@@ -1,6 +1,254 @@
 @import "tailwindcss";
 @import "@heroui/styles";
 
+/* ==========================================================================
+   Token desain Monotion (DESIGN.md bagian 3 & 4)
+   Nilai DESIGN.md dipasang ke nama variabel HeroUI v3, supaya semua komponen
+   HeroUI otomatis ikut. Komponen tidak boleh menulis kode warna sendiri.
+   Blok ini harus berada SETELAH @import "@heroui/styles" supaya menang.
+   ========================================================================== */
+
+@layer base {
+  /* ---------- Mode terang ---------- */
+  :root,
+  .light,
+  [data-theme="light"] {
+    /* Permukaan */
+    --background: #f5f5f7; /* bg-app */
+    --surface: #ffffff; /* panel */
+    --surface-secondary: #ececef; /* surface-raised */
+    --surface-tertiary: #e4e4e8; /* surface-hover */
+    --surface-hover: #e4e4e8; /* surface-hover */
+    --overlay: var(--surface); /* modal */
+    --default: var(--surface-secondary);
+    --default-hover: var(--surface-hover);
+    --default-foreground: var(--foreground);
+    --segment: var(--surface); /* item terpilih di grup segmented */
+    --segment-foreground: var(--foreground);
+    --border: rgba(0, 0, 0, 0.1);
+    --separator: var(--border);
+
+    /* Input & select */
+    --field-background: var(--surface-secondary);
+    --field-hover: var(--surface-hover);
+    --field-foreground: var(--foreground);
+    --field-border: var(--border);
+    --field-border-width: 1px;
+
+    /* Teks */
+    --foreground: #111113; /* text */
+    --muted: #52525b; /* text-muted */
+    --subtle: #71717a; /* text-subtle (token baru) */
+
+    /* Aksen */
+    --accent: #0b6fd0;
+    --accent-hover: #0e89f8;
+    --accent-pressed: #1d4ed8;
+    --accent-foreground: #ffffff;
+    --focus: var(--accent);
+    --link: var(--accent);
+
+    /* Status */
+    --success: #22c55e;
+    --danger: #ef4444;
+    --warning: #eab308;
+
+    /* Latar gelap di belakang modal */
+    --backdrop: rgba(0, 0, 0, 0.4);
+
+    /* Kanvas: pola titik & papan catur (Remove Background) */
+    --canvas-dot: rgba(0, 0, 0, 0.15);
+    --checker-a: var(--surface);
+    --checker-b: var(--surface-hover);
+
+    /* Tombol glossy: sama di dua mode (DESIGN.md bagian 8) */
+    --glossy-top: #0e89f8;
+    --glossy-top-hover: #48a6fb;
+    --glossy-top-pressed: #1e40af;
+    --glossy-bottom: #1d4ed8;
+    --glossy-border: #003768;
+    --glossy-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.1);
+    --glossy-shadow-pressed: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  /* ---------- Mode gelap ---------- */
+  .dark,
+  [data-theme="dark"] {
+    /* Permukaan */
+    --background: #1c1c1e; /* bg-app */
+    --surface: #161618; /* panel */
+    --surface-secondary: #232328; /* surface-raised */
+    --surface-tertiary: #2c2c32; /* surface-hover */
+    --surface-hover: #2c2c32; /* surface-hover */
+    --overlay: var(--surface);
+    --default: var(--surface-secondary);
+    --default-hover: var(--surface-hover);
+    --default-foreground: var(--foreground);
+    --segment: var(--surface);
+    --segment-foreground: var(--foreground);
+    --border: rgba(255, 255, 255, 0.08);
+    --separator: var(--border);
+
+    /* Input & select */
+    --field-background: var(--surface-secondary);
+    --field-hover: var(--surface-hover);
+    --field-foreground: var(--foreground);
+    --field-border: var(--border);
+    --field-border-width: 1px;
+
+    /* Teks */
+    --foreground: #f4f4f5;
+    --muted: #a1a1aa;
+    --subtle: #71717a;
+
+    /* Aksen */
+    --accent: #0e89f8;
+    --accent-hover: #48a6fb;
+    --accent-pressed: #1d4ed8;
+    --accent-foreground: #ffffff;
+    --focus: var(--accent);
+    --link: var(--accent);
+
+    /* Status */
+    --success: #22c55e;
+    --danger: #ef4444;
+    --warning: #eab308;
+
+    --backdrop: rgba(0, 0, 0, 0.6);
+
+    /* Kanvas */
+    --canvas-dot: rgba(255, 255, 255, 0.12);
+    --checker-a: var(--surface-secondary);
+    --checker-b: var(--surface-hover);
+  }
+}
+
+/* Token baru yang tidak dimiliki HeroUI, dijadikan class Tailwind.
+   "inline" wajib: variabel font dari next/font baru ada di <body>, bukan di :root. */
+@theme inline {
+  --color-subtle: var(--subtle); /* text-subtle */
+  --color-accent-pressed: var(--accent-pressed); /* bg-accent-pressed */
+
+  --font-sans: var(--font-plus-jakarta), sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace; /* penghitung waktu/frame */
+}
+
+/* Radius (DESIGN.md bagian 5, keputusan K-6 opsi A).
+   HeroUI menghitung radius dari satu angka induk (--radius × pengali). Di sini tiap nama
+   diisi angka tetap, jadi rounded-lg = 12px persis seperti DESIGN.md.
+   --radius-3xl & --radius-4xl bawaan HeroUI dibiarkan, tapi jangan dipakai di kode kita. */
+@theme inline {
+  --radius-xs: 6px; /* item di dalam grup, thumb, kotak warna */
+  --radius-sm: 8px; /* tombol ikon, input, select, tooltip */
+  --radius-md: 10px; /* tombol berteks */
+  --radius-lg: 12px; /* kartu karakter, popover, grup segmented */
+  --radius-xl: 16px; /* panel */
+  --radius-2xl: 24px; /* modal */
+}
+
+@layer base {
+  :root {
+    --field-radius: var(--radius-sm); /* Input & Select */
+  }
+}
+
+/* Aturan per komponen HeroUI. Komponen HeroUI memilih nama radiusnya sendiri
+   (mis. Button memakai rounded-3xl = kapsul), jadi mengganti skala saja tidak cukup. */
+@layer components {
+  /* Tombol berteks 10px, tombol ikon 8px */
+  .button,
+  .toggle-button,
+  .toggle-button-group--detached .toggle-button {
+    @apply rounded-md;
+  }
+  .button--icon-only {
+    @apply rounded-sm;
+  }
+  .toggle-button-group--horizontal .toggle-button:first-child {
+    @apply rounded-s-md;
+  }
+  .toggle-button-group--horizontal .toggle-button:last-child {
+    @apply rounded-e-md;
+  }
+  .toggle-button-group--vertical .toggle-button:first-child {
+    @apply rounded-t-md;
+  }
+  .toggle-button-group--vertical .toggle-button:last-child {
+    @apply rounded-b-md;
+  }
+  .toggle-button-group .toggle-button:first-child:last-child {
+    @apply rounded-md;
+  }
+
+  /* Segmented (Tabs): grup 12px, item & penanda terpilih 6px */
+  .tabs__list-container {
+    @apply rounded-lg;
+  }
+  .tabs__tab,
+  .tabs__indicator {
+    @apply rounded-xs;
+  }
+
+  /* Lapisan melayang: popover & dropdown memakai surface-raised.
+     HeroUI menyatukan modal & popover di --overlay (= surface, untuk modal),
+     jadi warna popover ditimpa di sini. */
+  .popover,
+  .dropdown__popover,
+  .select__popover,
+  .combo-box__popover,
+  .autocomplete__popover,
+  .color-picker__popover {
+    @apply rounded-lg bg-surface-secondary;
+  }
+  .list-box-item,
+  .menu-item {
+    @apply rounded-sm;
+  }
+  .tooltip {
+    @apply rounded-sm;
+  }
+
+  /* Modal 24px; Alert di dalam modal harus lebih kecil (aturan sudut bersarang) */
+  .modal__dialog {
+    @apply rounded-2xl;
+  }
+  .alert {
+    @apply rounded-lg;
+  }
+
+  /* Bentuk bulat penuh: switch, progress bar, track slider */
+  .switch__control,
+  .switch--sm .switch__control,
+  .switch__thumb,
+  .switch--sm .switch__thumb,
+  .switch--lg .switch__thumb {
+    @apply rounded-full;
+  }
+  .progress-bar .progress-bar__track,
+  .progress-bar .progress-bar__fill,
+  .progress-bar--sm .progress-bar__track,
+  .progress-bar--sm .progress-bar__fill,
+  .progress-bar--lg .progress-bar__track,
+  .progress-bar--lg .progress-bar__fill {
+    @apply rounded-full;
+  }
+  .slider .slider__track {
+    @apply rounded-full;
+  }
+  .slider .slider__thumb,
+  .slider .slider__thumb::after {
+    @apply rounded-xs;
+  }
+
+  /* Warna: kotak warna 6px, area pemilih di dalam popover 8px */
+  .color-swatch--square {
+    @apply rounded-xs;
+  }
+  .color-area {
+    @apply rounded-sm;
+  }
+}
+
 /* Custom Scrollbar untuk Editor Monotion Studio */
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
@@ -9,38 +257,16 @@
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #333;
+  background: var(--surface-hover);
   border-radius: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-@layer base {
-  :root, [data-theme="light"] {
-    --heroui-foreground: 17 17 19; /* #111113 untuk warna teks light mode */
-    --heroui-divider: 0 0 0 / 0.12; /* Garis border tegas di light mode */
-  }
-
-  .dark, [data-theme="dark"] {
-    --heroui-foreground: 255 255 255; /* Putih di dark mode */
-    --heroui-divider: 255 255 255 / 0.08; /* Border transparan halus di dark mode */
-  }
-}
-
-/* Custom Dot Grid Background */
-.bg-dot-pattern {
-  /* Mode Light: Titik-titik gelap transparan dengan background terang */
-  background-color: #f8fafc;
-  background-image: radial-gradient(rgba(0, 0, 0, 0.15) 1px, transparent 1px);
-  background-size: 20px 20px;
+  background: var(--muted);
 }
 
 /* Papan catur: tanda background karakter transparan (DESIGN.md bagian 3 "Kanvas", K-4).
-   Kotak 8px, jadi satu pola utuh = 16px. Warna diganti token saat B1. */
+   Kotak 8px, jadi satu pola utuh = 16px. Warnanya dari token --checker-a/b di atas. */
 .bg-checkerboard {
-  --checker-a: #ffffff; /* surface */
-  --checker-b: #e4e4e8; /* surface-hover */
   background-color: var(--checker-a);
   background-image: conic-gradient(
     var(--checker-b) 25%,
@@ -49,18 +275,4 @@
     transparent 0
   );
   background-size: 16px 16px;
-}
-
-.dark .bg-checkerboard,
-[data-theme="dark"] .bg-checkerboard {
-  --checker-a: #232328; /* surface-raised */
-  --checker-b: #2c2c32; /* surface-hover */
-}
-
-.dark .bg-dot-pattern,
-.bg-dot-pattern-dark {
-  /* Mode Dark (Persis Animos): Background charcoal/hitam gelap dengan titik putih halus */
-  background-color: #0c0d0e;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px);
-  background-size: 20px 20px;
 }

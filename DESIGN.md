@@ -43,6 +43,8 @@ Nama token dipakai di CSS variable dan Tailwind. Nilai diambil dari editor sekar
 | `surface` | Panel: top bar, sidebar, player bar, modal | `#FFFFFF` | `#161618` |
 | `surface-raised` | Di atas panel: input, select, segmented, popover, kartu terpilih | `#ECECEF` | `#232328` |
 | `surface-hover` | Hover di atas `surface-raised` | `#E4E4E8` | `#2C2C32` |
+
+> Popover dan dropdown memakai `surface-raised`, modal memakai `surface`. HeroUI menyatukan keduanya di satu variabel (`--overlay`), jadi `--overlay` diisi `surface` (untuk modal) dan warna popover/dropdown ditimpa terpisah di `globals.css`.
 | `border` | Garis tepi & pemisah | `rgba(0,0,0,0.10)` | `rgba(255,255,255,0.08)` |
 
 ### Teks
@@ -101,7 +103,7 @@ Aturan: maksimal 3 ketebalan (500, 600, 700). Jangan pakai ukuran di luar tabel 
 | Token | Nilai | Dipakai untuk |
 |---|---|---|
 | `radius-xs` | 6px | Item di dalam grup (tombol segmented, thumb) |
-| `radius-sm` | 8px | Tombol ikon, input, select |
+| `radius-sm` | 8px | Tombol ikon, input, select, tooltip |
 | `radius-md` | 10px | Tombol berteks (Export, Cancel) |
 | `radius-lg` | 12px | Kartu karakter, popover, grup segmented |
 | `radius-xl` | 16px | Panel |
