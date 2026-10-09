@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import {
@@ -12,9 +12,16 @@ import {
 } from "lucide-react";
 import { GlossyButton } from "@/components/UI/GlossyButton";
 
-export const TopBar = ({ canUndo = false, canRedo = false, onUndo, onRedo, onExportClick }) => {
+export const TopBar = ({
+  projectName = "",
+  onProjectNameChange,
+  canUndo = false,
+  canRedo = false,
+  onUndo,
+  onRedo,
+  onExportClick,
+}) => {
   const { theme, setTheme } = useTheme();
-  const [projectName, setProjectName] = useState("My Character");
 
   return (
     <header
@@ -80,10 +87,9 @@ export const TopBar = ({ canUndo = false, canRedo = false, onUndo, onRedo, onExp
         <input
           type="text"
           value={projectName}
-          onChange={(e) => setProjectName(e.target.value)}
-          onBlur={() => {
-            if (!projectName.trim()) setProjectName("My Character");
-          }}
+          placeholder="Untitled"
+          aria-label="Nama proyek"
+          onChange={(e) => onProjectNameChange?.(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.currentTarget.blur();

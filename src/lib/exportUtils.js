@@ -1,6 +1,7 @@
 import * as htmlToImage from "html-to-image";
 import { getCharacter, getMoodDuration } from "@/characters/registry";
 import { TIMELINE_EVENT } from "@/characters/_core/useTimeline";
+import { DEFAULT_BACKGROUND } from "@/lib/editorState";
 
 // =========================================================================
 // HELPER FUNCTIONS & MOOD DURATION MAP
@@ -73,7 +74,7 @@ async function captureAndScaleToTarget(
   ctx.clearRect(0, 0, targetWidth, targetHeight);
 
   const isBgRemoved = config?.isBgRemoved;
-  const bgColor = isBgRemoved ? null : config?.backgroundColor || "#f5f5f7";
+  const bgColor = isBgRemoved ? null : config?.backgroundColor || DEFAULT_BACKGROUND;
 
   if (bgColor && bgColor !== "transparent") {
     ctx.fillStyle = bgColor;
@@ -542,7 +543,7 @@ export const copyReactComponent = async ({
 export const MochiCharacter = ({
   mood = "${config.mood || "idle"}",
   color = "${config.color || "#ffffff"}",
-  backgroundColor = "${config.backgroundColor || "#f5f5f7"}",
+  backgroundColor = "${config.backgroundColor || DEFAULT_BACKGROUND}",
   text = "${config.text || ""}",
 }) => {
   return (

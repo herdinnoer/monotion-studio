@@ -1,33 +1,20 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Play, Pause, RotateCcw, Repeat, Gauge } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getCharacter, getMoodDuration } from "@/characters/registry";
 import { TIMELINE_EVENT, dispatchTimeline } from "@/characters/_core/useTimeline";
 
 export function AnimationPlayerBar({
   elementId = "character-workspace",
-  characterId,
-  currentState = "idle",
+  durationMs,
   totalFrames = 48,
-  onDurationChange,
 }) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
   const [isLooping, setIsLooping] = useState(true);
   const [speed, setSpeed] = useState(1);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
-
-  // Durasi 1 putaran dibaca dari daftar mood karakter (lewat registry)
-  const durationMs = useMemo(
-    () => getMoodDuration(getCharacter(characterId), currentState),
-    [characterId, currentState]
-  );
-
-  useEffect(() => {
-    onDurationChange?.(durationMs);
-  }, [durationMs, onDurationChange]);
 
   const requestRef = useRef(null);
   const lastTimeRef = useRef(null);

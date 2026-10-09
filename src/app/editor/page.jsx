@@ -16,6 +16,7 @@ import {
   getMoodDuration,
   pickMood,
 } from "@/characters/registry";
+import { createInitialState } from "@/lib/editorState";
 
 const emptySubscribe = () => () => {};
 function useMounted() {
@@ -25,41 +26,28 @@ function useMounted() {
 export default function EditorPage() {
   const mounted = useMounted();
   const [isExportOpen, setIsExportOpen] = useState(false);
-  const [currentDurationMs, setCurrentDurationMs] = useState(() => getMoodDuration(defaultCharacter, defaultCharacter.defaultMood)); // State untuk menyimpan duration aktual dari AnimationPlayerBar
+  // Nama proyek: dipakai untuk nama file export. Tidak ikut undo/redo (keputusan K-10).
+  const [projectName, setProjectName] = useState("");
 
-  // State Riwayat Undo / Redo
-  const [history, setHistory] = useState([
-    {
-      selectedCharacterId: defaultCharacter.id,
-      config: {
-        mood: defaultCharacter.defaultMood,
-        shapePreset: getDefaultShape(defaultCharacter),
-        color: defaultCharacter.defaultColor,
-        backgroundColor: "#f5f5f7",
-        isBgRemoved: false,
-      },
-    },
-  ]);
+  // Riwayat Undo / Redo. Tiap isi = satu paket kondisi (lihat src/lib/editorState.js)
+  const [history, setHistory] = useState(() => [createInitialState(defaultCharacter)]);
   const [historyIndex, setHistoryIndex] = useState(0);
 
-  // Ambil state aktif saat ini berdasarkan index riwayat
-  const currentState = history[historyIndex] || history[0];
-  const selectedCharacterId = currentState.selectedCharacterId;
-  const config = currentState.config;
+  // Paket kondisi yang sedang aktif
+  const editorState = history[historyIndex] || history[0];
+  const { characterId } = editorState;
+  const character = getCharacter(characterId);
+
+  // Durasi 1 putaran mood, dihitung langsung dari registry
+  const durationMs = getMoodDuration(character, editorState.mood);
 
   // Fungsi untuk Menambahkan State Baru ke Riwayat
   const pushState = useCallback(
-    (newCharacterId, newConfig) => {
+    (newState) => {
       setHistory((prevHistory) => {
         // Hapus riwayat "future" jika ada perubahan baru setelah undo
         const updatedHistory = prevHistory.slice(0, historyIndex + 1);
-        return [
-          ...updatedHistory,
-          {
-            selectedCharacterId: newCharacterId,
-            config: newConfig,
-          },
-        ];
+        return [...updatedHistory, newState];
       });
       setHistoryIndex((prevIndex) => prevIndex + 1);
     },
@@ -68,19 +56,22 @@ export default function EditorPage() {
 
   // Handler Ganti Karakter
   const handleSelectCharacter = (id) => {
-    const character = getCharacter(id);
-    const newConfig = {
-      ...config,
-      mood: pickMood(character, config.mood),
-      shapePreset: getDefaultShape(character),
-      color: character.defaultColor,
-    };
-    pushState(id, newConfig);
+    // Klik karakter yang sudah aktif: jangan reset warna & bentuk, jangan buat langkah undo
+    if (id === characterId) return;
+
+    const nextCharacter = getCharacter(id);
+    pushState({
+      ...editorState,
+      characterId: nextCharacter.id,
+      mood: pickMood(nextCharacter, editorState.mood),
+      shapePreset: getDefaultShape(nextCharacter),
+      color: nextCharacter.defaultColor,
+    });
   };
 
   // Handler Perubahan Config Customizer
   const handleConfigChange = (newConfig) => {
-    pushState(selectedCharacterId, newConfig);
+    pushState({ ...newConfig, characterId });
   };
 
   // Status ketersediaan Undo & Redo
@@ -150,6 +141,8 @@ export default function EditorPage() {
       )}
     >
       <TopBar
+        projectName={projectName}
+        onProjectNameChange={setProjectName}
         canUndo={canUndo}
         canRedo={canRedo}
         onUndo={handleUndo}
@@ -159,26 +152,24 @@ export default function EditorPage() {
 
       <div className="flex-1 flex gap-2 overflow-hidden">
         <LeftSidebar
-          selectedCharacterId={selectedCharacterId}
+          selectedCharacterId={characterId}
           onSelectCharacter={handleSelectCharacter}
           characters={characters}
         />
 
         {/* AREA TENGAH: CenterWorkspace + AnimationPlayerBar */}
         <div className="flex-1 flex flex-col gap-2 h-full min-h-0">
-          <CenterWorkspace characterId={selectedCharacterId} config={config} />
-          
+          <CenterWorkspace characterId={characterId} config={editorState} />
+
           <AnimationPlayerBar
             elementId="character-workspace"
-            characterId={selectedCharacterId}
-            currentState={config.mood}
-            onDurationChange={(duration) => setCurrentDurationMs(duration)} 
+            durationMs={durationMs}
           />
         </div>
 
         <RightSidebar
-          characterId={selectedCharacterId}
-          config={config}
+          characterId={characterId}
+          config={editorState}
           onConfigChange={handleConfigChange}
         />
         
@@ -188,12 +179,11 @@ export default function EditorPage() {
       <ExportModal
         isOpen={isExportOpen}
         onClose={() => setIsExportOpen(false)}
-        onExport={(options) => {
-          console.log("Exporting video with options:", options);
-        }}
-        character={selectedCharacterId}
-        config={config}
-        durationMs={currentDurationMs}
+        character={characterId}
+        characterName={character.name}
+        projectName={projectName}
+        config={editorState}
+        durationMs={durationMs}
       />
       
     </div>

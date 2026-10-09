@@ -4,6 +4,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import { ColorInput } from "@/components/UI/ColorInput";
 import { getCharacter, getDefaultShape } from "@/characters/registry";
+import { DEFAULT_BACKGROUND } from "@/lib/editorState";
 import { ChevronDown } from "lucide-react";
 import { Switch } from "@heroui/react";
 
@@ -32,9 +33,9 @@ export const RightSidebar = ({ characterId, config, onConfigChange }) => {
     onConfigChange({ ...config, backgroundColor: bgColor, isBgRemoved: false });
   };
 
-  // Reset background ke putih (#FFFFFF)
+  // Reset background ke background default karakter (sama dengan saat editor dibuka)
   const handleResetBg = () => {
-    onConfigChange({ ...config, backgroundColor: "#FFFFFF", isBgRemoved: false });
+    onConfigChange({ ...config, backgroundColor: DEFAULT_BACKGROUND, isBgRemoved: false });
   };
 
   // Toggle Remove Background
@@ -132,7 +133,7 @@ export const RightSidebar = ({ characterId, config, onConfigChange }) => {
           </div>
 
           <ColorInput
-            value={config.backgroundColor || "#FFFFFF"}
+            value={config.backgroundColor || DEFAULT_BACKGROUND}
             onChange={handleBgChange}
             isDisabled={Boolean(config.isBgRemoved)}
           />

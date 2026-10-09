@@ -11,8 +11,9 @@ import {
   copyReactComponent,
   exportAsLottieJson,
 } from "@/lib/exportUtils";
+import { exportFilename } from "@/lib/editorState";
 
-export function ExportModal({ isOpen, onClose, character, config, durationMs, }) {
+export function ExportModal({ isOpen, onClose, character, characterName, projectName, config, durationMs }) {
   const [format, setFormat] = useState("gif");
   const [resolution, setResolution] = useState("720p");
   const [frameRate, setFrameRate] = useState("60 fps");
@@ -33,7 +34,8 @@ export function ExportModal({ isOpen, onClose, character, config, durationMs, })
       setIsExporting(true);
       setProgress(0);
 
-      const baseFilename = `${character}-${config?.mood || "custom"}`;
+      // Nama file dari nama proyek; kalau kosong pakai "<karakter>-<mood>" (keputusan K-2 & K-9)
+      const baseFilename = exportFilename({ projectName, characterName, mood: config?.mood });
 
       switch (format) {
         case "gif":

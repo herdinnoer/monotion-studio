@@ -11,6 +11,7 @@
 
 import mochi from "./mochi";
 import capybara from "./capybara";
+import { getDefaultShape, pickMood } from "../lib/editorState";
 
 export const characters = [
   mochi,
@@ -24,15 +25,9 @@ export function getCharacter(id) {
   return characters.find((c) => c.id === id) ?? defaultCharacter;
 }
 
-// Bentuk badan awal karakter (null kalau karakter tidak punya pilihan bentuk).
-export function getDefaultShape(character) {
-  return character.shapePresets?.[0]?.id ?? null;
-}
-
-// Mood dipertahankan kalau karakter punya mood itu; kalau tidak, pakai mood default karakter.
-export function pickMood(character, moodId) {
-  return character.moods.some((m) => m.id === moodId) ? moodId : character.defaultMood;
-}
+// getDefaultShape & pickMood tinggal di editorState.js (fungsi murni, bisa dites Node).
+// Diteruskan dari sini supaya komponen tetap cukup import dari registry.
+export { getDefaultShape, pickMood };
 
 // Durasi 1 putaran animasi (ms) untuk mood tertentu.
 export function getMoodDuration(character, moodId) {
