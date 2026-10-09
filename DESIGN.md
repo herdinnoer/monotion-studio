@@ -100,15 +100,19 @@ Aturan: maksimal 3 ketebalan (500, 600, 700). Jangan pakai ukuran di luar tabel 
 ## 5. Bentuk
 
 ### Radius (sudut)
-| Token | Nilai | Dipakai untuk |
+Memakai skala bawaan Tailwind (tidak ditimpa), jadi angka class `rounded-*` selalu sama dengan dokumentasi Tailwind. Satu-satunya tambahan: token `--radius-button` untuk tombol berteks.
+
+| Class | Nilai | Dipakai untuk |
 |---|---|---|
-| `radius-xs` | 6px | Item di dalam grup (tombol segmented, thumb) |
-| `radius-sm` | 8px | Tombol ikon, input, select, tooltip |
-| `radius-md` | 10px | Tombol berteks (Export, Cancel) |
-| `radius-lg` | 12px | Kartu karakter, popover, grup segmented |
-| `radius-xl` | 16px | Panel |
-| `radius-2xl` | 24px | Modal |
-| `radius-full` | 9999px | Avatar, switch, progress bar |
+| `rounded-md` | 6px | Item di dalam grup (tombol segmented, thumb), kotak warna |
+| `rounded-lg` | 8px | Tombol ikon, input, select, tooltip, item menu |
+| `rounded-button` | 10px | Tombol berteks (Export, Cancel). Token khusus `--radius-button` |
+| `rounded-xl` | 12px | Kartu karakter, popover, dropdown, grup segmented |
+| `rounded-2xl` | 16px | Panel |
+| `rounded-3xl` | 24px | Modal |
+| `rounded-full` | 9999px | Avatar, switch, progress bar |
+
+`rounded-xs` (2px), `rounded-sm` (4px) dan `rounded-4xl` tidak dipakai.
 
 Aturan sudut bersarang: sudut kotak di dalam selalu lebih kecil dari kotak luarnya (contoh: grup segmented 12px → tombol di dalamnya 6px), supaya lengkungannya terlihat sejajar.
 
@@ -157,20 +161,20 @@ Gerakan UI harus nyaris tak terasa. Yang boleh "hidup" dan memantul hanya karakt
 |---|---|
 | Tombol utama (glossy) | Hanya **satu** per layar (Export). Lihat "Tombol glossy" di bawah. |
 | Tombol kedua | Teks saja atau latar `surface-raised`. Tidak memakai aksen. |
-| Tombol ikon | 32×32px, radius 8px, transparan, hover `surface-raised`. Nonaktif: opacity 40%. |
+| Tombol ikon | 32×32px, `rounded-lg` (8px), transparan, hover `surface-raised`. Nonaktif: opacity 40%. |
 | Select (mood) | Latar `surface-raised`, garis `border`, teks 12px/500, ikon chevron 14px. |
-| Segmented (format, resolusi, fps) | Grup `surface-raised` radius 12px padding 4px. Item terpilih: `surface` + `shadow-sm`. |
-| Kartu karakter | Radius 12px. Terpilih: latar `surface-raised` + garis tepi 2px `accent`. |
-| Input warna | Kotak warna 24px radius 6px + kode hex 12px kapital. |
-| Modal | Lebar maks 480px, `surface`, radius 24px, padding 24px, latar belakang `black/40` (terang) atau `black/60` (gelap) + blur. |
-| Progress export | Bar tinggi 6px radius penuh, isi `accent`, ada teks persen. |
+| Segmented (format, resolusi, fps) | Grup `surface-raised` `rounded-xl` (12px) padding 4px, item `rounded-md` (6px). Item terpilih: `surface` + `shadow-sm`. |
+| Kartu karakter | `rounded-xl` (12px). Terpilih: latar `surface-raised` + garis tepi 2px `accent`. |
+| Input warna | Kotak warna 24px `rounded-md` (6px) + kode hex 12px kapital. |
+| Modal | Lebar maks 480px, `surface`, `rounded-3xl` (24px), padding 24px, latar belakang `black/40` (terang) atau `black/60` (gelap) + blur. |
+| Progress export | Bar tinggi 6px `rounded-full`, isi `accent`, ada teks persen. |
 
 ### Tombol glossy (ciri khas Monotion)
 Satu-satunya elemen UI yang boleh memakai gradient. Sengaja dipertahankan sebagai ciri khas, jadi justru harus jarang muncul supaya tetap terasa istimewa.
 
 - Hanya satu warna: **biru**. Varian pink dan hijau di `GlossyButton` dihapus.
 - Sama di mode terang dan gelap.
-- Teks putih 14px/600, radius 10px, tinggi 36px, padding samping 16px.
+- Teks putih 14px/600, `rounded-button` (10px), tinggi 36px, padding samping 16px.
 
 | Keadaan | Gradient (atas → bawah) | Garis tepi |
 |---|---|---|

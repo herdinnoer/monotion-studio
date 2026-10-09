@@ -133,63 +133,58 @@
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace; /* penghitung waktu/frame */
 }
 
-/* Radius (DESIGN.md bagian 5, keputusan K-6 opsi A).
-   HeroUI menghitung radius dari satu angka induk (--radius × pengali). Di sini tiap nama
-   diisi angka tetap, jadi rounded-lg = 12px persis seperti DESIGN.md.
-   --radius-3xl & --radius-4xl bawaan HeroUI dibiarkan, tapi jangan dipakai di kode kita. */
+/* Radius (DESIGN.md bagian 5).
+   Skala rounded-* bawaan Tailwind TIDAK ditimpa (rounded-md 6px, rounded-lg 8px,
+   rounded-xl 12px, rounded-2xl 16px, rounded-3xl 24px), supaya class lama tetap sesuai
+   angkanya. Satu-satunya token tambahan: tombol berteks 10px → class rounded-button. */
 @theme inline {
-  --radius-xs: 6px; /* item di dalam grup, thumb, kotak warna */
-  --radius-sm: 8px; /* tombol ikon, input, select, tooltip */
-  --radius-md: 10px; /* tombol berteks */
-  --radius-lg: 12px; /* kartu karakter, popover, grup segmented */
-  --radius-xl: 16px; /* panel */
-  --radius-2xl: 24px; /* modal */
+  --radius-button: 10px;
 }
 
 @layer base {
   :root {
-    --field-radius: var(--radius-sm); /* Input & Select */
+    --field-radius: var(--radius-lg); /* Input & Select 8px */
   }
 }
 
 /* Aturan per komponen HeroUI. Komponen HeroUI memilih nama radiusnya sendiri
-   (mis. Button memakai rounded-3xl = kapsul), jadi mengganti skala saja tidak cukup. */
+   (mis. Button memakai rounded-3xl = kapsul), jadi perlu ditimpa satu per satu. */
 @layer components {
   /* Tombol berteks 10px, tombol ikon 8px */
   .button,
   .toggle-button,
   .toggle-button-group--detached .toggle-button {
-    @apply rounded-md;
+    @apply rounded-button;
   }
   .button--icon-only {
-    @apply rounded-sm;
+    @apply rounded-lg;
   }
   .toggle-button-group--horizontal .toggle-button:first-child {
-    @apply rounded-s-md;
+    @apply rounded-s-button;
   }
   .toggle-button-group--horizontal .toggle-button:last-child {
-    @apply rounded-e-md;
+    @apply rounded-e-button;
   }
   .toggle-button-group--vertical .toggle-button:first-child {
-    @apply rounded-t-md;
+    @apply rounded-t-button;
   }
   .toggle-button-group--vertical .toggle-button:last-child {
-    @apply rounded-b-md;
+    @apply rounded-b-button;
   }
   .toggle-button-group .toggle-button:first-child:last-child {
-    @apply rounded-md;
+    @apply rounded-button;
   }
 
   /* Segmented (Tabs): grup 12px, item & penanda terpilih 6px */
   .tabs__list-container {
-    @apply rounded-lg;
+    @apply rounded-xl;
   }
   .tabs__tab,
   .tabs__indicator {
-    @apply rounded-xs;
+    @apply rounded-md;
   }
 
-  /* Lapisan melayang: popover & dropdown memakai surface-raised.
+  /* Lapisan melayang: popover & dropdown 12px, memakai surface-raised.
      HeroUI menyatukan modal & popover di --overlay (= surface, untuk modal),
      jadi warna popover ditimpa di sini. */
   .popover,
@@ -198,22 +193,22 @@
   .combo-box__popover,
   .autocomplete__popover,
   .color-picker__popover {
-    @apply rounded-lg bg-surface-secondary;
+    @apply rounded-xl bg-surface-secondary;
   }
   .list-box-item,
   .menu-item {
-    @apply rounded-sm;
+    @apply rounded-lg;
   }
   .tooltip {
-    @apply rounded-sm;
+    @apply rounded-lg;
   }
 
   /* Modal 24px; Alert di dalam modal harus lebih kecil (aturan sudut bersarang) */
   .modal__dialog {
-    @apply rounded-2xl;
+    @apply rounded-3xl;
   }
   .alert {
-    @apply rounded-lg;
+    @apply rounded-xl;
   }
 
   /* Bentuk bulat penuh: switch, progress bar, track slider */
@@ -237,15 +232,15 @@
   }
   .slider .slider__thumb,
   .slider .slider__thumb::after {
-    @apply rounded-xs;
+    @apply rounded-md;
   }
 
   /* Warna: kotak warna 6px, area pemilih di dalam popover 8px */
   .color-swatch--square {
-    @apply rounded-xs;
+    @apply rounded-md;
   }
   .color-area {
-    @apply rounded-sm;
+    @apply rounded-lg;
   }
 }
 
