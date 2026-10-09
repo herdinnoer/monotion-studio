@@ -56,10 +56,8 @@
     /* Latar gelap di belakang modal */
     --backdrop: rgba(0, 0, 0, 0.4);
 
-    /* Kanvas: pola titik & papan catur (Remove Background) */
+    /* Kanvas: pola titik */
     --canvas-dot: rgba(0, 0, 0, 0.15);
-    --checker-a: var(--surface);
-    --checker-b: var(--surface-hover);
 
     /* Tombol glossy: sama di dua mode (DESIGN.md bagian 8) */
     --glossy-top: #0e89f8;
@@ -118,8 +116,6 @@
 
     /* Kanvas */
     --canvas-dot: rgba(255, 255, 255, 0.12);
-    --checker-a: var(--surface-secondary);
-    --checker-b: var(--surface-hover);
   }
 }
 
@@ -259,15 +255,3 @@
   background: var(--muted);
 }
 
-/* Papan catur: tanda background karakter transparan (DESIGN.md bagian 3 "Kanvas", K-4).
-   Kotak 8px, jadi satu pola utuh = 16px. Warnanya dari token --checker-a/b di atas. */
-.bg-checkerboard {
-  background-color: var(--checker-a);
-  background-image: conic-gradient(
-    var(--checker-b) 25%,
-    transparent 0 50%,
-    var(--checker-b) 0 75%,
-    transparent 0
-  );
-  background-size: 16px 16px;
-}

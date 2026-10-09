@@ -224,6 +224,7 @@ sebelum lanjut.
    Kotak 8px. Terang: `surface` (`#FFFFFF`) + `surface-hover` (`#E4E4E8`).
    Gelap: `surface-raised` (`#232328`) + `surface-hover` (`#2C2C32`).
    Aturannya sudah ditulis di DESIGN.md bagian 3 "Kanvas"; tokennya dipasang di B1.
+   **Diubah di B2 (lihat K-4):** papan catur dibatalkan, kanvas kembali menampilkan pola titik.
 
 **Selesai kalau:**
 - Export GIF/WebM dengan background merah → seluruh kotak merah, tidak ada pita abu-abu.
@@ -441,7 +442,7 @@ Wajib baca `DESIGN.md` dan `.github/antislop.md` sebelum mulai tiap langkah.
    | `success`, `danger`, `warning` | `--success`, `--danger`, `--warning` | |
    | Glossy (3 keadaan) | Token baru `--glossy-*` | Satu-satunya gradient |
    | Pola titik kanvas | Token baru `--canvas-dot` | Ganti `CenterWorkspace.jsx:15–17` |
-   | Papan catur (A4) | Token baru `--checker-a`, `--checker-b` | Disetujui (K-4), nilai di DESIGN.md bagian 3 "Kanvas" |
+   | Papan catur (A4) | ~~Token baru `--checker-a`, `--checker-b`~~ | Dihapus di B2 (K-4 diubah) |
 
 3. **Radius (U-6, keputusan K-6):** nilai piksel **tetap ikut DESIGN.md**. Cara memetakannya
    ke nama HeroUI (`--radius`, `--field-radius`, `--radius-xs` … `--radius-3xl`) **belum
@@ -553,7 +554,7 @@ disimpan di `docs/reference/fase-2/` sebagai bukti.
 | K-1 | Background default karakter | **`#FFFFFF`**. Beda dengan token `bg-app` (`#F5F5F7`) di DESIGN.md yang khusus latar UI; jangan tertukar | A2 |
 | K-2 | Nama proyek | Dipakai sebagai **nama file export**: huruf kecil, spasi jadi `-`. Placeholder **"Untitled"**. Kalau kosong, nama file = nama karakter + mood | A2, B2 |
 | K-3 | Export SVG dan background | **Ikut aturan yang sama dengan GIF/WebM**: ada warna background kalau tidak dihapus, transparan kalau dihapus | A4 |
-| K-4 | Papan catur untuk Remove Background | **Boleh.** Kotak 8px. Terang: `surface` `#FFFFFF` + `surface-hover` `#E4E4E8`. Gelap: `surface-raised` `#232328` + `surface-hover` `#2C2C32`. Ditulis di DESIGN.md bagian 3 "Kanvas" | A4, B1 |
+| K-4 | Papan catur untuk Remove Background | **Diubah di B2: tidak pakai papan catur.** Saat Remove Background menyala, area karakter transparan dan pola titik kanvas terlihat (seperti sebelum A4). Token `--checker-a`/`--checker-b` dan class `.bg-checkerboard` dihapus dari `globals.css`, aturannya dihapus dari DESIGN.md bagian 3. Export transparan tidak berubah. *(Keputusan awal di A4: papan catur kotak 8px, terang `surface` + `surface-hover`, gelap `surface-raised` + `surface-hover`.)* | A4, B1, B2 |
 | K-5 | Batas riwayat undo | **100 langkah**; yang paling lama dibuang | A3 |
 | K-6 | Bentrok nama radius | **Nilai piksel ikut DESIGN.md.** Cara pemetaan ke nama HeroUI diusulkan saat B1, diputuskan user | B1 |
 | K-7 | Kartu karakter | **Coba `ToggleButton` HeroUI dulu.** Kalau harus buatan sendiri, jelaskan alasannya dulu dan tunggu izin | B2 |

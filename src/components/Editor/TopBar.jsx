@@ -26,7 +26,7 @@ export const TopBar = ({
     <header
       className={cn(
         "w-full h-16 px-4 transition-colors duration-200",
-        "bg-surface rounded-2xl border border-border dark:shadow-xl",
+        "bg-surface rounded-2xl border border-border",
         "grid grid-cols-3 items-center",
         "text-sm text-foreground",
       )}

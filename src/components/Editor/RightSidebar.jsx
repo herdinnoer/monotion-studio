@@ -6,7 +6,7 @@ import { ColorInput } from "@/components/UI/ColorInput";
 import { getCharacter, getDefaultShape } from "@/characters/registry";
 import { DEFAULT_BACKGROUND } from "@/lib/editorState";
 import { ChevronDown } from "lucide-react";
-import { Switch } from "@heroui/react";
+import { Label, Switch } from "@heroui/react";
 
 // onConfigChange  = simpan satu langkah undo
 // onConfigPreview = ubah tampilan saja (dipakai selama color picker digeser)
@@ -58,7 +58,7 @@ export const RightSidebar = ({ characterId, config, onConfigChange, onConfigPrev
     <aside
       className={cn(
         "w-[290px] h-full flex flex-col overflow-y-auto custom-scrollbar text-sm",
-        "bg-surface rounded-2xl border border-border dark:shadow-xl",
+        "bg-surface rounded-2xl border border-border",
       )}
     >
       <div className="p-4 border-b border-border shrink-0">
@@ -149,24 +149,21 @@ export const RightSidebar = ({ characterId, config, onConfigChange, onConfigPrev
             isDisabled={Boolean(config.isBgRemoved)}
           />
 
-          <div className="flex items-center justify-between pt-1">
-            <span
-              onClick={() => handleToggleRemoveBg(!config.isBgRemoved)}
-              className="text-xs font-semibold text-foreground cursor-pointer select-none"
-            >
-              Remove Background
-            </span>
-            <Switch
-              isSelected={Boolean(config.isBgRemoved)}
-              onChange={handleToggleRemoveBg}
-            >
-              <Switch.Content>
-                <Switch.Control>
-                  <Switch.Thumb />
-                </Switch.Control>
-              </Switch.Content>
-            </Switch>
-          </div>
+          {/* Label di dalam Switch.Content: klik teks ikut menyalakan switch & terbaca screen reader */}
+          <Switch
+            className="w-full pt-1"
+            isSelected={Boolean(config.isBgRemoved)}
+            onChange={handleToggleRemoveBg}
+          >
+            <Switch.Content className="w-full justify-between">
+              <Label className="text-xs font-semibold text-foreground">
+                Remove Background
+              </Label>
+              <Switch.Control>
+                <Switch.Thumb />
+              </Switch.Control>
+            </Switch.Content>
+          </Switch>
         </div>
 
         {/* Divider antara Mood & Color */}

@@ -182,7 +182,7 @@ export function AnimationPlayerBar({
   const totalTimeSec = (durationMs / 1000).toFixed(1);
 
   return (
-    <div className="w-full bg-surface border border-border rounded-2xl px-4 py-2.5 shadow-sm flex items-center gap-3 select-none">
+    <div className="w-full bg-surface border border-border rounded-2xl px-4 py-2.5 flex items-center gap-3 select-none">
       <button
         type="button"
         onClick={() => setIsPlaying(!isPlaying)}
@@ -199,7 +199,7 @@ export function AnimationPlayerBar({
         <RotateCcw size={15} />
       </button>
 
-      <div className="text-[11px] font-mono text-muted shrink-0 min-w-[70px] text-center">
+      <div className="text-[11px] font-mono font-medium tabular-nums text-muted shrink-0 min-w-[70px] text-center">
         <span>{currentTimeSec}s</span> / <span>{totalTimeSec}s</span>
         <span className="text-[10px] opacity-60 block">{currentFrame}/{totalFrames}f</span>
       </div>

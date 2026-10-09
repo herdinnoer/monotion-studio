@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 export const LeftSidebar = ({ selectedCharacterId, onSelectCharacter, characters }) => {
   return (
-    <aside className="w-[240px] h-full flex flex-col overflow-hidden bg-surface rounded-2xl border border-border dark:shadow-xl shrink-0 select-none">
+    <aside className="w-[240px] h-full flex flex-col overflow-hidden bg-surface rounded-2xl border border-border shrink-0 select-none">
       <div className="p-4 border-b border-border shrink-0">
         <span className="font-semibold text-[14px] text-foreground">
           Characters
