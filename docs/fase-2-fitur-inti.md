@@ -206,9 +206,14 @@ sebelum lanjut.
    isi latar dengan warna itu, set `transparent: 0x00FF00` di `gif.js`. Batasan: tepi
    karakter bisa bergerigi/berhalo karena GIF tidak punya setengah transparan. Ini batas
    format GIF, bukan bug; disampaikan ke user lewat teks kecil di modal export.
-4. **WebM transparan:** `VideoEncoder.configure({ ..., alpha: "keep" })` + opsi alpha di
-   `Muxer` (`webm-muxer` sudah mendukung, tidak perlu library baru). Cek dulu dengan
-   `VideoEncoder.isConfigSupported`; kalau browser tidak mendukung, tampilkan peringatan
+   *Dikerjakan:* warna kunci dipilih otomatis (`src/lib/gifKeyColor.js`): warna yang paling
+   jauh dari semua warna karakter di semua frame + warna pilihan user. Karakter `#00FF00`
+   → kunci pindah ke `#FF00FF`. Piksel dengan alpha < 128 jadi tembus, sisanya padat
+   (tanpa campuran warna kunci, jadi tidak ada halo hijau).
+4. **WebM transparan:** ~~`VideoEncoder.configure({ ..., alpha: "keep" })` + opsi alpha di
+   `Muxer` (`webm-muxer` sudah mendukung, tidak perlu library baru).~~ **Koreksi (hasil tes
+   A4):** rencana ini tidak jalan, lihat "Catatan temuan A4" di bawah. Cek dukungan browser
+   dengan `VideoEncoder.isConfigSupported`; kalau tidak didukung, tampilkan peringatan
    (token `warning` DESIGN.md) dan export dengan latar warna, bukan diam-diam gagal.
 5. **SVG (keputusan K-3):** ikut aturan background yang sama dengan GIF/WebM. Kalau background
    **tidak** dihapus, tambahkan `<rect>` warna background di belakang karakter; kalau dihapus,
@@ -235,6 +240,60 @@ sebelum lanjut.
    B-9 di Fase 1: "perlu dites di beberapa pemutar video").
 4. Cek dimensi file = resolusi yang dipilih (misalnya 720×720).
 5. Cek warna background di file sama dengan kode hex di panel (pakai pipet di Figma).
+
+**Catatan temuan A4 (WebM transparan):**
+
+Yang ternyata **tidak bisa** (dites di Chrome 154):
+- `VideoEncoder` dengan `alpha: "keep"`: `isConfigSupported` menjawab tidak didukung, baik
+  VP9 maupun VP8.
+- `webm-muxer` 5.1.4 opsi `alpha: true` hanya menulis tanda "video ini transparan" di kepala
+  file. Lapisan alpha per frame (BlockAdditions) tidak bisa ditulis lewat API-nya.
+- `MediaRecorder` VP8 (merekam kanvas) memang menyimpan transparansi, tapi **ditolak**:
+  - warna bergeser ±9 tingkat (putih `250` jadi `255`);
+  - waktu tiap frame ikut jam asli, jadi jarak antar frame acak (14–99 ms, harusnya 33 ms);
+  - frame pertama berisi sisa gambar kanvas (109 frame, harusnya 108);
+  - pindah tab membuat timer browser melambat, jadi video bisa patah-patah.
+
+Yang **dipakai**: tiap frame di-encode **dua kali** dengan `VideoEncoder` VP9 (sama seperti
+WebM biasa): sekali untuk warna, sekali untuk alpha (sebagai gambar hitam-putih). Keduanya
+dijahit jadi satu file oleh `src/lib/webmAlphaMuxer.js` (buatan sendiri, tanpa library
+baru), mengikuti format resmi WebM transparan (`AlphaMode` + `BlockAdditions`). Info rumus
+warna (`Colour`) dari encoder ikut ditulis; tanpa itu warna bergeser (ketajaman ±27 dB).
+
+Hasil tes di Chrome 154 (Mochi, mood idle 3,6 detik):
+
+| | WebM transparan | WebM berlatar warna |
+|---|---|---|
+| Jumlah frame (720p 30 fps / 1080p 60 fps) | 108 / 216, sama dengan sumber | 108 / 216 |
+| Jarak antar frame | 33–34 ms / 16–17 ms | sama |
+| Durasi di pemutar | 3,600 detik | 3,566 detik (tanpa durasi frame terakhir) |
+| Ketajaman (PSNR vs frame sumber, bagian dalam karakter) | 44–49 dB | 55–59 dB |
+| Pindah tab 15 detik saat export | hasil identik, export lebih lama | (tidak dites) |
+
+Hasil tes manual (laptop Windows user, file dibuat di Chrome):
+
+| Tes | Hasil |
+|---|---|
+| 3. WebM transparan 1080p di Chrome | Transparan |
+| 3. WebM transparan 1080p di Edge | Transparan |
+| 3. WebM transparan 1080p di Firefox | Transparan |
+| 3. WebM transparan 1080p di Figma | Transparan |
+| 3. WebM transparan di Safari | Belum dites |
+| 3. WebM transparan di editor video (Premiere, DaVinci, dll) | Belum dites |
+| 4. Dimensi file sesuai resolusi yang dipilih | Ya |
+| 5. Warna background (pipet) sama dengan kode hex di panel | Ya |
+| Export dari browser selain Chrome (Firefox, Safari) | Belum dites |
+
+Batasan yang tersisa:
+- Ketajaman WebM transparan sedikit di bawah WebM biasa (selisih rata-rata < 1 tingkat warna,
+  paling besar 6–20 tingkat di beberapa piksel). Penyebabnya belum ketemu. Sudah dicoba dan
+  bukan penyebab: tepi tajam ke area tembus (color bleeding), jalur input warna ke encoder.
+  Perlu dicek mata: bandingkan dua file berdampingan.
+- File transparan sudah tampil transparan di Chrome, Edge, Firefox, dan Figma. Yang belum
+  dites: memutar di Safari & editor video, dan **membuat** export dari Firefox/Safari
+  (peringatan "tidak mendukung" muncul kalau browser tidak punya encoder VP9).
+- Kalau tab disembunyikan, export jadi lebih lama (timer browser diperlambat), hasilnya tetap
+  sama.
 
 ### A5. Simpan pengaturan terakhir di browser
 
@@ -269,7 +328,8 @@ sebelum lanjut.
 ### A6. Tes kasus aneh
 
 **Isi:**
-- Tes otomatis untuk fungsi murni (`sanitizeState`, `isSameState`, logika riwayat undo) pakai
+- Tes otomatis untuk fungsi murni (`sanitizeState`, `isSameState`, logika riwayat undo,
+  warna kunci GIF di `gifKeyColor.js`) pakai
   **`node --test` bawaan Node 24** (sudah terpasang, tanpa library baru). Tambah script
   `"test": "node --test"` di `package.json`.
 - Daftar tes manual untuk hal yang butuh browser.
@@ -299,6 +359,14 @@ sebelum lanjut.
 | T-19 | Nama proyek hanya simbol/emoji (`"???"`, `"🐹🐹"`) | `<karakter>-<mood>` |
 | T-20 | Undo setelah ganti nama proyek | Nama proyek tidak berubah (K-10) |
 | T-21 | Ganti nama proyek → refresh | Nama proyek tetap (K-10) |
+| T-22 | `pickKeyColor`: karakter tidak memakai warna neon | Kunci `#00FF00` |
+| T-23 | `pickKeyColor`: karakter memakai `#00FF00` (atau hijau mirip, misalnya `#05F50A`) | Kunci bukan hijau (`#FF00FF`) |
+| T-24 | `pickKeyColor`: `#00FF00`, `#FF00FF`, `#00FFFF` dipakai | Kunci warna favorit berikutnya (`#0000FF`) |
+| T-25 | `pickKeyColor`: semua 6 warna favorit dipakai | Warna terjauh di ruang warna; jaraknya ke tiap warna karakter > 60 |
+| T-26 | `pickKeyColor`: tidak ada warna tercatat (frame kosong) | Kunci `#00FF00`, tanpa error |
+| T-27 | `prepareFrame`: alpha 100 dan 200 | Alpha 100 → tembus (0), alpha 200 → padat (255), warna piksel padat tidak berubah |
+| T-28 | `applyKeyColor`: piksel tembus | Diisi warna kunci + alpha 255; piksel padat tidak berubah |
+| T-29 | `hexToRgbNumber`: `"#0f0"`, `"00FF00"`, `"bukan-hex"` | `0x00FF00`, `0x00FF00`, `null` |
 
 **Selesai kalau:** `npm test` lulus semua, daftar manual T-9 s/d T-13 sudah dicoba dan hasilnya dicatat di dokumen ini.
 
@@ -441,7 +509,7 @@ disimpan di `docs/reference/fase-2/` sebagai bukti.
 | Riwayat | `useState`/`useReducer` bawaan React |
 | Simpan pengaturan | `localStorage` bawaan browser |
 | GIF transparan | Opsi `transparent` di `gif.js` |
-| WebM transparan | Opsi alpha di `VideoEncoder` (browser) + `webm-muxer` |
+| WebM transparan | `VideoEncoder` VP9 dua kali (warna + alpha) + penjahit sendiri `src/lib/webmAlphaMuxer.js`. Opsi alpha `VideoEncoder` belum didukung Chrome dan `webm-muxer` tidak bisa menulis lapisan alpha (lihat catatan temuan A4) |
 | Tes otomatis | `node --test` bawaan Node 24 |
 | Tebal ikon global | `LucideProvider` dari `lucide-react` |
 | Komponen UI | HeroUI v3 (Select, ToggleButtonGroup, Modal, Toast, Dropdown, Slider, ProgressBar, Tooltip) |

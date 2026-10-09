@@ -36,6 +36,27 @@
   background-size: 20px 20px;
 }
 
+/* Papan catur: tanda background karakter transparan (DESIGN.md bagian 3 "Kanvas", K-4).
+   Kotak 8px, jadi satu pola utuh = 16px. Warna diganti token saat B1. */
+.bg-checkerboard {
+  --checker-a: #ffffff; /* surface */
+  --checker-b: #e4e4e8; /* surface-hover */
+  background-color: var(--checker-a);
+  background-image: conic-gradient(
+    var(--checker-b) 25%,
+    transparent 0 50%,
+    var(--checker-b) 0 75%,
+    transparent 0
+  );
+  background-size: 16px 16px;
+}
+
+.dark .bg-checkerboard,
+[data-theme="dark"] .bg-checkerboard {
+  --checker-a: #232328; /* surface-raised */
+  --checker-b: #2c2c32; /* surface-hover */
+}
+
 .dark .bg-dot-pattern,
 .bg-dot-pattern-dark {
   /* Mode Dark (Persis Animos): Background charcoal/hitam gelap dengan titik putih halus */

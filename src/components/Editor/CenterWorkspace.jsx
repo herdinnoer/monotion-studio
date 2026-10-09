@@ -17,19 +17,23 @@ export const CenterWorkspace = ({ characterId, config }) => {
         "[background-size:20px_20px]"
       )}
     >
-      <div
-        id="character-workspace"
-        className="w-full h-full flex items-center justify-center rounded-xl transition-colors duration-200"
-        style={{
-          backgroundColor: config.isBgRemoved ? "transparent" : config.backgroundColor,
-        }}
-      >
-        <CharacterComponent
-          state={config.mood || character.defaultMood}
-          shapePreset={config.shapePreset || getDefaultShape(character)}
-          color={isDefaultColor(character, config.color) ? null : config.color}
-          size={500}
-        />
+      {/* Papan catur = tanda "transparan" saat Remove Background aktif (DESIGN.md bagian 3).
+          Sengaja di luar #character-workspace, supaya tidak ikut tertangkap saat export. */}
+      <div className={cn("w-full h-full rounded-xl", config.isBgRemoved && "bg-checkerboard")}>
+        <div
+          id="character-workspace"
+          className="w-full h-full flex items-center justify-center rounded-xl transition-colors duration-200"
+          style={{
+            backgroundColor: config.isBgRemoved ? "transparent" : config.backgroundColor,
+          }}
+        >
+          <CharacterComponent
+            state={config.mood || character.defaultMood}
+            shapePreset={config.shapePreset || getDefaultShape(character)}
+            color={isDefaultColor(character, config.color) ? null : config.color}
+            size={500}
+          />
+        </div>
       </div>
     </main>
   );

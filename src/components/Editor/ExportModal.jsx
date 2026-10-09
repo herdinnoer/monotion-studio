@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { X, Loader2 } from "lucide-react";
+import { Alert } from "@heroui/react";
 import { cn } from "@/lib/utils";
 import { GlossyButton } from "@/components/UI/GlossyButton";
 import {
@@ -10,8 +11,9 @@ import {
   exportAsWebm,
   copyReactComponent,
   exportAsLottieJson,
+  supportsTransparentWebm,
 } from "@/lib/exportUtils";
-import { exportFilename } from "@/lib/editorState";
+import { DEFAULT_BACKGROUND, exportFilename } from "@/lib/editorState";
 
 export function ExportModal({ isOpen, onClose, character, characterName, projectName, config, durationMs }) {
   const [format, setFormat] = useState("gif");
@@ -19,8 +21,26 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
   const [frameRate, setFrameRate] = useState("60 fps");
   const [isExporting, setIsExporting] = useState(false);
   const [progress, setProgress] = useState(0);
+  // null = belum dicek, true/false = browser bisa/tidak menyimpan WebM transparan
+  const [canWebmAlpha, setCanWebmAlpha] = useState(null);
+
+  const isBgRemoved = Boolean(config?.isBgRemoved);
+  const needsAlphaCheck = isOpen && format === "webm" && isBgRemoved;
+
+  useEffect(() => {
+    if (!needsAlphaCheck) return;
+    let isCancelled = false;
+    supportsTransparentWebm().then((supported) => {
+      if (!isCancelled) setCanWebmAlpha(supported);
+    });
+    return () => {
+      isCancelled = true;
+    };
+  }, [needsAlphaCheck]);
 
   if (!isOpen) return null;
+
+  const fallbackBackground = (config?.backgroundColor || DEFAULT_BACKGROUND).toUpperCase();
 
   const handleSelectFormat = (selectedFormat) => {
     setFormat(selectedFormat);
@@ -46,6 +66,7 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
             frameRate,
             filename: `${baseFilename}.gif`,
             character,
+            config,
             onProgress: (p) => setProgress(p),
           });
           onClose();
@@ -55,6 +76,7 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
           await exportAsSvg({
             elementId: "character-workspace",
             filename: `${baseFilename}.svg`,
+            config,
           });
           onClose();
           break;
@@ -67,6 +89,7 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
             frameRate,
             filename: `${baseFilename}.webm`,
             character,
+            config,
             onProgress: (p) => setProgress(p),
           });
           onClose();
@@ -206,6 +229,33 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
               ))}
             </div>
           </div>
+        )}
+
+        {/* Catatan batas format GIF saat background dihapus */}
+        {format === "gif" && isBgRemoved && (
+          <p className="text-[11px] font-medium leading-relaxed text-[#52525B] dark:text-[#A1A1AA]">
+            GIF transparency is on or off per pixel, so the character&apos;s edges may look
+            slightly jagged.
+          </p>
+        )}
+
+        {/* Peringatan: browser tidak bisa menyimpan WebM transparan */}
+        {format === "webm" && isBgRemoved && canWebmAlpha === false && (
+          <Alert
+            status="warning"
+            className="rounded-xl border border-[#EAB308]/40 bg-[#EAB308]/10 px-3 py-2.5 shadow-none"
+          >
+            <Alert.Indicator className="text-[#EAB308]" />
+            <Alert.Content>
+              <Alert.Title className="text-xs font-semibold text-[#111113] dark:text-[#F4F4F5]">
+                This browser can&apos;t export transparent WebM
+              </Alert.Title>
+              <Alert.Description className="text-[11px] font-medium text-[#52525B] dark:text-[#A1A1AA]">
+                The video will use your background color ({fallbackBackground}) instead. Use
+                Chrome or Edge to keep it transparent.
+              </Alert.Description>
+            </Alert.Content>
+          </Alert>
         )}
 
         {/* Indikator Progress */}

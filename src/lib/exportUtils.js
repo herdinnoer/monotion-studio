@@ -2,6 +2,15 @@ import * as htmlToImage from "html-to-image";
 import { getCharacter, getMoodDuration } from "@/characters/registry";
 import { TIMELINE_EVENT } from "@/characters/_core/useTimeline";
 import { DEFAULT_BACKGROUND } from "@/lib/editorState";
+import {
+  applyKeyColor,
+  createColorUsage,
+  hexToRgbNumber,
+  markColor,
+  pickKeyColor,
+  prepareFrame,
+} from "@/lib/gifKeyColor";
+import { muxAlphaWebm } from "@/lib/webmAlphaMuxer";
 
 // =========================================================================
 // HELPER FUNCTIONS & MOOD DURATION MAP
@@ -173,8 +182,8 @@ export const exportAsGif = async ({
   const GIFModule = await import("gif.js");
   const GIF = GIFModule.default || GIFModule;
 
-  const mood = config?.mood || "idle";
-  const durationMs = animationDuration || getAnimationDurationByMood(mood, character);
+  const durationMs = animationDuration || getAnimationDurationByMood(config.mood, character);
+  const isTransparent = Boolean(config.isBgRemoved);
 
   const resolutionMap = {
     "240p": { width: 240, height: 240 },
@@ -205,14 +214,13 @@ export const exportAsGif = async ({
   // Wait for pause to take effect
   await new Promise((resolve) => setTimeout(resolve, 50));
 
-  const gif = new GIF({
-    workers: 2,
-    quality: 1,
-    workerScript: "/gif.worker.js",
-    width: targetSize.width,
-    height: targetSize.height,
-    transparent: null,
-  });
+  // Frame ditampung dulu, karena warna kunci transparan baru bisa dipilih
+  // setelah semua warna karakter di semua frame diketahui.
+  const frames = [];
+  const colorUsage = createColorUsage();
+  // Warna pilihan user juga dicatat, supaya warna kunci pasti tidak mirip dengannya.
+  markColor(colorUsage, hexToRgbNumber(config.color));
+  markColor(colorUsage, hexToRgbNumber(config.backgroundColor));
 
   try {
     for (let i = 0; i < totalFrames; i++) {
@@ -238,7 +246,11 @@ export const exportAsGif = async ({
         config,
       );
 
-      gif.addFrame(scaledCanvas, { copy: true, delay: playbackDelay });
+      const imageData = scaledCanvas
+        .getContext("2d")
+        .getImageData(0, 0, targetSize.width, targetSize.height);
+      if (isTransparent) prepareFrame(imageData.data, colorUsage);
+      frames.push(imageData);
     }
   } finally {
     // ✅ FIX: Always resume as paused (safe default)
@@ -253,6 +265,23 @@ export const exportAsGif = async ({
         },
       }),
     );
+  }
+
+  // Remove Background: isi bagian tembus dengan warna kunci, lalu tandai warna itu transparan.
+  const keyColor = isTransparent ? pickKeyColor(colorUsage) : null;
+
+  const gif = new GIF({
+    workers: 2,
+    quality: 1,
+    workerScript: "/gif.worker.js",
+    width: targetSize.width,
+    height: targetSize.height,
+    transparent: keyColor,
+  });
+
+  for (const imageData of frames) {
+    if (isTransparent) applyKeyColor(imageData.data, keyColor);
+    gif.addFrame(imageData, { delay: playbackDelay });
   }
 
   return new Promise((resolve, reject) => {
@@ -291,6 +320,7 @@ export const exportAsGif = async ({
 export const exportAsSvg = async ({
   elementId = "character-workspace",
   filename = "character.svg",
+  config = {},
 }) => {
   const container = document.getElementById(elementId);
   if (!container) {
@@ -312,6 +342,20 @@ export const exportAsSvg = async ({
   }
   if (!clonedSvg.getAttribute("height")) {
     clonedSvg.setAttribute("height", "400");
+  }
+
+  // Background ikut aturan yang sama dengan GIF/WebM (keputusan K-3):
+  // ada kotak warna di paling belakang, kecuali Remove Background aktif.
+  if (!config.isBgRemoved) {
+    const viewBox = clonedSvg.viewBox?.baseVal;
+    const hasViewBox = viewBox && viewBox.width > 0 && viewBox.height > 0;
+    const bgRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    bgRect.setAttribute("x", hasViewBox ? String(viewBox.x) : "0");
+    bgRect.setAttribute("y", hasViewBox ? String(viewBox.y) : "0");
+    bgRect.setAttribute("width", hasViewBox ? String(viewBox.width) : "100%");
+    bgRect.setAttribute("height", hasViewBox ? String(viewBox.height) : "100%");
+    bgRect.setAttribute("fill", config.backgroundColor || DEFAULT_BACKGROUND);
+    clonedSvg.insertBefore(bgRect, clonedSvg.firstChild);
   }
 
   const serializer = new XMLSerializer();
@@ -336,6 +380,131 @@ export const exportAsSvg = async ({
 // =========================================================================
 // 4. EKSPOR WEBM / CANVAS VIDEO (GUARANTEED DOWNLOAD & NO STUCK)
 // =========================================================================
+
+// WebM transparan (Remove Background).
+// Encoder video browser (VideoEncoder) belum bisa menyimpan transparansi secara langsung,
+// dan webm-muxer 5 tidak bisa menulis lapisan alpha per frame. Jadi tiap frame di-encode
+// DUA kali dengan VP9 (warna + alpha sebagai gambar hitam-putih), lalu dijahit oleh
+// muxAlphaWebm (src/lib/webmAlphaMuxer.js). Hasilnya frame per frame, sama seperti WebM biasa.
+const WEBM_CODEC = "vp09.00.10.08";
+const WEBM_BITRATE = 4_000_000;
+
+let transparentWebmSupport = null;
+
+// Cek sekali (hasilnya diingat): apakah browser punya encoder VP9.
+export function supportsTransparentWebm() {
+  if (!transparentWebmSupport) {
+    transparentWebmSupport =
+      typeof window === "undefined" || typeof window.VideoEncoder === "undefined"
+        ? Promise.resolve(false)
+        : VideoEncoder.isConfigSupported({
+            codec: WEBM_CODEC,
+            width: 720,
+            height: 720,
+            bitrate: WEBM_BITRATE,
+          })
+            .then((result) => Boolean(result.supported))
+            .catch(() => false);
+  }
+  return transparentWebmSupport;
+}
+
+async function encodeTransparentWebm({ frames, width, height, fpsNumber, onProgress }) {
+  const makeEncoder = (target) => {
+    const state = { error: null, colorSpace: null };
+    const encoder = new VideoEncoder({
+      output: (chunk, meta) => {
+        // Info rumus warna dari encoder, ditulis ke file oleh muxAlphaWebm
+        if (meta?.decoderConfig?.colorSpace) state.colorSpace = meta.decoderConfig.colorSpace;
+        const data = new Uint8Array(chunk.byteLength);
+        chunk.copyTo(data);
+        target.push({ timestampUs: chunk.timestamp, isKey: chunk.type === "key", data });
+      },
+      error: (e) => {
+        state.error = e;
+      },
+    });
+    encoder.configure({ codec: WEBM_CODEC, width, height, bitrate: WEBM_BITRATE });
+    return { encoder, state };
+  };
+
+  const colorChunks = [];
+  const alphaChunks = [];
+  const color = makeEncoder(colorChunks);
+  const alpha = makeEncoder(alphaChunks);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  const pixelCount = width * height;
+  // Gambar alpha dalam format I420: Y = tingkat transparansi, U & V netral (128).
+  const alphaPlane = new Uint8Array(pixelCount * 1.5);
+  alphaPlane.fill(128, pixelCount);
+
+  for (let i = 0; i < frames.length; i++) {
+    const img = new Image();
+    img.src = frames[i];
+    await img.decode();
+    ctx.clearRect(0, 0, width, height);
+    ctx.drawImage(img, 0, 0);
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const { data } = imageData;
+
+    // Pisahkan alpha, lalu buat gambar warna yang padat dengan warna asli piksel
+    // (belum dicampur transparansi), supaya tepi setengah tembus tidak jadi gelap.
+    for (let p = 0; p < pixelCount; p++) {
+      alphaPlane[p] = data[p * 4 + 3];
+      data[p * 4 + 3] = 255;
+    }
+    ctx.putImageData(imageData, 0, 0);
+
+    const timestamp = Math.round((i / fpsNumber) * 1_000_000);
+    const duration = Math.round((1 / fpsNumber) * 1_000_000);
+    const keyFrame = i % 15 === 0;
+
+    // Dikirim sebagai kanvas, sama seperti jalur WebM berlatar warna.
+    const colorFrame = new VideoFrame(canvas, { timestamp, duration });
+    const alphaFrame = new VideoFrame(alphaPlane, {
+      format: "I420",
+      codedWidth: width,
+      codedHeight: height,
+      timestamp,
+      duration,
+    });
+    color.encoder.encode(colorFrame, { keyFrame });
+    alpha.encoder.encode(alphaFrame, { keyFrame });
+    colorFrame.close();
+    alphaFrame.close();
+
+    if (onProgress) onProgress(85 + Math.round(((i + 1) / frames.length) * 14));
+  }
+
+  await color.encoder.flush();
+  await alpha.encoder.flush();
+  color.encoder.close();
+  alpha.encoder.close();
+  if (color.state.error || alpha.state.error) throw color.state.error || alpha.state.error;
+  if (colorChunks.length !== frames.length || alphaChunks.length !== frames.length) {
+    throw new Error("Jumlah frame warna dan alpha tidak sama.");
+  }
+
+  return muxAlphaWebm({
+    width,
+    height,
+    codecId: "V_VP9",
+    frameDurationMs: 1000 / fpsNumber,
+    colorSpace: color.state.colorSpace,
+    frames: colorChunks.map((chunk, i) => ({
+      timestampMs: chunk.timestampUs / 1000,
+      isKey: chunk.isKey,
+      data: chunk.data,
+      alpha: alphaChunks[i].data,
+    })),
+  });
+}
+
+
 export const exportAsWebm = async ({
   elementId = "character-workspace",
   resolution = "720p",
@@ -349,8 +518,12 @@ export const exportAsWebm = async ({
   const element = document.getElementById(elementId);
   if (!element) throw new Error("Elemen workspace tidak ditemukan!");
 
-  const mood = config?.mood || "idle";
-  const durationMs = animationDuration || getAnimationDurationByMood(mood, character);
+  const durationMs = animationDuration || getAnimationDurationByMood(config.mood, character);
+
+  // Remove Background: kalau browser tidak bisa menyimpan WebM transparan, export tetap
+  // jalan dengan latar warna (modal export sudah memberi peringatan sebelumnya).
+  const keepAlpha = Boolean(config.isBgRemoved) && (await supportsTransparentWebm());
+  const frameConfig = config.isBgRemoved && !keepAlpha ? { ...config, isBgRemoved: false } : config;
 
   const resolutionMap = {
     "240p": { width: 240, height: 240 },
@@ -402,19 +575,35 @@ export const exportAsWebm = async ({
         element,
         targetSize.width,
         targetSize.height,
-        config,
+        frameConfig,
       );
 
       ctx.clearRect(0, 0, targetSize.width, targetSize.height);
       ctx.drawImage(frameCanvas, 0, 0);
 
-      // Simpan data URL frame
+      // Simpan data URL frame (WebP menyimpan transparansi)
       frames.push(outputCanvas.toDataURL("image/webp", 0.95));
     }
 
     if (onProgress) onProgress(85);
 
-    // Phase 2: Jika browser mendukung WebCodecs (Chrome/Edge/Brave modern)
+    // Phase 2a: WebM transparan → warna + alpha di-encode terpisah, lalu dijahit.
+    // Kalau gagal, jangan lanjut ke fallback: frame-nya transparan dan fallback
+    // tidak bisa menyimpan transparansi (hasilnya akan berlatar hitam).
+    if (keepAlpha) {
+      const file = await encodeTransparentWebm({
+        frames,
+        width: targetSize.width,
+        height: targetSize.height,
+        fpsNumber,
+        onProgress,
+      });
+      triggerDownload(new Blob([file], { type: "video/webm" }), filename);
+      if (onProgress) onProgress(100);
+      return true;
+    }
+
+    // Phase 2b: Latar warna + browser mendukung WebCodecs (Chrome/Edge/Brave modern)
     if (typeof window.VideoEncoder !== "undefined") {
       try {
         const webmMuxerModule = await import("webm-muxer");
@@ -541,7 +730,7 @@ export const copyReactComponent = async ({
   const codeSnippet = `import React from 'react';
 
 export const MochiCharacter = ({
-  mood = "${config.mood || "idle"}",
+  mood = "${config.mood || ""}",
   color = "${config.color || "#ffffff"}",
   backgroundColor = "${config.backgroundColor || DEFAULT_BACKGROUND}",
   text = "${config.text || ""}",
@@ -591,7 +780,7 @@ export const exportAsLottieJson = async ({
     throw new Error(`Elemen dengan ID "${elementId}" tidak ditemukan!`);
   }
 
-  const mood = config?.mood || "idle";
+  const mood = config.mood;
   const durationMs = animationDuration || getAnimationDurationByMood(mood, character);
 
   const resolutionMap = {
