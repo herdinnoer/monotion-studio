@@ -2,8 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { X, Loader2 } from "lucide-react";
-import { Alert } from "@heroui/react";
-import { cn } from "@/lib/utils";
+import { Alert, ToggleButton, ToggleButtonGroup } from "@heroui/react";
 import { GlossyButton } from "@/components/UI/GlossyButton";
 import { IconButton } from "@/components/UI/IconButton";
 import {
@@ -162,48 +161,48 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
         {/* Format Export (Side-by-side) */}
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs font-semibold text-muted">Format</span>
-          <div className="flex bg-surface-secondary p-1 rounded-xl border border-border gap-1">
+          <ToggleButtonGroup
+            aria-label="Format"
+            className="segmented"
+            selectionMode="single"
+            disallowEmptySelection
+            isDisabled={isExporting}
+            selectedKeys={[format]}
+            onSelectionChange={(keys) => {
+              const [next] = keys;
+              if (next) handleSelectFormat(next);
+            }}
+          >
             {formatList.map((item) => (
-              <button
-                type="button"
-                key={item.id}
-                disabled={isExporting}
-                onClick={() => handleSelectFormat(item.id)}
-                className={cn(
-                  "px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer disabled:opacity-50",
-                  format === item.id
-                    ? "bg-surface dark:bg-surface-hover text-foreground shadow-sm font-bold"
-                    : "text-muted hover:text-foreground"
-                )}
-              >
+              <ToggleButton key={item.id} id={item.id}>
                 {item.label}
-              </button>
+              </ToggleButton>
             ))}
-          </div>
+          </ToggleButtonGroup>
         </div>
 
         {/* Resolution (Tampil Saat Format GIF, WebM, atau Lottie) */}
         {(format === "gif" || format === "webm" || format === "lottie") && (
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-semibold text-muted">Resolution</span>
-            <div className="flex bg-surface-secondary p-1 rounded-xl border border-border gap-1">
+            <ToggleButtonGroup
+              aria-label="Resolution"
+              className="segmented"
+              selectionMode="single"
+              disallowEmptySelection
+              isDisabled={isExporting}
+              selectedKeys={[resolution]}
+              onSelectionChange={(keys) => {
+                const [next] = keys;
+                if (next) setResolution(next);
+              }}
+            >
               {availableResolutions.map((res) => (
-                <button
-                  type="button"
-                  key={res}
-                  disabled={isExporting}
-                  onClick={() => setResolution(res)}
-                  className={cn(
-                    "px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer disabled:opacity-50",
-                    resolution === res
-                      ? "bg-surface dark:bg-surface-hover text-foreground shadow-sm font-bold"
-                      : "text-muted hover:text-foreground"
-                  )}
-                >
+                <ToggleButton key={res} id={res}>
                   {res}
-                </button>
+                </ToggleButton>
               ))}
-            </div>
+            </ToggleButtonGroup>
           </div>
         )}
 
@@ -211,24 +210,24 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
         {(format === "gif" || format === "webm" || format === "lottie") && (
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-semibold text-muted">Frame rate</span>
-            <div className="flex bg-surface-secondary p-1 rounded-xl border border-border gap-1">
+            <ToggleButtonGroup
+              aria-label="Frame rate"
+              className="segmented"
+              selectionMode="single"
+              disallowEmptySelection
+              isDisabled={isExporting}
+              selectedKeys={[frameRate]}
+              onSelectionChange={(keys) => {
+                const [next] = keys;
+                if (next) setFrameRate(next);
+              }}
+            >
               {["30 fps", "60 fps"].map((fps) => (
-                <button
-                  type="button"
-                  key={fps}
-                  disabled={isExporting}
-                  onClick={() => setFrameRate(fps)}
-                  className={cn(
-                    "px-4 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer disabled:opacity-50",
-                    frameRate === fps
-                      ? "bg-surface dark:bg-surface-hover text-foreground shadow-sm font-bold"
-                      : "text-muted hover:text-foreground"
-                  )}
-                >
+                <ToggleButton key={fps} id={fps}>
                   {fps}
-                </button>
+                </ToggleButton>
               ))}
-            </div>
+            </ToggleButtonGroup>
           </div>
         )}
 

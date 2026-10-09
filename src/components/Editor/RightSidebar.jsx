@@ -6,7 +6,7 @@ import { ColorInput } from "@/components/UI/ColorInput";
 import { getCharacter, getDefaultShape } from "@/characters/registry";
 import { DEFAULT_BACKGROUND } from "@/lib/editorState";
 import { ChevronDown } from "lucide-react";
-import { Label, Switch } from "@heroui/react";
+import { Label, Switch, ToggleButton, ToggleButtonGroup } from "@heroui/react";
 
 // onConfigChange  = simpan satu langkah undo
 // onConfigPreview = ubah tampilan saja (dipakai selama color picker digeser)
@@ -73,22 +73,25 @@ export const RightSidebar = ({ characterId, config, onConfigChange, onConfigPrev
           <h3 className="text-[12px] font-semibold uppercase tracking-wide text-muted">
             Shape Preset
           </h3>
-          <div className="grid grid-cols-3 gap-2">
+          {/* Segmented (gaya "segmented" di globals.css). Pilihan baru = satu langkah undo */}
+          <ToggleButtonGroup
+            aria-label="Shape preset"
+            className="segmented"
+            fullWidth
+            selectionMode="single"
+            disallowEmptySelection
+            selectedKeys={[config.shapePreset || getDefaultShape(character)]}
+            onSelectionChange={(keys) => {
+              const [next] = keys;
+              if (next) handleShapePresetChange(next);
+            }}
+          >
             {shapePresets.map((preset) => (
-              <button
-                key={preset.id}
-                onClick={() => handleShapePresetChange(preset.id)}
-                className={cn(
-                  "px-2 py-2 text-xs font-medium rounded-lg border transition-all text-center",
-                  (config.shapePreset || getDefaultShape(character)) === preset.id
-                    ? "bg-accent text-accent-foreground border-accent-pressed shadow-sm"
-                    : "bg-surface-secondary border-border text-foreground hover:border-subtle"
-                )}
-              >
+              <ToggleButton key={preset.id} id={preset.id}>
                 {preset.label}
-              </button>
+              </ToggleButton>
             ))}
-          </div>
+          </ToggleButtonGroup>
         </div>
         {/* Divider antara Shape Preset & Mood */}
         <div className="border-t border-border" />

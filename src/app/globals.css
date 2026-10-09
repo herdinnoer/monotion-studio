@@ -186,7 +186,8 @@
   .toggle-button-group.segmented .toggle-button,
   .toggle-button-group.segmented .toggle-button:first-child,
   .toggle-button-group.segmented .toggle-button:last-child {
-    @apply rounded-md;
+    /* Isi kontrol 12px/500 (DESIGN.md bagian 4), tinggi 32px di semua lebar layar */
+    @apply h-8 rounded-md px-2.5 text-xs font-medium;
     --toggle-button-bg: transparent;
     --toggle-button-bg-hover: var(--surface-hover);
     --toggle-button-bg-pressed: var(--surface-hover);
@@ -199,8 +200,8 @@
   .toggle-button-group.segmented .toggle-button[data-selected="true"] {
     @apply shadow-sm;
   }
-  .toggle-button-group.segmented .toggle-button--icon-only {
-    @apply size-8;
+  .toggle-button-group.segmented .toggle-button.toggle-button--icon-only {
+    @apply size-8 p-0;
   }
 
   /* Input "inline" (nama proyek, DESIGN.md bagian 8): Input HeroUI + class "inline-field".
