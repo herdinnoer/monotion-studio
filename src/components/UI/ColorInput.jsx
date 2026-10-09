@@ -14,7 +14,11 @@ import {
 import { Shuffle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function ColorInput({ value = "#FFFFFF", onChange, className, isDisabled = false }) {
+// Dua jenis perubahan (Fase 2 A3):
+//   onChange    = pratinjau, dipanggil terus selama color area / hue slider digeser
+//   onChangeEnd = simpan satu langkah undo: saat geseran dilepas, klik swatch,
+//                 tombol acak, atau ketik hex lalu Enter/blur
+export function ColorInput({ value = "#FFFFFF", onChange, onChangeEnd, className, isDisabled = false }) {
   const colorValue = React.useMemo(() => {
     try {
       const hex = value ? (value.startsWith("#") ? value : `#${value}`) : "#FFFFFF";
@@ -49,14 +53,20 @@ export function ColorInput({ value = "#FFFFFF", onChange, className, isDisabled 
     const newColor = parseColor(
       `hsl(${randomHue}, ${randomSaturation}%, ${randomLightness}%)`
     );
-    if (onChange) {
-      onChange(newColor.toString("hex"));
+    if (onChangeEnd) {
+      onChangeEnd(newColor.toString("hex"));
     }
   };
 
   const handleChange = (newColorObj) => {
     if (newColorObj && onChange && !isDisabled) {
       onChange(newColorObj.toString("hex"));
+    }
+  };
+
+  const handleChangeEnd = (newColorObj) => {
+    if (newColorObj && onChangeEnd && !isDisabled) {
+      onChangeEnd(newColorObj.toString("hex"));
     }
   };
 
@@ -101,7 +111,7 @@ export function ColorInput({ value = "#FFFFFF", onChange, className, isDisabled 
 
       {!isDisabled && (
         <ColorPicker.Popover className="gap-2 p-3 bg-white dark:bg-[#1a1a1c] border border-divider shadow-2xl rounded-2xl text-foreground z-50">
-          <ColorSwatchPicker className="justify-center pt-1 gap-1.5" size="xs">
+          <ColorSwatchPicker className="justify-center pt-1 gap-1.5" size="xs" onChange={handleChangeEnd}>
             {colorPresets.map((preset) => (
               <ColorSwatchPicker.Item key={preset} color={preset}>
                 <ColorSwatchPicker.Swatch className="rounded-md cursor-pointer hover:scale-110 transition" />
@@ -115,12 +125,19 @@ export function ColorInput({ value = "#FFFFFF", onChange, className, isDisabled 
             colorSpace="hsb"
             xChannel="saturation"
             yChannel="brightness"
+            onChangeEnd={handleChangeEnd}
           >
             <ColorArea.Thumb className="border-2 border-white shadow-md" />
           </ColorArea>
 
           <div className="flex items-center gap-2 px-1 py-1">
-            <ColorSlider aria-label="Hue slider" channel="hue" className="flex-1" colorSpace="hsb">
+            <ColorSlider
+              aria-label="Hue slider"
+              channel="hue"
+              className="flex-1"
+              colorSpace="hsb"
+              onChangeEnd={handleChangeEnd}
+            >
               <ColorSlider.Track className="w-full h-3 rounded-full overflow-hidden">
                 <ColorSlider.Thumb className="border-2 border-white shadow-md" />
               </ColorSlider.Track>
@@ -138,7 +155,8 @@ export function ColorInput({ value = "#FFFFFF", onChange, className, isDisabled 
             </Button>
           </div>
 
-          <ColorField aria-label="Color field">
+          {/* ColorField baru memanggil onChange setelah Enter / blur, jadi langsung disimpan */}
+          <ColorField aria-label="Color field" onChange={handleChangeEnd}>
             <ColorField.Group variant="secondary" className="bg-gray-100 dark:bg-[#252525] border border-divider rounded-xl">
               <ColorField.Prefix className="pl-2">
                 <ColorSwatch size="xs" className="rounded-sm" />

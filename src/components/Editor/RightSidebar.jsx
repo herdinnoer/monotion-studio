@@ -8,7 +8,9 @@ import { DEFAULT_BACKGROUND } from "@/lib/editorState";
 import { ChevronDown } from "lucide-react";
 import { Switch } from "@heroui/react";
 
-export const RightSidebar = ({ characterId, config, onConfigChange }) => {
+// onConfigChange  = simpan satu langkah undo
+// onConfigPreview = ubah tampilan saja (dipakai selama color picker digeser)
+export const RightSidebar = ({ characterId, config, onConfigChange, onConfigPreview }) => {
   const character = getCharacter(characterId);
   const shapePresets = character.shapePresets ?? [];
 
@@ -20,6 +22,10 @@ export const RightSidebar = ({ characterId, config, onConfigChange }) => {
     onConfigChange({ ...config, shapePreset });
   };
 
+  const handleColorPreview = (color) => {
+    onConfigPreview({ ...config, color });
+  };
+
   const handleColorChange = (color) => {
     onConfigChange({ ...config, color });
   };
@@ -27,6 +33,10 @@ export const RightSidebar = ({ characterId, config, onConfigChange }) => {
   // Reset warna body karakter ke warna dasar awal karakter
   const handleResetColor = () => {
     onConfigChange({ ...config, color: character.defaultColor });
+  };
+
+  const handleBgPreview = (bgColor) => {
+    onConfigPreview({ ...config, backgroundColor: bgColor, isBgRemoved: false });
   };
 
   const handleBgChange = (bgColor) => {
@@ -134,7 +144,8 @@ export const RightSidebar = ({ characterId, config, onConfigChange }) => {
 
           <ColorInput
             value={config.backgroundColor || DEFAULT_BACKGROUND}
-            onChange={handleBgChange}
+            onChange={handleBgPreview}
+            onChangeEnd={handleBgChange}
             isDisabled={Boolean(config.isBgRemoved)}
           />
 
@@ -175,7 +186,11 @@ export const RightSidebar = ({ characterId, config, onConfigChange }) => {
               Reset
             </button>
           </div>
-          <ColorInput value={config.color || character.defaultColor} onChange={handleColorChange} />
+          <ColorInput
+            value={config.color || character.defaultColor}
+            onChange={handleColorPreview}
+            onChangeEnd={handleColorChange}
+          />
         </div>
       </div>
     </aside>

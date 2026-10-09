@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Play, Pause, RotateCcw, Repeat, Gauge } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isPressableTarget, isTypingTarget } from "@/lib/keyboard";
 import { TIMELINE_EVENT, dispatchTimeline } from "@/characters/_core/useTimeline";
 
 export function AnimationPlayerBar({
@@ -147,9 +148,12 @@ export function AnimationPlayerBar({
   // Keyboard shortcut (Space bar)
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // Spasi diabaikan di kolom ketik dan di elemen yang punya aksi spasi sendiri
+      // (tombol, select, switch), supaya tidak memicu dua aksi sekaligus.
       if (
         e.code === "Space" &&
-        !["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName)
+        !isTypingTarget(e.target) &&
+        !isPressableTarget(e.target)
       ) {
         e.preventDefault();
         setIsPlaying((prev) => !prev);

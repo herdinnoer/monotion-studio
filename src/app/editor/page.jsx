@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useSyncExternalStore } from "react";
+import React, { useState, useEffect, useCallback, useReducer, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 import { TopBar } from "@/components/Editor/TopBar";
 import { LeftSidebar } from "@/components/Editor/LeftSidebar";
@@ -17,6 +17,14 @@ import {
   pickMood,
 } from "@/characters/registry";
 import { createInitialState } from "@/lib/editorState";
+import {
+  canRedo,
+  canUndo,
+  createHistory,
+  currentState,
+  historyReducer,
+} from "@/lib/editorHistory";
+import { isTypingTarget } from "@/lib/keyboard";
 
 const emptySubscribe = () => () => {};
 function useMounted() {
@@ -29,30 +37,24 @@ export default function EditorPage() {
   // Nama proyek: dipakai untuk nama file export. Tidak ikut undo/redo (keputusan K-10).
   const [projectName, setProjectName] = useState("");
 
-  // Riwayat Undo / Redo. Tiap isi = satu paket kondisi (lihat src/lib/editorState.js)
-  const [history, setHistory] = useState(() => [createInitialState(defaultCharacter)]);
-  const [historyIndex, setHistoryIndex] = useState(0);
+  // Riwayat Undo / Redo: daftar langkah + posisi + draf pratinjau dalam SATU state
+  // (lihat src/lib/editorHistory.js). Tiap langkah = satu paket kondisi (src/lib/editorState.js)
+  const [history, dispatch] = useReducer(historyReducer, defaultCharacter, (character) =>
+    createHistory(createInitialState(character))
+  );
 
-  // Paket kondisi yang sedang aktif
-  const editorState = history[historyIndex] || history[0];
+  // Paket kondisi yang sedang tampil (draf kalau sedang digeser, kalau tidak langkah aktif)
+  const editorState = currentState(history);
   const { characterId } = editorState;
   const character = getCharacter(characterId);
 
   // Durasi 1 putaran mood, dihitung langsung dari registry
   const durationMs = getMoodDuration(character, editorState.mood);
 
-  // Fungsi untuk Menambahkan State Baru ke Riwayat
-  const pushState = useCallback(
-    (newState) => {
-      setHistory((prevHistory) => {
-        // Hapus riwayat "future" jika ada perubahan baru setelah undo
-        const updatedHistory = prevHistory.slice(0, historyIndex + 1);
-        return [...updatedHistory, newState];
-      });
-      setHistoryIndex((prevIndex) => prevIndex + 1);
-    },
-    [historyIndex]
-  );
+  // Simpan satu langkah undo (langkah yang tidak mengubah apa-apa otomatis ditolak)
+  const commitState = useCallback((next) => dispatch({ type: "commit", state: next }), []);
+  // Ubah tampilan saja tanpa menambah langkah (misalnya selama color picker digeser)
+  const previewState = useCallback((next) => dispatch({ type: "preview", state: next }), []);
 
   // Handler Ganti Karakter
   const handleSelectCharacter = (id) => {
@@ -60,7 +62,7 @@ export default function EditorPage() {
     if (id === characterId) return;
 
     const nextCharacter = getCharacter(id);
-    pushState({
+    commitState({
       ...editorState,
       characterId: nextCharacter.id,
       mood: pickMood(nextCharacter, editorState.mood),
@@ -71,36 +73,21 @@ export default function EditorPage() {
 
   // Handler Perubahan Config Customizer
   const handleConfigChange = (newConfig) => {
-    pushState({ ...newConfig, characterId });
+    commitState({ ...newConfig, characterId });
+  };
+  const handleConfigPreview = (newConfig) => {
+    previewState({ ...newConfig, characterId });
   };
 
-  // Status ketersediaan Undo & Redo
-  const canUndo = historyIndex > 0;
-  const canRedo = historyIndex < history.length - 1;
-
-  // Action Undo (Aman dari stale state)
-  const handleUndo = useCallback(() => {
-    setHistoryIndex((prev) => (prev > 0 ? prev - 1 : prev));
-  }, []);
-
-  // Action Redo (Selalu mengecek panjang riwayat terbaru)
-  const handleRedo = useCallback(() => {
-    setHistoryIndex((prev) => (prev < history.length - 1 ? prev + 1 : prev));
-  }, [history.length]);
+  const handleUndo = useCallback(() => dispatch({ type: "undo" }), []);
+  const handleRedo = useCallback(() => dispatch({ type: "redo" }), []);
 
   // Listener Keyboard Shortcut
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Abaikan shortcut jika pengguna sedang mengetik di input teks, textarea, atau select
-      const targetTag = e.target.tagName ? e.target.tagName.toLowerCase() : "";
-      if (
-        targetTag === "input" ||
-        targetTag === "textarea" ||
-        targetTag === "select" ||
-        e.target.isContentEditable
-      ) {
-        return;
-      }
+      // Di kolom ketik teks, Ctrl+Z milik browser (undo ketikan). Di slider, switch,
+      // dan tombol, shortcut editor tetap jalan.
+      if (isTypingTarget(e.target)) return;
 
       const isCmdOrCtrl = e.metaKey || e.ctrlKey;
 
@@ -143,8 +130,8 @@ export default function EditorPage() {
       <TopBar
         projectName={projectName}
         onProjectNameChange={setProjectName}
-        canUndo={canUndo}
-        canRedo={canRedo}
+        canUndo={canUndo(history)}
+        canRedo={canRedo(history)}
         onUndo={handleUndo}
         onRedo={handleRedo}
         onExportClick={() => setIsExportOpen(true)}
@@ -171,6 +158,7 @@ export default function EditorPage() {
           characterId={characterId}
           config={editorState}
           onConfigChange={handleConfigChange}
+          onConfigPreview={handleConfigPreview}
         />
         
       </div>
