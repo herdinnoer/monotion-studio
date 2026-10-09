@@ -370,6 +370,32 @@ Batasan yang tersisa:
 
 **Selesai kalau:** `npm test` lulus semua, daftar manual T-9 s/d T-13 sudah dicoba dan hasilnya dicatat di dokumen ini.
 
+**Hasil A6:**
+
+- Tes otomatis: `npm test` → **32 tes, 32 lulus**. File tes ada di sebelah file yang dites
+  (`src/lib/*.test.js`), memakai karakter tiruan `src/lib/testCharacters.js` karena registry asli
+  berisi komponen React yang tidak bisa dimuat Node.
+- Script test memakai `--disable-warning=MODULE_TYPELESS_PACKAGE_JSON`: tanpa `"type": "module"`
+  di `package.json`, Node memberi peringatan tiap file. Menambah `"type": "module"` berisiko untuk
+  `tailwind.config.js`, jadi peringatannya saja yang dimatikan.
+- Bug yang ketemu dan sudah diperbaiki:
+  - **T-29:** `hexToRgbNumber("bukan-hex")` menghasilkan `11` (huruf `b` dibaca sebagai hex),
+    bukan `null`. Sekarang dicek dengan pola hex 3/6 digit dulu.
+  - **T-11:** Ctrl+Z / Ctrl+Y tetap jalan saat modal export terbuka. Sekarang shortcut undo/redo
+    diabaikan selama modal terbuka (`page.jsx`).
+  - **T-12:** tombol Export tidak terkunci selama export (salah nama prop, lihat tabel).
+
+Tes manual (butuh browser). Kolom "Analisis kode" dari membaca kode; kolom "Dicoba" diisi
+setelah dicoba di browser.
+
+| # | Analisis kode | Dicoba |
+|---|---|---|
+| T-9 | **Aman.** Dengan mouse tidak mungkin: selama geser, pointer "dipegang" color picker, dan melepasnya langsung menyimpan langkah. Dengan keyboard, tiap tekan panah langsung disimpan. Kalau draf tetap ada, ganti karakter menyimpan draf background bersama karakter baru (= "disimpan dulu"); warna karakter tetap direset ke warna karakter baru | Lolos |
+| T-10 | **Aman.** Ganti/geser/reset warna background selalu mematikan Remove Background (`RightSidebar.jsx`) | Lolos |
+| T-11 | **Sempat gagal, sudah diperbaiki.** Tombol undo/redo di top bar tertutup lapisan modal; shortcut keyboard sekarang ikut diabaikan | Lolos |
+| T-12 | **Sempat salah, sudah diperbaiki.** Tombol Export memakai `disabled`/`onClick`, padahal `Button` HeroUI memakai `isDisabled`/`onPress`, jadi tombol tidak terkunci selama export. Sekarang `ExportModal.jsx` & `TopBar.jsx` memakai nama HeroUI. Tombol HeroUI lain di proyek sudah benar | Lolos |
+| T-13 | **Temuan, ditunda ke B2** (sudah masuk "Selesai kalau" B2). Mouse tidak bisa (lapisan modal menutupi editor), tapi modal belum "mengurung" fokus keyboard: Tab bisa pindah ke tombol mood di belakang modal, lalu Enter mengganti mood saat export berjalan. Export memotret tampilan langsung, jadi frame bisa berubah di tengah jalan. Diusulkan beres di B2 saat modal pindah ke `Modal` HeroUI (fokus otomatis terkurung) | Ditunda ke B2 |
+
 ---
 
 ## 3. Kelompok B — Tampilan (ikut DESIGN.md)
@@ -471,6 +497,8 @@ Wajib baca `DESIGN.md` dan `.github/antislop.md` sebelum mulai tiap langkah.
 - Projects & avatar tidak terlihat. Tidak ada request ke `api.dicebear.com` di tab Network.
 - Semua tombol ikon punya `aria-label` dan tooltip.
 - Semua bisa dipakai pakai keyboard saja (Tab, Enter, Esc, panah).
+- Tab tidak bisa keluar dari jendela Export selama terbuka (fokus terkurung di dalam modal),
+  jadi mood/warna tidak bisa diganti saat export berjalan (temuan T-13 di A6).
 
 **Cara tes:** per komponen yang diganti: klik dengan mouse, lalu ulangi pakai keyboard saja;
 cek fitur A2–A5 tetap jalan (terutama undo color picker dan export).

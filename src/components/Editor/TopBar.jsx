@@ -130,7 +130,7 @@ export const TopBar = ({
           </button>
         </div>
 
-        <GlossyButton colorScheme="blue" onClick={onExportClick}>
+        <GlossyButton colorScheme="blue" onPress={onExportClick}>
           Export
         </GlossyButton>
 

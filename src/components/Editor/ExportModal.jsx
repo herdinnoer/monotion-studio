@@ -289,8 +289,8 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
           
           <GlossyButton
             colorScheme="blue"
-            onClick={handleExport}
-            disabled={isExporting}
+            onPress={handleExport}
+            isDisabled={isExporting}
           >
             {isExporting
               ? "Exporting..."

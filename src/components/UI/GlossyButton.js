@@ -36,6 +36,9 @@ export function GlossyButton({
 
   const currentTheme = themes[colorScheme] || themes.blue;
 
+  // Props lain diteruskan ke Button HeroUI: pakai `onPress` & `isDisabled`,
+  // bukan `onClick` & `disabled` (nama HTML biasa tidak dikenal, tombol tidak terkunci).
+
   return (
     <Button
       // Menggunakan cn() agar kelas kustom dari props (seperti fontSize & borderRadius)

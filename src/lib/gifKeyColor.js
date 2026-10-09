@@ -25,11 +25,14 @@ function binIndex(r, g, b) {
   return ((r >> BIN_SHIFT) * BINS + (g >> BIN_SHIFT)) * BINS + (b >> BIN_SHIFT);
 }
 
+// "#0f0" / "00FF00" → 0x00FF00. Bukan hex 3/6 digit → null (parseInt saja akan
+// menerima awalan seperti "b" di "bukan-hex").
 export function hexToRgbNumber(hex) {
-  const clean = String(hex).replace("#", "");
+  const match = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(String(hex));
+  if (!match) return null;
+  const clean = match[1];
   const full = clean.length === 3 ? clean.replace(/./g, (c) => c + c) : clean;
-  const value = parseInt(full, 16);
-  return Number.isNaN(value) ? null : value;
+  return parseInt(full, 16);
 }
 
 // Catatan warna yang dipakai: satu angka per kotak warna (0 = tidak dipakai).

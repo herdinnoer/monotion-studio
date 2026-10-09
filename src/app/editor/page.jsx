@@ -110,6 +110,9 @@ export default function EditorPage() {
       // Di kolom ketik teks, Ctrl+Z milik browser (undo ketikan). Di slider, switch,
       // dan tombol, shortcut editor tetap jalan.
       if (isTypingTarget(e.target)) return;
+      // Selama modal export terbuka, undo/redo dimatikan: export memakai kondisi saat
+      // tombol Export ditekan, jadi tampilan di belakang modal tidak boleh berubah.
+      if (isExportOpen) return;
 
       const isCmdOrCtrl = e.metaKey || e.ctrlKey;
 
@@ -136,7 +139,7 @@ export default function EditorPage() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleUndo, handleRedo]);
+  }, [handleUndo, handleRedo, isExportOpen]);
 
   if (!mounted) {
     return <div className="h-screen w-screen bg-[#F5F5F7] dark:bg-[#1C1C1E]" />;
