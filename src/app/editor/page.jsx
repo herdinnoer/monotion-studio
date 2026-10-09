@@ -10,13 +10,12 @@ import { ExportModal } from "@/components/Editor/ExportModal";
 import { AnimationPlayerBar } from "@/components/Editor/AnimationPlayerBar";
 import {
   characters,
-  defaultCharacter,
   getCharacter,
   getDefaultShape,
   getMoodDuration,
   pickMood,
 } from "@/characters/registry";
-import { createInitialState } from "@/lib/editorState";
+import { loadSaved, save } from "@/lib/editorStorage";
 import {
   canRedo,
   canUndo,
@@ -34,19 +33,42 @@ function useMounted() {
 export default function EditorPage() {
   const mounted = useMounted();
   const [isExportOpen, setIsExportOpen] = useState(false);
+  // Pengaturan terakhir dari browser, dibaca SEKALI saat editor dibuka (sudah dirapikan
+  // sanitizeState). Aman dibaca di sini karena editor baru tampil setelah "mounted".
+  const [saved] = useState(() => loadSaved(characters));
   // Nama proyek: dipakai untuk nama file export. Tidak ikut undo/redo (keputusan K-10).
-  const [projectName, setProjectName] = useState("");
+  const [projectName, setProjectName] = useState(saved.projectName);
 
   // Riwayat Undo / Redo: daftar langkah + posisi + draf pratinjau dalam SATU state
   // (lihat src/lib/editorHistory.js). Tiap langkah = satu paket kondisi (src/lib/editorState.js)
-  const [history, dispatch] = useReducer(historyReducer, defaultCharacter, (character) =>
-    createHistory(createInitialState(character))
-  );
+  const [history, dispatch] = useReducer(historyReducer, saved.state, createHistory);
 
   // Paket kondisi yang sedang tampil (draf kalau sedang digeser, kalau tidak langkah aktif)
   const editorState = currentState(history);
   const { characterId } = editorState;
   const character = getCharacter(characterId);
+
+  // Langkah yang sudah disimpan (tanpa draf), supaya geser warna tidak ikut ditulis ke browser
+  const committedState = history.entries[history.index];
+
+  // Simpan ke browser 300ms setelah perubahan terakhir (bukan tiap gerakan / ketikan).
+  // Penyimpanan darurat: langsung simpan saat tab disembunyikan atau halaman ditutup,
+  // supaya perubahan dalam jeda 300ms itu tidak hilang.
+  useEffect(() => {
+    const flush = () => save({ state: committedState, projectName });
+    const flushIfHidden = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+
+    const timer = setTimeout(flush, 300);
+    window.addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", flushIfHidden);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("pagehide", flush);
+      document.removeEventListener("visibilitychange", flushIfHidden);
+    };
+  }, [committedState, projectName]);
 
   // Durasi 1 putaran mood, dihitung langsung dari registry
   const durationMs = getMoodDuration(character, editorState.mood);
