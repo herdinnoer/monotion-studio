@@ -66,6 +66,11 @@ export function ColorInput({ value = DEFAULT_BACKGROUND, onChange, onChangeEnd, 
     }
   };
 
+  // Patokan posisi popover = seluruh kolom warna. Tanpa ini React Aria memakai tombol yang
+  // terakhir ditekan di dalam ColorPicker, yang bisa berpindah ke tombol acak setelah warna
+  // berubah, sehingga popover melompat dan jaraknya ke kolom berubah.
+  const fieldRef = React.useRef(null);
+
   const handleChangeEnd = (newColorObj) => {
     if (newColorObj && onChangeEnd && !isDisabled) {
       onChangeEnd(newColorObj.toString("hex"));
@@ -75,6 +80,7 @@ export function ColorInput({ value = DEFAULT_BACKGROUND, onChange, onChangeEnd, 
   return (
     <ColorPicker value={colorValue} onChange={handleChange} className="w-full" isDisabled={isDisabled}>
       <div
+        ref={fieldRef}
         className={cn(
           "w-full h-11 flex items-center justify-between rounded-xl border border-border transition-colors duration-150 ease-out",
           "bg-surface-secondary",
@@ -112,8 +118,13 @@ export function ColorInput({ value = DEFAULT_BACKGROUND, onChange, onChangeEnd, 
       </div>
 
       {!isDisabled && (
-        // Latar popover (surface-raised) diatur di globals.css, sama dengan dropdown mood
-        <ColorPicker.Popover className="gap-2 p-3 border border-border shadow-2xl rounded-2xl text-foreground z-50">
+        // Latar (surface-raised) & sudut 12px popover diatur di globals.css, sama dengan dropdown mood
+        // Jarak tetap 8px dari kolom warna (DESIGN.md bagian 8)
+        <ColorPicker.Popover
+          triggerRef={fieldRef}
+          offset={8}
+          className="gap-2 p-3 border border-border shadow-2xl text-foreground z-50"
+        >
           <ColorSwatchPicker className="justify-center pt-1 gap-1.5" size="xs" onChange={handleChangeEnd}>
             {colorPresets.map((preset) => (
               <ColorSwatchPicker.Item key={preset} color={preset}>
@@ -124,7 +135,7 @@ export function ColorInput({ value = DEFAULT_BACKGROUND, onChange, onChangeEnd, 
 
           <ColorArea
             aria-label="Color area"
-            className="max-w-full h-36 rounded-xl border border-border overflow-hidden"
+            className="max-w-full h-36 border border-border overflow-hidden"
             colorSpace="hsb"
             xChannel="saturation"
             yChannel="brightness"
@@ -152,19 +163,21 @@ export function ColorInput({ value = DEFAULT_BACKGROUND, onChange, onChangeEnd, 
               size="sm"
               variant="tertiary"
               onPress={shuffleColor}
-              className="bg-surface-secondary hover:bg-surface-hover text-foreground border border-border rounded-lg"
+              className="text-foreground border border-border"
             >
               <Shuffle size={14} />
             </Button>
           </div>
 
-          {/* ColorField baru memanggil onChange setelah Enter / blur, jadi langsung disimpan */}
+          {/* ColorField baru memanggil onChange setelah Enter / blur, jadi langsung disimpan.
+              Latar kolom & tombol di dalam popover = surface (aturan umum di globals.css) */}
           <ColorField aria-label="Color field" onChange={handleChangeEnd}>
-            <ColorField.Group variant="secondary" className="bg-surface-secondary border border-border rounded-xl">
-              <ColorField.Prefix className="pl-2">
+            <ColorField.Group variant="secondary" className="border border-border">
+              {/* Jarak kiri 12px dari HeroUI (ms-3) + 12px kotak→teks (pl-3), sama dengan kolom di sidebar */}
+              <ColorField.Prefix>
                 <ColorSwatch size="xs" className="rounded-sm" />
               </ColorField.Prefix>
-              <ColorField.Input className="text-foreground text-xs pl-1" />
+              <ColorField.Input className="text-foreground text-xs pl-3" />
             </ColorField.Group>
           </ColorField>
         </ColorPicker.Popover>

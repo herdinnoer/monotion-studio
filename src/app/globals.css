@@ -299,6 +299,17 @@
   .color-picker__popover {
     @apply rounded-xl bg-surface-secondary;
   }
+  /* Elemen isian & tombol berlatar di DALAM popover memakai surface (DESIGN.md bagian 8),
+     supaya beda satu tingkat dari latar popover (surface-raised). Caranya: variabel warna
+     HeroUI diganti di elemen itu sendiri, jadi semua keadaan (diam, hover, fokus) ikut. */
+  :is(.popover, .dropdown__popover, .select__popover, .combo-box__popover, .autocomplete__popover, .color-picker__popover)
+    :is(.input, .input-group, .color-input-group, .text-area, .button--secondary, .button--tertiary) {
+    --default: var(--surface);
+    --default-hover: var(--surface-hover);
+    --field-background: var(--surface);
+    --field-hover: var(--surface-hover);
+    --field-focus: var(--surface);
+  }
   .list-box-item,
   .menu-item {
     @apply rounded-lg;

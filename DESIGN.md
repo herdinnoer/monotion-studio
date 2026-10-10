@@ -164,6 +164,7 @@ Gerakan UI harus nyaris tak terasa. Yang boleh "hidup" dan memantul hanya karakt
 | Segmented (format, resolusi, fps) | Grup `surface-raised` `rounded-xl` (12px) padding 4px, item `rounded-md` (6px). Item terpilih: `surface` + `shadow-sm`. |
 | Kartu karakter | `rounded-xl` (12px), garis tepi 1px (transparan saat tidak terpilih). Terpilih: latar `surface-raised` + garis `border-selected`. Cincin fokus biru hanya saat navigasi keyboard. |
 | Input warna | Kotak warna 24px `rounded-md` (6px) + kode hex 12px kapital. |
+| Popover (color picker, dropdown) | Latar `surface-raised`, `rounded-xl` (12px), jarak 8px dari kolom/tombol pemicunya (tetap sama saat isinya berubah). **Elemen isian di dalam popover = `surface`** (kolom hex, tombol berlatar), supaya beda satu tingkat dari latar popover. Hover-nya `surface-hover`. |
 | Input nama proyek (top bar) | `Input` HeroUI + class `inline-field`, teks di tengah. Diam: tanpa latar, tanpa garis tepi. Hover: latar `surface-raised`. Fokus (sedang diketik): latar `surface-raised`, **tanpa ring fokus** (pengecualian dari aturan `focus-ring`; tanda fokusnya latar + kursor ketik). Supaya terbaca sebagai judul, bukan kolom isian. |
 | Modal | Lebar maks 480px, `surface`, `rounded-3xl` (24px), padding 24px, latar belakang `black/40` (terang) atau `black/60` (gelap) + blur. |
 | Progress export | Bar tinggi 6px `rounded-full`, isi `accent`, ada teks persen. |
