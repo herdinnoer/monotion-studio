@@ -1,8 +1,17 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { X, Loader2 } from "lucide-react";
-import { Alert, ToggleButton, ToggleButtonGroup } from "@heroui/react";
+import { X } from "lucide-react";
+import {
+  Alert,
+  Button,
+  Label,
+  Modal,
+  ProgressBar,
+  ToggleButton,
+  ToggleButtonGroup,
+  toast,
+} from "@heroui/react";
 import { GlossyButton } from "@/components/UI/GlossyButton";
 import { IconButton } from "@/components/UI/IconButton";
 import {
@@ -38,7 +47,11 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
     };
   }, [needsAlphaCheck]);
 
-  if (!isOpen) return null;
+  // Selama export berjalan modal tidak boleh tertutup (Esc, klik di luar, tombol tutup),
+  // supaya export tidak terlihat "batal" padahal masih jalan di belakang.
+  const handleOpenChange = (open) => {
+    if (!open && !isExporting) onClose();
+  };
 
   const fallbackBackground = (config?.backgroundColor || DEFAULT_BACKGROUND).toUpperCase();
 
@@ -70,6 +83,7 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
             onProgress: (p) => setProgress(p),
           });
           onClose();
+          toast.success(`Exported ${baseFilename}.gif`);
           break;
 
         case "svg":
@@ -79,6 +93,7 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
             config,
           });
           onClose();
+          toast.success(`Exported ${baseFilename}.svg`);
           break;
 
         case "webm":
@@ -93,6 +108,7 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
             onProgress: (p) => setProgress(p),
           });
           onClose();
+          toast.success(`Exported ${baseFilename}.webm`);
           break;
 
         case "lottie":
@@ -106,11 +122,12 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
             onProgress: (p) => setProgress(p),
           });
           onClose();
+          toast.success(`Exported ${baseFilename}-lottie.json`);
           break;
 
         case "react":
           await copyReactComponent({ character, config });
-          alert("Kode komponen React berhasil disalin ke clipboard!");
+          toast.success("React code copied");
           onClose();
           break;
 
@@ -119,7 +136,9 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
       }
     } catch (error) {
       console.error("Gagal melakukan export:", error);
-      alert(`Gagal melakukan export: ${error?.message || "Silakan coba lagi."}`);
+      toast.danger("Export failed", {
+        description: "Try again. If it keeps failing, pick a lower resolution or another format.",
+      });
     } finally {
       setIsExporting(false);
     }
@@ -140,166 +159,171 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
       : ["240p", "360p", "480p", "720p"];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-backdrop backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-[480px] bg-surface text-foreground border-b border-border rounded-3xl p-6 shadow-2xl flex flex-col gap-6 select-none relative animate-in zoom-in-95 duration-200">
-        
-        {/* Header dengan Divider */}
-        <div className="flex items-center justify-between pb-4 -mx-6 px-6 border-b border-border shrink-0">
-          <h2 className="text-base font-bold text-foreground tracking-wide">
-            Export
-          </h2>
-          <IconButton
-            label="Close"
-            onPress={onClose}
-            isDisabled={isExporting}
-            className="text-muted hover:text-foreground"
-          >
-            <X size={16} />
-          </IconButton>
-        </div>
+    // Modal HeroUI: fokus keyboard terkurung di dalam (T-13), Esc & klik di luar menutup.
+    // Lebar, radius, animasi buka mengikuti DESIGN.md (animasi diatur di globals.css).
+    <Modal isOpen={isOpen} onOpenChange={handleOpenChange}>
+      <Modal.Backdrop
+        variant="blur"
+        isDismissable={!isExporting}
+        isKeyboardDismissDisabled={isExporting}
+      >
+        <Modal.Container placement="center">
+          <Modal.Dialog className="w-[480px] max-w-full text-foreground gap-6 select-none">
 
-        {/* Format Export (Side-by-side) */}
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-semibold text-muted">Format</span>
-          <ToggleButtonGroup
-            aria-label="Format"
-            className="segmented"
-            selectionMode="single"
-            disallowEmptySelection
-            isDisabled={isExporting}
-            selectedKeys={[format]}
-            onSelectionChange={(keys) => {
-              const [next] = keys;
-              if (next) handleSelectFormat(next);
-            }}
-          >
-            {formatList.map((item) => (
-              <ToggleButton key={item.id} id={item.id}>
-                {item.label}
-              </ToggleButton>
-            ))}
-          </ToggleButtonGroup>
-        </div>
+            {/* Header dengan Divider */}
+            <Modal.Header className="flex-row items-center justify-between pb-4 -mx-6 px-6 border-b border-border shrink-0">
+              <Modal.Heading className="text-base font-bold text-foreground tracking-wide">
+                Export
+              </Modal.Heading>
+              <IconButton
+                label="Close"
+                onPress={onClose}
+                isDisabled={isExporting}
+                className="text-muted hover:text-foreground"
+              >
+                <X size={16} />
+              </IconButton>
+            </Modal.Header>
 
-        {/* Resolution (Tampil Saat Format GIF, WebM, atau Lottie) */}
-        {(format === "gif" || format === "webm" || format === "lottie") && (
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-semibold text-muted">Resolution</span>
-            <ToggleButtonGroup
-              aria-label="Resolution"
-              className="segmented"
-              selectionMode="single"
-              disallowEmptySelection
-              isDisabled={isExporting}
-              selectedKeys={[resolution]}
-              onSelectionChange={(keys) => {
-                const [next] = keys;
-                if (next) setResolution(next);
-              }}
-            >
-              {availableResolutions.map((res) => (
-                <ToggleButton key={res} id={res}>
-                  {res}
-                </ToggleButton>
-              ))}
-            </ToggleButtonGroup>
-          </div>
-        )}
-
-        {/* Frame Rate (Tampil Saat Format GIF, WebM, atau Lottie) */}
-        {(format === "gif" || format === "webm" || format === "lottie") && (
-          <div className="flex items-center justify-between gap-2">
-            <span className="text-xs font-semibold text-muted">Frame rate</span>
-            <ToggleButtonGroup
-              aria-label="Frame rate"
-              className="segmented"
-              selectionMode="single"
-              disallowEmptySelection
-              isDisabled={isExporting}
-              selectedKeys={[frameRate]}
-              onSelectionChange={(keys) => {
-                const [next] = keys;
-                if (next) setFrameRate(next);
-              }}
-            >
-              {["30 fps", "60 fps"].map((fps) => (
-                <ToggleButton key={fps} id={fps}>
-                  {fps}
-                </ToggleButton>
-              ))}
-            </ToggleButtonGroup>
-          </div>
-        )}
-
-        {/* Catatan batas format GIF saat background dihapus */}
-        {format === "gif" && isBgRemoved && (
-          <p className="text-[11px] font-medium leading-relaxed text-muted">
-            GIF transparency is on or off per pixel, so the character&apos;s edges may look
-            slightly jagged.
-          </p>
-        )}
-
-        {/* Peringatan: browser tidak bisa menyimpan WebM transparan */}
-        {format === "webm" && isBgRemoved && canWebmAlpha === false && (
-          <Alert
-            status="warning"
-            className="rounded-xl border border-warning/40 bg-warning/10 px-3 py-2.5 shadow-none"
-          >
-            <Alert.Indicator className="text-warning" />
-            <Alert.Content>
-              <Alert.Title className="text-xs font-semibold text-foreground">
-                This browser can&apos;t export transparent WebM
-              </Alert.Title>
-              <Alert.Description className="text-[11px] font-medium text-muted">
-                The video will use your background color ({fallbackBackground}) instead. Use
-                Chrome or Edge to keep it transparent.
-              </Alert.Description>
-            </Alert.Content>
-          </Alert>
-        )}
-
-        {/* Indikator Progress */}
-        {isExporting && (format === "gif" || format === "webm" || format === "lottie") && (
-          <div className="w-full bg-surface-secondary rounded-xl p-3 flex flex-col gap-2">
-            <div className="flex justify-between text-xs text-subtle font-medium">
-              <span className="flex items-center gap-1.5">
-                <Loader2 size={12} className="animate-spin text-accent" /> Rendering {format.toUpperCase()}...
-              </span>
-              <span>{progress}%</span>
+            {/* Format Export (Side-by-side) */}
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-xs font-semibold text-muted">Format</span>
+              <ToggleButtonGroup
+                aria-label="Format"
+                className="segmented"
+                selectionMode="single"
+                disallowEmptySelection
+                isDisabled={isExporting}
+                selectedKeys={[format]}
+                onSelectionChange={(keys) => {
+                  const [next] = keys;
+                  if (next) handleSelectFormat(next);
+                }}
+              >
+                {formatList.map((item) => (
+                  <ToggleButton key={item.id} id={item.id}>
+                    {item.label}
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
             </div>
-            <div className="w-full bg-border h-1.5 rounded-full overflow-hidden">
-              <div
-                className="bg-accent h-full transition-all duration-150"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          </div>
-        )}
 
-        {/* Footer Actions */}
-        <div className="flex items-center justify-end gap-3 pt-3">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={isExporting}
-            className="px-4 py-2 text-xs font-semibold text-muted hover:text-foreground transition-colors cursor-pointer disabled:opacity-50"
-          >
-            Close
-          </button>
-          
-          <GlossyButton
-            onPress={handleExport}
-            isDisabled={isExporting}
-          >
-            {isExporting
-              ? "Exporting..."
-              : format === "react"
-              ? "Copy Code"
-              : "Export"}
-          </GlossyButton>
-        </div>
+            {/* Resolution (Tampil Saat Format GIF, WebM, atau Lottie) */}
+            {(format === "gif" || format === "webm" || format === "lottie") && (
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-semibold text-muted">Resolution</span>
+                <ToggleButtonGroup
+                  aria-label="Resolution"
+                  className="segmented"
+                  selectionMode="single"
+                  disallowEmptySelection
+                  isDisabled={isExporting}
+                  selectedKeys={[resolution]}
+                  onSelectionChange={(keys) => {
+                    const [next] = keys;
+                    if (next) setResolution(next);
+                  }}
+                >
+                  {availableResolutions.map((res) => (
+                    <ToggleButton key={res} id={res}>
+                      {res}
+                    </ToggleButton>
+                  ))}
+                </ToggleButtonGroup>
+              </div>
+            )}
 
-      </div>
-    </div>
+            {/* Frame Rate (Tampil Saat Format GIF, WebM, atau Lottie) */}
+            {(format === "gif" || format === "webm" || format === "lottie") && (
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-semibold text-muted">Frame rate</span>
+                <ToggleButtonGroup
+                  aria-label="Frame rate"
+                  className="segmented"
+                  selectionMode="single"
+                  disallowEmptySelection
+                  isDisabled={isExporting}
+                  selectedKeys={[frameRate]}
+                  onSelectionChange={(keys) => {
+                    const [next] = keys;
+                    if (next) setFrameRate(next);
+                  }}
+                >
+                  {["30 fps", "60 fps"].map((fps) => (
+                    <ToggleButton key={fps} id={fps}>
+                      {fps}
+                    </ToggleButton>
+                  ))}
+                </ToggleButtonGroup>
+              </div>
+            )}
+
+            {/* Catatan batas format GIF saat background dihapus */}
+            {format === "gif" && isBgRemoved && (
+              <p className="text-[11px] font-medium leading-relaxed text-muted">
+                GIF transparency is on or off per pixel, so the character&apos;s edges may look
+                slightly jagged.
+              </p>
+            )}
+
+            {/* Peringatan: browser tidak bisa menyimpan WebM transparan */}
+            {format === "webm" && isBgRemoved && canWebmAlpha === false && (
+              <Alert
+                status="warning"
+                className="rounded-xl border border-warning/40 bg-warning/10 px-3 py-2.5 shadow-none"
+              >
+                <Alert.Indicator className="text-warning" />
+                <Alert.Content>
+                  <Alert.Title className="text-xs font-semibold text-foreground">
+                    This browser can&apos;t export transparent WebM
+                  </Alert.Title>
+                  <Alert.Description className="text-[11px] font-medium text-muted">
+                    The video will use your background color ({fallbackBackground}) instead. Use
+                    Chrome or Edge to keep it transparent.
+                  </Alert.Description>
+                </Alert.Content>
+              </Alert>
+            )}
+
+            {/* Indikator Progress */}
+            {isExporting && (format === "gif" || format === "webm" || format === "lottie") && (
+              <ProgressBar value={progress} className="gap-2">
+                <Label className="text-xs font-medium text-muted">
+                  Rendering {format.toUpperCase()}…
+                </Label>
+                <ProgressBar.Output className="text-xs font-medium text-muted" />
+                <ProgressBar.Track className="h-1.5 bg-border">
+                  <ProgressBar.Fill />
+                </ProgressBar.Track>
+              </ProgressBar>
+            )}
+
+            {/* Footer Actions */}
+            <Modal.Footer className="gap-3 pt-3">
+              <Button
+                variant="ghost"
+                onPress={onClose}
+                isDisabled={isExporting}
+                className="text-xs font-semibold text-muted hover:text-foreground"
+              >
+                Close
+              </Button>
+
+              <GlossyButton
+                onPress={handleExport}
+                isDisabled={isExporting}
+              >
+                {isExporting
+                  ? "Exporting..."
+                  : format === "react"
+                  ? "Copy Code"
+                  : "Export"}
+              </GlossyButton>
+            </Modal.Footer>
+
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal.Backdrop>
+    </Modal>
   );
 }

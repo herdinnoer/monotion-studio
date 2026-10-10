@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { LucideProvider } from "lucide-react";
+import { Toast } from "@heroui/react";
 
 // Filter false-positive warning React 19 khusus untuk script tag next-themes
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
@@ -39,6 +40,8 @@ export function Providers({ children }) {
       ) : (
         children
       )}
+      {/* Tempat munculnya notifikasi (toast) di seluruh aplikasi, dipasang sekali */}
+      <Toast.Provider placement="bottom" />
     </LucideProvider>
   );
 }

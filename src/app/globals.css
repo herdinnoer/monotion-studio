@@ -279,6 +279,27 @@
   .modal__dialog {
     @apply rounded-3xl;
   }
+  /* Modal muncul 200ms ease-out, fade + skala 0.95→1 (DESIGN.md bagian 7).
+     Bawaan HeroUI 250ms dan membesar dari 1.05. */
+  .modal__backdrop[data-entering="true"] {
+    @apply duration-200 ease-out;
+  }
+  .modal__container[data-entering="true"] {
+    @apply duration-200 ease-out zoom-in-95;
+  }
+  /* Gerakan dikurangi: HeroUI mematikan semua animasi; DESIGN.md minta fade tetap ada,
+     hanya skalanya yang dimatikan. */
+  @media (prefers-reduced-motion: reduce) {
+    .modal__backdrop[data-entering="true"],
+    .modal__container[data-entering="true"] {
+      @apply animate-in fade-in-0;
+      --tw-enter-scale: 1;
+    }
+  }
+  /* Toast = lapisan melayang seperti popover: 12px */
+  .toast {
+    @apply rounded-xl;
+  }
   .alert {
     @apply rounded-xl;
   }

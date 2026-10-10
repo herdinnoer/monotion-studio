@@ -351,7 +351,7 @@ Batasan yang tersisa:
 | T-10 | Toggle Remove Background lalu ganti warna background | Remove Background mati otomatis (perilaku sekarang, dipertahankan) |
 | T-11 | Ctrl+Z saat modal export terbuka / saat export berjalan | Diabaikan (export memakai kondisi saat tombol ditekan) |
 | T-12 | Klik Export 2× cepat | Hanya satu export berjalan |
-| T-13 | Ganti mood saat export berjalan | Tidak mungkin (modal mengunci), atau hasil export tetap mood awal |
+| T-13 | **Sempat temuan, beres di B2.** Mouse tidak bisa (lapisan modal menutupi editor), tapi dulu modal belum "mengurung" fokus keyboard: Tab bisa pindah ke tombol mood di belakang modal, lalu Enter mengganti mood saat export berjalan. Sekarang jendela Export memakai `Modal` HeroUI: fokus terkurung di dalam, Esc & klik di luar diabaikan selama export, tombol ✕ & Close tampil nonaktif sampai export selesai | Lolos |
 | T-14 | Nama proyek `"  Kopi   Pagi  "` (spasi berlebih) | `kopi-pagi` |
 | T-15 | Nama proyek kosong / hanya spasi | `<karakter>-<mood>` |
 | T-16 | Nama proyek `"Kopi/Pagi?"` | `kopi-pagi` (simbol jadi strip, strip di akhir dibuang) |
@@ -575,3 +575,4 @@ Ide yang muncul selama Fase 2 tapi sengaja tidak dikerjakan di fase ini.
 | Ide | Asal | Catatan |
 |---|---|---|
 | **Kecepatan animasi yang ikut export** | K-11 (B2) | Pengganti menu kecepatan yang dihapus. Kecepatan harus jadi pengaturan karakter (mengubah `durationMs` mood yang dipakai), bukan hanya pemutar, supaya preview **dan** hasil export (GIF/SVG/WebM) sama-sama ikut berubah. Perlu diputuskan: ikut undo atau tidak, ikut disimpan di browser atau tidak, dan apakah animasi bawaan karakter (CSS & Framer Motion) bisa diatur kecepatannya tanpa mengubah tiap karakter |
+| **Tombol Cancel export** | T-13 (B2) | Sekarang selama export berjalan modal terkunci (✕ & Close nonaktif) dan user harus menunggu sampai selesai. Tombol Cancel perlu cara menghentikan proses di tengah jalan di `exportUtils.js` (mis. `AbortController` dicek tiap frame), membereskan sisa proses (worker GIF, encoder WebM), lalu toast "Export canceled". Logika export belum boleh diubah di Fase 2 |
