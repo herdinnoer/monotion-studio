@@ -4,13 +4,20 @@
 //   - per tes maksimal 60 detik
 //   - total semua tes maksimal 10 menit
 // Browser selalu ditutup otomatis oleh Playwright, baik tes lulus, gagal, maupun kehabisan waktu.
+//
+// Server: tes SELALU menyalakan dev server sendiri di port 3100 (folder kerja .next-e2e), tidak
+// pernah memakai server yang sudah jalan. Jadi selalu jelas kode mana yang dites, dan
+// `npm run dev` biasa (port 3000) boleh tetap menyala.
+//
+// Tes ukur (e2e/ukur-*.spec.js) tidak ikut di sini; jalankan terpisah: npm run ukur:gif
 
 import { defineConfig, devices } from "@playwright/test";
 
-const PORT = 3000;
+const PORT = 3100;
 
 export default defineConfig({
   testDir: "./e2e",
+  testIgnore: "**/ukur-*.spec.js",
   timeout: 60_000,
   globalTimeout: 10 * 60_000,
   expect: { timeout: 10_000 },
@@ -41,11 +48,13 @@ export default defineConfig({
     },
   ],
 
-  // Pakai server dev yang sudah jalan kalau ada; kalau belum, dinyalakan lalu dimatikan otomatis.
+  // Server sendiri, dinyalakan lalu dimatikan otomatis. Kalau port 3100 sudah terpakai, tes berhenti
+  // dengan pesan error (bukan diam-diam memakai server lain).
   webServer: {
-    command: "npm run dev",
+    command: `npx next dev -p ${PORT}`,
     url: `http://localhost:${PORT}/editor`,
-    reuseExistingServer: true,
+    env: { NEXT_DIST_DIR: ".next-e2e" },
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 });

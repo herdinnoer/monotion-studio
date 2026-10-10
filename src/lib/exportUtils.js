@@ -236,7 +236,9 @@ export const exportAsGif = async ({
 
   const gif = new GIF({
     workers: 2,
-    quality: 1,
+    // Ketelitian pemilihan 256 warna per frame (1 = paling teliti & paling lambat).
+    // 10: kompresi ±4–5× lebih cepat, tampilan & ukuran file setara q1 (Fase 3 F1b, dicek mata).
+    quality: 10,
     workerScript: "/gif.worker.js",
     width: targetSize.width,
     height: targetSize.height,

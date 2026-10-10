@@ -10,6 +10,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Folder kerja server tes Playwright (lihat next.config.mjs)
+    ".next-e2e/**",
   ]),
 ]);
 

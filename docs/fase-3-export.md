@@ -93,6 +93,7 @@ batas 60 detik per tes, 10 menit per jalan).
 | Langkah | Isi | Risiko |
 |---|---|---|
 | F1 | Hapus Lottie & React + kode mati | Ringan (hanya menghapus) |
+| F1b | Kecepatan GIF (setelan `quality` `gif.js`) | Kecil (tidak mengubah pose, waktu, atau ukuran file) |
 | F2 | Tes otomatis "export = preview" | Ringan (hanya menambah tes) |
 | F3 | Tes export di Chrome, Edge, Firefox, WebKit | Ringan (tes), tapi bisa memunculkan temuan |
 | F4 | Durasi WebM berlatar (frame terakhir) | Kecil |
@@ -147,6 +148,122 @@ memberi tahu.
 - Catatan: `screenshot.spec.js` menulis ulang foto bukti di `docs/reference/fase-2/` tiap
   kali jalan. Foto itu dikembalikan ke versi Fase 2 (tampilan tidak berubah). Mulai F2/F3,
   foto baru sebaiknya disimpan di folder `fase-3`.
+
+### F1b. Kecepatan GIF (dimajukan dari F5, disetujui Herdin)
+
+Kenapa sebelum F2: export GIF 240p butuh ±40–55 detik (temuan di F5), mepet dengan batas
+60 detik per tes. Tes F2 butuh beberapa export GIF, jadi akan sering gagal karena waktu habis,
+dan total tes bisa lewat 10 menit. Tes yang sering "alarm palsu" lama-lama diabaikan.
+Hanya bagian **kecepatan** yang dimajukan; sisa F5 (fps 25/50, memori, tabel ukuran file,
+evaluasi pengganti `gif.js`) mengubah hasil export, jadi tetap setelah F2.
+
+**Isi:**
+1. **Ukur dulu, tanpa mengubah apa pun:** berapa detik tahap memotret (progress 0–50%) dan
+   tahap kompresi `gif.js` (50–100%). Lewat tes Playwright khusus ukur (`e2e/`), bukan skrip
+   terpisah.
+2. Coba `quality` 10 dan 20 (sekarang 1): catat waktu, ukuran file, cek tampilan dengan mata.
+3. Pilih setelan tercepat yang tampilannya tidak turun.
+
+**Batasan (keputusan Herdin):**
+- Kalau ternyata yang lambat tahap **memotret**, **tidak** diperbaiki di F1b. Itu beres di
+  F7–F9 (FRAME: memotret langsung di ukuran file). F1b cukup melaporkan angkanya.
+- Batas waktu tes tidak dilonggarkan.
+- Dinilai juga: apakah tes export lebih cocok dijalankan di versi build (`npm run build` +
+  `npm run start`) daripada mode dev. Diusulkan dulu, belum diubah.
+
+**Selesai kalau:** tes export GIF yang sudah ada lulus 3× berturut-turut tanpa batas waktu
+dilonggarkan, dan warna pojok tetap dalam toleransi.
+
+**Hasil langkah 1 (ukur, kode aplikasi tidak diubah):**
+
+Alat ukur: `e2e/ukur-gif.spec.js`, hanya jalan dengan `UKUR=1`
+(`UKUR=1 npm run test:e2e -- e2e/ukur-gif.spec.js`). "Stopwatch" dipasang dari luar sebelum
+aplikasi jalan. Setelan: GIF 240p 30 fps, 108 frame (durasi 3,6 detik), Chromium, jendela
+1440×900. Tiap kasus diukur 3× di dev server (dev server Herdin di port 3000) dan 3× di versi
+build (`npm run build` + `next start` di port 3100, dimatikan lagi setelah selesai).
+
+| Kasus | Server | Total | Memotret | Per frame | Kompresi `gif.js` |
+|---|---|---|---|---|---|
+| Mochi, background merah | dev | 45,4* / 22,3 / 22,3 dtk | 20,2* / 13,0 / 13,0 dtk | 182* / 118 / 117 ms | 25,1* / 9,4 / 9,4 dtk |
+| Mochi, Remove Background | dev | 22,9 / 21,8 / 22,4 dtk | 14,1 / 12,4 / 12,8 dtk | 125 / 112 / 115 ms | 8,8 / 9,3 / 9,6 dtk |
+| Capybara, background merah | dev | 21,6 / 22,1 / 22,5 dtk | 12,3 / 12,6 / 12,8 dtk | 111 / 113 / 115 ms | 9,3 / 9,5 / 9,7 dtk |
+| Mochi, background merah | build | 21,7 / 22,5 / 22,3 dtk | 12,3 / 12,9 / 12,6 dtk | 112 / 116 / 114 ms | 9,3 / 9,6 / 9,7 dtk |
+| Mochi, Remove Background | build | 47,5* / 21,8 / 22,3 dtk | 17,1* / 12,4 / 12,5 dtk | 156* / 113 / 114 ms | 30,4* / 9,4 / 9,7 dtk |
+| Capybara, background merah | build | 23,0 / 22,9 / 22,3 dtk | 13,3 / 12,8 / 12,7 dtk | 118 / 116 / 115 ms | 9,7 / 10,1 / 9,7 dtk |
+
+\* = lonjakan: dua tahap sekaligus melambat ±1,5–3×. Muncul 2 dari 18 kali, di dev **dan** build.
+Jeda antara memotret & kompresi, dan penyatuan + unduh: < 0,05 detik (tidak berarti).
+
+Kesimpulan:
+- **Normalnya ±22 detik: memotret ±12,7 dtk (±58%), kompresi ±9,5 dtk (±42%).**
+- **Tahap memotret yang paling lambat.** Per frame ±115 ms, ±33 ms di antaranya jeda tunggu
+  tetap (1 frame layar + 16 ms), sisanya ±80 ms foto `html-to-image` seukuran layar walau
+  hasilnya cuma 240p. Sesuai keputusan Herdin, **tidak diperbaiki di F1b**; beres di F7–F9
+  (FRAME memotret langsung di ukuran file).
+- **Kompresi `gif.js` ±9,5 dtk** = bagian yang memang bisa dipercepat di F1b (`quality`).
+- **Penyebab tes gagal:** lonjakan (±45–55 dtk) mendorong export lewat batas 50 detik tes.
+  Lonjakan terbesar ada di kompresi (25–30 dtk vs 9,5), jadi mempercepat kompresi juga
+  memperkecil lonjakan.
+- Remove Background (warna kunci) tidak menambah waktu yang berarti.
+- **Build vs dev: hampir sama** (selisih < 0,5 dtk). Kompresi jalan di worker `gif.js` yang
+  sama di kedua mode, dan foto `html-to-image` tidak dipercepat versi build.
+
+**Perubahan alat tes (disetujui Herdin):**
+- Tes selalu menyalakan dev server **sendiri** di port **3100** (`playwright.config.js`:
+  `reuseExistingServer: false`), tidak pernah memakai server yang sudah jalan.
+- Next 16 menolak dua `next dev` di folder yang sama ("Another next dev server is already
+  running"). Karena itu server tes memakai folder kerja sendiri `.next-e2e`
+  (`next.config.mjs`: `distDir` dari `NEXT_DIST_DIR`, default `.next`), ditambahkan ke
+  `.gitignore` dan pengecualian ESLint. `npm run dev` biasa (port 3000) boleh tetap menyala.
+- Tes ukur dipisah: `npm run ukur:gif` (`playwright.ukur.config.js`, batas waktu sama: 60 dtk
+  per tes, 10 menit total). `npm run test:e2e` tidak lagi memuatnya (29 tes, tanpa "skipped").
+- Hasil `npm run test:e2e` dengan setelan baru (dev server Herdin di port 3000 tetap menyala):
+  **29/29 lulus** (3,4 menit), server 3100 mati sendiri setelahnya.
+
+**Hasil langkah 2 (`quality` 1 / 10 / 20, kode aplikasi tetap `quality: 1`):**
+
+Nilai `quality` ditimpa dari luar di pesan ke worker `gif.js`. GIF 30 fps, 108 frame,
+background `#FFFFFF`, warna default karakter. Satu kali ukur per setelan.
+
+| Contoh | Memotret | Kompresi | Total | Ukuran file |
+|---|---|---|---|---|
+| mochi-240p-q1 | 15,1 dtk | 9,0 dtk | 24,1 dtk | 485 KB |
+| mochi-240p-q10 | 20,7 dtk | 2,0 dtk | 22,8 dtk | 466 KB |
+| mochi-240p-q20 | 16,8 dtk | 1,1 dtk | 17,9 dtk | 462 KB |
+| capybara-240p-q1 | 12,2 dtk | 9,2 dtk | 21,4 dtk | 643 KB |
+| capybara-240p-q10 | 12,7 dtk | 1,8 dtk | 14,6 dtk | 647 KB |
+| capybara-240p-q20 | 13,1 dtk | 1,5 dtk | 14,6 dtk | 630 KB |
+| mochi-720p-q1 | 16,3 dtk | **> 38,7 dtk, belum selesai** | **> 55 dtk (waktu habis)** | — |
+| mochi-720p-q10 | 12,8 dtk | 16,4 dtk | 29,2 dtk | 2.306 KB |
+| mochi-720p-q20 | 12,8 dtk | 8,5 dtk | 21,4 dtk | 2.278 KB |
+| capybara-720p-q1 | 13,0 dtk | **> 41,9 dtk, belum selesai** | **> 55 dtk (waktu habis)** | — |
+| capybara-720p-q10 | 12,7 dtk | 15,3 dtk | 28,0 dtk | 2.721 KB |
+| capybara-720p-q20 | 12,8 dtk | 6,4 dtk | 19,2 dtk | 2.527 KB |
+
+Catatan:
+- 720p q1 (setelan aplikasi sekarang di resolusi default) **tidak selesai dalam batas tes**,
+  jadi contoh GIF-nya tidak ada. Batas waktu tidak dilonggarkan.
+- Ukuran file hampir tidak berubah antar `quality` (selisih ≤ 7%); `quality` terutama
+  mengubah waktu kompresi.
+- Memotret tetap ±12–21 dtk di semua setelan (tidak dipengaruhi `quality`; beres di F7–F9).
+- Contoh GIF untuk cek mata: `ukur-hasil/gif/` (lokal, dikecualikan lewat `.git/info/exclude`,
+  tidak di-commit). Keputusan setelan menunggu cek mata Herdin.
+
+**Cek mata Herdin (720p, dibandingkan export manual q1 dari editor):** q10 & q20 gradasi, glow,
+dan tepi sama baiknya dengan q1. Temuan kedip daun jeruk Capybara muncul di semua setelan,
+jadi bukan akibat `quality` (dicatat di F5). **Keputusan: `quality` 10.**
+
+**Hasil langkah 3:** `exportUtils.js` → `quality: 10` (sebelumnya 1). `npm run test:e2e`
+3× berturut-turut (server tes sendiri di port 3100):
+
+| Run | Hasil | GIF merah | GIF transparan | Klik Export 2× | Waktu total |
+|---|---|---|---|---|---|
+| 1 | 29/29 lulus | 17,3 dtk | 16,9 dtk | 19,3 dtk | 3,4 menit |
+| 2 | 29/29 lulus | 17,4 dtk | 17,4 dtk | 19,4 dtk | 3,3 menit |
+| 3 | 29/29 lulus | 17,6 dtk | 17,1 dtk | 19,4 dtk | 3,2 menit |
+
+Tes GIF turun dari ±40–55 dtk (sebelum F1b) ke ±17 dtk. Batas waktu tidak dilonggarkan.
+Warna pojok tetap dalam toleransi. **F1b selesai.**
 
 ### F2. Tes otomatis "export = preview" (Mochi & Capybara)
 
@@ -257,6 +374,15 @@ dan VLC, cek durasi & tidak ada kedip di sambungan loop.
 - Tes export GIF yang ada (`e2e/export.spec.js`) lulus stabil tanpa melonggarkan batas waktu
   (lihat temuan di bawah).
 
+**Temuan (cek mata F1b): warna hijau daun jeruk Capybara sedikit berkedip di GIF.**
+Muncul di GIF 720p dengan `quality` 1, 10, **dan** 20, jadi bukan akibat setelan `quality`.
+Dugaan Herdin: `gif.js` memilih ulang palet 256 warna di **setiap frame** (tanpa
+`globalPalette`), sehingga hijau daun bisa dipetakan ke warna palet yang sedikit beda dari
+frame ke frame. Pembanding "sebelum": contoh GIF F1b di `ukur-hasil/gif/` (lokal, tidak
+di-commit, **jangan dihapus** sampai F5 selesai). Di F5: **analisis penyebab dulu** (misalnya bandingkan warna piksel daun
+antar frame di file vs di preview) dan susun pilihan perbaikan (contoh: satu palet untuk semua
+frame, dithering, atau warna penting "dikunci" di palet) **sebelum mengubah kode**.
+
 **Temuan (setelah F1): tes export GIF gagal karena waktu habis.**
 Export GIF 240p 30 fps (Mochi idle, 108 frame) butuh ±40–55 detik, padahal tes menunggu file
 maksimal 50 detik (batas per tes 60 detik). Batas waktu tes **tidak** dilonggarkan (keputusan
@@ -271,7 +397,8 @@ Herdin); tes ini harus lulus karena GIF-nya dipercepat.
 | Tes GIF di **kode sebelum F1** (perubahan F1 disimpan sementara) | dev server Herdin | Gagal (53,9 dtk) → **bukan disebabkan F1** |
 | `test:e2e` lengkap, dev server & aplikasi lain dimatikan | server dinyalakan sendiri oleh Playwright | 28 lulus, 1 gagal: "GIF dengan background merah" (tidak ada file dalam 50 dtk) |
 
-Penyebab yang paling mungkin: P-9 (`quality: 1`, paling teliti & paling lambat). Foto saat
+Penyebab yang paling mungkin: P-9 (`quality: 1`, paling teliti & paling lambat).
+**Update:** terbukti di F1b; `quality` 10 membuat tes GIF ±17 dtk dan lulus 3× berturut-turut. Foto saat
 gagal di 88% berarti export sudah lewat tahap memotret (0–50%) dan tertahan di tahap
 kompresi `gif.js` (50–100%). Pembagian waktu per tahap diukur dulu di F5 sebelum setelan diubah.
 
