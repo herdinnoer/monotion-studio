@@ -18,8 +18,6 @@ import {
   exportAsGif,
   exportAsSvg,
   exportAsWebm,
-  copyReactComponent,
-  exportAsLottieJson,
   supportsTransparentWebm,
 } from "@/lib/exportUtils";
 import { DEFAULT_BACKGROUND, exportFilename } from "@/lib/editorState";
@@ -111,26 +109,6 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
           toast.success(`Exported ${baseFilename}.webm`);
           break;
 
-        case "lottie":
-          await exportAsLottieJson({
-            elementId: "character-workspace",
-            character,
-            config,
-            resolution,
-            frameRate,
-            filename: `${baseFilename}-lottie.json`,
-            onProgress: (p) => setProgress(p),
-          });
-          onClose();
-          toast.success(`Exported ${baseFilename}-lottie.json`);
-          break;
-
-        case "react":
-          await copyReactComponent({ character, config });
-          toast.success("React code copied");
-          onClose();
-          break;
-
         default:
           break;
       }
@@ -144,13 +122,11 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
     }
   };
 
-  // 5 Format utama khusus untuk Developer & Designer
+  // Format export: GIF & WebM (animasi), SVG (gambar diam)
   const formatList = [
     { id: "gif", label: "GIF" },
     { id: "svg", label: "SVG" },
     { id: "webm", label: "WebM" },
-   // { id: "lottie", label: "Lottie" }, //
-   // { id: "react", label: "React" }, //
   ];
 
   const availableResolutions =
@@ -208,8 +184,8 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
               </ToggleButtonGroup>
             </div>
 
-            {/* Resolution (Tampil Saat Format GIF, WebM, atau Lottie) */}
-            {(format === "gif" || format === "webm" || format === "lottie") && (
+            {/* Resolution (tampil saat format GIF atau WebM) */}
+            {(format === "gif" || format === "webm") && (
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-semibold text-muted">Resolution</span>
                 <ToggleButtonGroup
@@ -233,8 +209,8 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
               </div>
             )}
 
-            {/* Frame Rate (Tampil Saat Format GIF, WebM, atau Lottie) */}
-            {(format === "gif" || format === "webm" || format === "lottie") && (
+            {/* Frame Rate (tampil saat format GIF atau WebM) */}
+            {(format === "gif" || format === "webm") && (
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-semibold text-muted">Frame rate</span>
                 <ToggleButtonGroup
@@ -286,7 +262,7 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
             )}
 
             {/* Indikator Progress */}
-            {isExporting && (format === "gif" || format === "webm" || format === "lottie") && (
+            {isExporting && (format === "gif" || format === "webm") && (
               <ProgressBar value={progress} className="gap-2">
                 <Label className="text-xs font-medium text-muted">
                   Rendering {format.toUpperCase()}…
@@ -313,11 +289,7 @@ export function ExportModal({ isOpen, onClose, character, characterName, project
                 onPress={handleExport}
                 isDisabled={isExporting}
               >
-                {isExporting
-                  ? "Exporting..."
-                  : format === "react"
-                  ? "Copy Code"
-                  : "Export"}
+                {isExporting ? "Exporting..." : "Export"}
               </GlossyButton>
             </Modal.Footer>
 

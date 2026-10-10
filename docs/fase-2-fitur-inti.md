@@ -46,7 +46,6 @@ lint, dan build lulus.
 ### Ide untuk fase berikutnya
 
 Rinciannya di bagian 6.
-- **Kecepatan animasi yang ikut export**, sebagai pengganti menu kecepatan yang dihapus.
 - **Tombol Cancel export**, supaya user tidak harus menunggu export selesai.
 
 ---
@@ -626,7 +625,7 @@ disimpan di `docs/reference/fase-2/` sebagai bukti. ✔ Tercapai.
 | K-8 | Hapus `tailwind.config.js` | **Ya**, di B1 setelah font pindah ke CSS, dan setelah minta izin | B1 |
 | K-9 | Simbol terlarang (`/ \ : * ? " < > \|`) & emoji di nama file | **Diganti strip** (bukan dibuang), strip berurutan digabung, strip di awal/akhir dibuang. Kalau hasilnya kosong → nama karakter + mood. Contoh: `"Kopi/Pagi?"` → `kopi-pagi.gif` | A2, A6 |
 | K-10 | Nama proyek dan undo/penyimpanan | **Tidak ikut undo/redo**, tapi **ikut disimpan di browser** | A2, A5 |
-| K-11 | Menu kecepatan (0.5x–2x) di player bar | **Dihapus.** Temuan di B2: kecepatan hanya mempercepat penghitung player bar, karakter tidak ikut karena saat play karakter memakai animasi bawaannya sendiri. Tombol yang tidak berfungsi dilarang DESIGN.md bagian 9. Ide penggantinya dicatat di bagian 6 | B2 |
+| K-11 | Menu kecepatan (0.5x–2x) di player bar | **Dihapus.** Temuan di B2: kecepatan hanya mempercepat penghitung player bar, karakter tidak ikut karena saat play karakter memakai animasi bawaannya sendiri. Tombol yang tidak berfungsi dilarang DESIGN.md bagian 9. Ide penggantinya (kecepatan yang ikut export) **dibatalkan di Fase 3**: tidak ada pengaturan kecepatan | B2 |
 | — | Bug "klik karakter yang sudah dipilih mereset warna" (M-2) | Masuk **A2** | A2 |
 
 Semua keputusan K-1 sampai K-11 sudah dijawab.
@@ -639,5 +638,4 @@ Ide yang muncul selama Fase 2 tapi sengaja tidak dikerjakan di fase ini.
 
 | Ide | Asal | Catatan |
 |---|---|---|
-| **Kecepatan animasi yang ikut export** | K-11 (B2) | Pengganti menu kecepatan yang dihapus. Kecepatan harus jadi pengaturan karakter (mengubah `durationMs` mood yang dipakai), bukan hanya pemutar, supaya preview **dan** hasil export (GIF/SVG/WebM) sama-sama ikut berubah. Perlu diputuskan: ikut undo atau tidak, ikut disimpan di browser atau tidak, dan apakah animasi bawaan karakter (CSS & Framer Motion) bisa diatur kecepatannya tanpa mengubah tiap karakter |
 | **Tombol Cancel export** | T-13 (B2) | Sekarang selama export berjalan modal terkunci (✕ & Close nonaktif) dan user harus menunggu sampai selesai. Tombol Cancel perlu cara menghentikan proses di tengah jalan di `exportUtils.js` (mis. `AbortController` dicek tiap frame), membereskan sisa proses (worker GIF, encoder WebM), lalu toast "Export canceled". Logika export belum boleh diubah di Fase 2 |

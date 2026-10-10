@@ -28,10 +28,7 @@ function getSupportedMimeType() {
     "video/webm;codecs=vp9",
     "video/webm;codecs=vp8,opus",
     "video/webm;codecs=vp8",
-    "video/webm;codecs=daala",
-    "video/webm;codecs=h264",
     "video/webm",
-    "video/mp4",
   ];
 
   for (const type of types) {
@@ -114,19 +111,13 @@ async function captureAndScaleToTarget(
   return destCanvas;
 }
 
-// Cleanup style pembeku setelah ekspor selesai
-function cleanupWorkspaceAnimations(element, durationMs = 1600) {
-  const styleEl = document.getElementById("timeline-step-style");
-  if (styleEl && styleEl.parentNode) {
-    styleEl.parentNode.removeChild(styleEl);
-  }
-
-  const wasPlaying = sessionStorage.getItem("timeline-was-playing") === "true";
+// Selesai export: lepas kunci export, player kembali ke awal dalam keadaan pause
+function cleanupWorkspaceAnimations(durationMs = 1600) {
   window.dispatchEvent(
     new CustomEvent(TIMELINE_EVENT, {
       detail: {
         progress: 0,
-        isPlaying: wasPlaying,
+        isPlaying: false,
         isExporting: false,
         durationMs,
       },
@@ -135,34 +126,7 @@ function cleanupWorkspaceAnimations(element, durationMs = 1600) {
 }
 
 // =========================================================================
-// 1. EKSPOR KONFIGURASI JSON
-// =========================================================================
-export const exportAsJson = (
-  character,
-  config,
-  filename = "character-config.json",
-) => {
-  const exportData = {
-    version: "1.0",
-    createdAt: new Date().toISOString(),
-    character,
-    config,
-  };
-
-  const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
-    JSON.stringify(exportData, null, 2),
-  )}`;
-
-  const downloadAnchor = document.createElement("a");
-  downloadAnchor.setAttribute("href", jsonString);
-  downloadAnchor.setAttribute("download", filename);
-  document.body.appendChild(downloadAnchor);
-  downloadAnchor.click();
-  downloadAnchor.remove();
-};
-
-// =========================================================================
-// 2. EKSPOR GIF (DETERMINISTIC FRAME-BY-FRAME)
+// 1. EKSPOR GIF (DETERMINISTIC FRAME-BY-FRAME)
 // =========================================================================
 export const exportAsGif = async ({
   elementId = "character-workspace",
@@ -315,7 +279,7 @@ export const exportAsGif = async ({
 };
 
 // =========================================================================
-// 3. EKSPOR STATIC SVG
+// 2. EKSPOR STATIC SVG
 // =========================================================================
 export const exportAsSvg = async ({
   elementId = "character-workspace",
@@ -378,7 +342,7 @@ export const exportAsSvg = async ({
 };
 
 // =========================================================================
-// 4. EKSPOR WEBM / CANVAS VIDEO (GUARANTEED DOWNLOAD & NO STUCK)
+// 3. EKSPOR WEBM / CANVAS VIDEO (GUARANTEED DOWNLOAD & NO STUCK)
 // =========================================================================
 
 // WebM transparan (Remove Background).
@@ -704,7 +668,7 @@ export const exportAsWebm = async ({
 
     return recordPromise;
   } finally {
-    cleanupWorkspaceAnimations(element, durationMs);
+    cleanupWorkspaceAnimations(durationMs);
   }
 };
 
@@ -719,208 +683,3 @@ function triggerDownload(blob, filename) {
   downloadAnchor.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-
-// =========================================================================
-// 5. COPY REACT COMPONENT CODE
-// =========================================================================
-export const copyReactComponent = async ({
-  character = "mochi",
-  config = {},
-}) => {
-  const codeSnippet = `import React from 'react';
-
-export const MochiCharacter = ({
-  mood = "${config.mood || ""}",
-  color = "${config.color || "#ffffff"}",
-  backgroundColor = "${config.backgroundColor || DEFAULT_BACKGROUND}",
-  text = "${config.text || ""}",
-}) => {
-  return (
-    <div 
-      className="mochi-container"
-      style={{
-        backgroundColor,
-        borderRadius: '24px',
-        padding: '32px',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <div style={{ color }}>
-        <span className="mochi-avatar" data-mood={mood}>
-          {text && <p className="mochi-text">{text}</p>}
-        </span>
-      </div>
-    </div>
-  );
-};
-
-export default MochiCharacter;`;
-
-  await navigator.clipboard.writeText(codeSnippet);
-  return true;
-};
-
-// =========================================================================
-// 6. EKSPOR LOTTIE JSON (100% PIXEL-PERFECT EXACT FRAME-BY-FRAME)
-// =========================================================================
-export const exportAsLottieJson = async ({
-  elementId = "character-workspace",
-  character,
-  config = {},
-  resolution = "480p",
-  frameRate = "30 fps",
-  filename = "character-lottie.json",
-  animationDuration,
-  onProgress,
-}) => {
-  const element = document.getElementById(elementId);
-  if (!element) {
-    throw new Error(`Elemen dengan ID "${elementId}" tidak ditemukan!`);
-  }
-
-  const mood = config.mood;
-  const durationMs = animationDuration || getAnimationDurationByMood(mood, character);
-
-  const resolutionMap = {
-    "240p": { width: 240, height: 240 },
-    "360p": { width: 360, height: 360 },
-    "480p": { width: 480, height: 480 },
-    "720p": { width: 720, height: 720 },
-    "1080p": { width: 1080, height: 1080 },
-  };
-
-  const targetSize = resolutionMap[resolution] || { width: 480, height: 480 };
-  const fpsNumber = parseInt(String(frameRate), 10) || 30;
-  const totalFrames = Math.max(12, Math.round((durationMs / 1000) * fpsNumber));
-
-  // 1. Pause player IMMEDIATELY before starting export to avoid race condition
-  window.dispatchEvent(
-    new CustomEvent(TIMELINE_EVENT, {
-      detail: {
-        progress: 0,
-        isPlaying: false,
-        isExporting: true,
-        durationMs,
-      },
-    }),
-  );
-
-  // Wait for pause to take effect
-  await new Promise((resolve) => setTimeout(resolve, 50));
-
-  const assets = [];
-  const layers = [];
-
-  try {
-    for (let i = 0; i < totalFrames; i++) {
-      if (onProgress) {
-        onProgress(Math.round(((i + 1) / totalFrames) * 95));
-      }
-
-      const progress = i / totalFrames;
-      broadcastSeekProgress(progress, durationMs);
-
-      await new Promise((resolve) => {
-        requestAnimationFrame(() => {
-          setTimeout(resolve, 16);
-        });
-      });
-
-      const scaledCanvas = await captureAndScaleToTarget(
-        element,
-        targetSize.width,
-        targetSize.height,
-        config,
-      );
-
-      const frameDataUrl = scaledCanvas.toDataURL("image/png");
-      const assetId = `img_${i}`;
-
-      assets.push({
-        id: assetId,
-        w: targetSize.width,
-        h: targetSize.height,
-        u: "",
-        p: frameDataUrl,
-        e: 1,
-      });
-
-      layers.push({
-        ddd: 0,
-        ind: i + 1,
-        ty: 2,
-        nm: `Frame_${i}`,
-        refId: assetId,
-        sr: 1,
-        ks: {
-          o: { a: 0, k: 100 },
-          r: { a: 0, k: 0 },
-          p: { a: 0, k: [targetSize.width / 2, targetSize.height / 2, 0] },
-          a: { a: 0, k: [targetSize.width / 2, targetSize.height / 2, 0] },
-          s: { a: 0, k: [100, 100, 100] },
-        },
-        ao: 0,
-        ip: i,
-        op: i + 1,
-        st: 0,
-      });
-    }
-  } finally {
-    // Resume player state safely
-    window.dispatchEvent(
-      new CustomEvent(TIMELINE_EVENT, {
-        detail: {
-          progress: 0,
-          isPlaying: false,
-          isExporting: false,
-          durationMs,
-        },
-      }),
-    );
-  }
-
-  // 2. Assemble complete valid Lottie JSON specification
-  const lottieData = {
-    v: "5.7.4",
-    fr: fpsNumber,
-    ip: 0,
-    op: totalFrames,
-    w: targetSize.width,
-    h: targetSize.height,
-    nm: `${character}-${mood}`,
-    ddd: 0,
-    assets,
-    layers,
-    meta: {
-      generator: "Monotion Studio 100% Pixel-Perfect Lottie",
-      character,
-      mood,
-      durationMs,
-      totalFrames,
-    },
-  };
-
-  if (onProgress) {
-    onProgress(100);
-  }
-
-  // 3. Trigger download using Blob & URL.createObjectURL
-  const jsonString = JSON.stringify(lottieData, null, 2);
-  const jsonBlob = new Blob([jsonString], { type: "application/json" });
-  const downloadUrl = URL.createObjectURL(jsonBlob);
-
-  const downloadAnchor = document.createElement("a");
-  downloadAnchor.href = downloadUrl;
-  downloadAnchor.download = filename;
-  document.body.appendChild(downloadAnchor);
-  downloadAnchor.click();
-  downloadAnchor.remove();
-
-  setTimeout(() => {
-    URL.revokeObjectURL(downloadUrl);
-  }, 1000);
-
-  return true;
-};

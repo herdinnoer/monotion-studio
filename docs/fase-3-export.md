@@ -127,6 +127,27 @@ memberi tahu.
 
 **Cara tes:** perintah di atas. Tes export yang sudah ada (`e2e/export.spec.js`) cukup.
 
+**Hasil F1: selesai.**
+- Dihapus: `copyReactComponent`, `exportAsLottieJson`, `exportAsJson` (`exportUtils.js`),
+  pilihan & cabang Lottie/React + teks "Copy Code" (`ExportModal.jsx`), library `lottie-web`.
+- Kode mati (e5): `cleanupWorkspaceAnimations` tidak lagi mencari style & `sessionStorage`
+  yang tidak pernah ada (player selalu kembali dalam keadaan pause, sama seperti sebelumnya);
+  format `daala`, `h264`, `mp4` dibuang dari daftar `MediaRecorder` (jalurnya sendiri baru
+  dihapus nanti, e3). Nomor bagian di `exportUtils.js` jadi 1. GIF, 2. SVG, 3. WebM.
+- Dokumen: B-7 & 5.8 Fase 1 ditutup; ide "kecepatan animasi" dihapus dari Fase 2 (H-3).
+- Pemeriksaan: grep `lottie|copyReact|Copy Code` di `src/` & `package.json` = 0 hasil;
+  `npm test` 32/32; `npm run lint` 0 error (1 peringatan lama `<img>` di `TopBar.jsx`, bukan
+  dari F1); `npm run build` lulus; `npm run test:e2e` 29/29 (termasuk GIF/WebM/SVG ×
+  background/transparan).
+- Cek manual Herdin: GIF ok, WebM ok, SVG ok, transparan ok.
+- Tes otomatis setelah F1 (server dinyalakan Playwright sendiri, aplikasi lain ditutup):
+  `npm run test:e2e` 28 lulus, 1 gagal ("GIF dengan background merah", waktu habis). Bukan
+  disebabkan F1 (kode sebelum F1 gagal dengan cara yang sama); dicatat sebagai temuan di F5
+  dan dikerjakan di F1b.
+- Catatan: `screenshot.spec.js` menulis ulang foto bukti di `docs/reference/fase-2/` tiap
+  kali jalan. Foto itu dikembalikan ke versi Fase 2 (tampilan tidak berubah). Mulai F2/F3,
+  foto baru sebaiknya disimpan di folder `fase-3`.
+
 ### F2. Tes otomatis "export = preview" (Mochi & Capybara)
 
 Analogi Figma: menumpuk hasil export di atas desain asli dengan opacity 50% dan melihat
@@ -233,6 +254,26 @@ dan VLC, cek durasi & tidak ada kedip di sambungan loop.
 - Tes durasi GIF F2 lulus (tanda `test.fail` dicabut): total jeda = durasi mood.
 - Tabel ukuran terisi dan pengaturan default GIF diputuskan dari angka itu.
 - Export GIF pengaturan terbesar tidak membuat tab crash (dicek di F3: Chrome & Firefox).
+- Tes export GIF yang ada (`e2e/export.spec.js`) lulus stabil tanpa melonggarkan batas waktu
+  (lihat temuan di bawah).
+
+**Temuan (setelah F1): tes export GIF gagal karena waktu habis.**
+Export GIF 240p 30 fps (Mochi idle, 108 frame) butuh ±40–55 detik, padahal tes menunggu file
+maksimal 50 detik (batas per tes 60 detik). Batas waktu tes **tidak** dilonggarkan (keputusan
+Herdin); tes ini harus lulus karena GIF-nya dipercepat.
+
+| Jalan | Server | Hasil |
+|---|---|---|
+| `test:e2e` lengkap, sesaat setelah F1 | dev server Herdin | 29/29 lulus (3,3 menit). GIF 37,8 dtk & 42,3 dtk |
+| `test:e2e` lengkap | dev server Herdin | 28 lulus, 1 gagal: "klik Export dua kali cepat" (tidak ada file dalam 50 dtk; foto saat gagal: "Rendering GIF… 88%") |
+| Ulang tes "dua kali" saja | dev server Herdin | Gagal (53,8 dtk) |
+| Ulang 2 tes GIF saja | dev server Herdin | 2 gagal (54,4 & 54,2 dtk) |
+| Tes GIF di **kode sebelum F1** (perubahan F1 disimpan sementara) | dev server Herdin | Gagal (53,9 dtk) → **bukan disebabkan F1** |
+| `test:e2e` lengkap, dev server & aplikasi lain dimatikan | server dinyalakan sendiri oleh Playwright | 28 lulus, 1 gagal: "GIF dengan background merah" (tidak ada file dalam 50 dtk) |
+
+Penyebab yang paling mungkin: P-9 (`quality: 1`, paling teliti & paling lambat). Foto saat
+gagal di 88% berarti export sudah lewat tahap memotret (0–50%) dan tertahan di tahap
+kompresi `gif.js` (50–100%). Pembagian waktu per tahap diukur dulu di F5 sebelum setelan diubah.
 
 ### F6. Tombol Cancel export (P-13)
 
