@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --test --disable-warning=MODULE_TYPELESS_PACKAGE_JSON \"src/**/*.test.js\"",
-    "postinstall": "cp node_modules/gif.js/dist/gif.worker.js public/ || copy node_modules\\gif.js\\dist\\gif.worker.js public\\"
+    "postinstall": "cp node_modules/gif.js/dist/gif.worker.js public/ || copy node_modules\\gif.js\\dist\\gif.worker.js public\\",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@heroui/react": "^3.2.6",
@@ -26,6 +27,7 @@
     "webm-muxer": "^5.1.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "@tailwindcss/postcss": "^4",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",

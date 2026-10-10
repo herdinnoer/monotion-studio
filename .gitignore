@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# playwright (tes browser otomatis)
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

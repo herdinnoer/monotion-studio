@@ -530,7 +530,7 @@ disimpan di `docs/reference/fase-2/` sebagai bukti.
 
 ## 4. Library
 
-**Tidak ada library baru.** Semua kebutuhan sudah tersedia:
+**Tidak ada library baru untuk aplikasi.** Satu-satunya tambahan adalah alat tes `@playwright/test` (devDependency, tidak ikut ke website), disetujui user untuk B3. Semua kebutuhan lain sudah tersedia:
 
 | Kebutuhan | Pakai |
 |---|---|
@@ -539,7 +539,7 @@ disimpan di `docs/reference/fase-2/` sebagai bukti.
 | Simpan pengaturan | `localStorage` bawaan browser |
 | GIF transparan | Opsi `transparent` di `gif.js` |
 | WebM transparan | `VideoEncoder` VP9 dua kali (warna + alpha) + penjahit sendiri `src/lib/webmAlphaMuxer.js`. Opsi alpha `VideoEncoder` belum didukung Chrome dan `webm-muxer` tidak bisa menulis lapisan alpha (lihat catatan temuan A4) |
-| Tes otomatis | `node --test` bawaan Node 24 |
+| Tes otomatis | `node --test` bawaan Node 24 (rumus, `npm test`) + `@playwright/test` (tes browser B3, `npm run test:e2e`, batas 60 detik per tes & 10 menit total) |
 | Tebal ikon global | `LucideProvider` dari `lucide-react` |
 | Komponen UI | HeroUI v3 (Select, ToggleButtonGroup, Modal, Toast, Dropdown, Slider, ProgressBar, Tooltip) |
 
