@@ -13,6 +13,44 @@ Setelah kode diubah, nomor baris bisa bergeser.
 
 ---
 
+## Ringkasan: Fase 2 selesai
+
+**Status: selesai** (A2–A6, B1–B3). Pemeriksaan akhir: `npm test`, `npm run test:e2e`,
+lint, dan build lulus.
+
+### Yang selesai
+
+| Bagian | Hasil |
+|---|---|
+| A2 Paket kondisi | Semua pengaturan karya user di satu paket. Nama proyek jadi nama file export (`Kopi Pagi` → `kopi-pagi.gif`). Klik karakter yang sudah dipilih tidak mereset warna |
+| A3 Undo/redo | Satu kali geser color picker = 1 langkah. Langkah kosong ditolak, riwayat maks 100 |
+| A4 Background & export | GIF/WebM/SVG ikut warna background atau transparan (Remove Background). WebM transparan lewat penjahit sendiri `webmAlphaMuxer.js` |
+| A5 Simpan di browser | Pengaturan & nama proyek tetap ada setelah refresh; data rusak tidak bikin error |
+| A6 Tes kasus aneh | `npm test` (Node) untuk rumus & kasus aneh |
+| B1 Token | Warna, font, radius dari DESIGN.md dipasang ke tema HeroUI; tidak ada kode warna langsung di komponen |
+| B2 Komponen HeroUI | Select, segmented, Modal, Toast, Slider, ProgressBar, tombol ikon + tooltip, kartu karakter. Fokus terkurung di jendela Export (T-13) |
+| B3 Tes dua mode | Tes browser otomatis `npm run test:e2e` (Playwright, 29 tes) + 6 temuan diperbaiki |
+
+### Keputusan yang berubah selama Fase 2
+
+| Topik | Rencana awal | Akhirnya | Asal |
+|---|---|---|---|
+| Papan catur Remove Background | Pola papan catur 8px di kanvas | **Dibatalkan.** Kanvas tetap pola titik; export transparan tidak berubah | K-4, B2 |
+| Menu kecepatan player | Diganti `Dropdown` HeroUI | **Dihapus**, karena karakter tidak ikut melambat/mempercepat | K-11, B2 |
+| Penghitung frame | Mono 10px di player bar | **Dihapus**; hanya penghitung waktu (mono + `tabular-nums`) | B2 |
+| Radius | Nama sendiri (`radius-xs` … `radius-2xl`) | **Skala bawaan Tailwind** (`rounded-md` 6px … `rounded-3xl` 24px), satu token tambahan `rounded-button` 10px | K-6, B1 |
+| Garis kartu karakter terpilih | Garis 2px `accent` | **Garis 1px abu `border-selected`**; biru hanya untuk cincin fokus keyboard | B2 |
+| Popover | `surface-raised` (tanpa detail) | `surface-raised`, sudut 12px, jarak 8px dari pemicunya, **isian di dalamnya `surface`** | B3 |
+| Library | Tidak ada library baru | Tetap, kecuali alat tes `@playwright/test` (devDependency, tidak ikut ke website) | B3 |
+
+### Ide untuk fase berikutnya
+
+Rinciannya di bagian 6.
+- **Kecepatan animasi yang ikut export**, sebagai pengganti menu kecepatan yang dihapus.
+- **Tombol Cancel export**, supaya user tidak harus menunggu export selesai.
+
+---
+
 ## 1. Kondisi sekarang
 
 ### 1.1 Peta file editor
@@ -506,25 +544,52 @@ cek fitur A2–A5 tetap jalan (terutama undo color picker dan export).
 
 ### B3. Tes dua mode
 
+**Status: selesai.** Semua cek dijalankan otomatis lewat `npm run test:e2e` (Playwright,
+folder `e2e/`, batas 60 detik per tes & 10 menit total). 29 tes lulus.
+
 **Isi:** cek semua layar di mode terang dan gelap.
 
 **Daftar cek (tiap mode):**
 1. Top bar, sidebar kiri, sidebar kanan, kanvas, player bar, modal export, popover warna,
-   dropdown mood, menu kecepatan, toast.
+   dropdown mood, toast. (Menu kecepatan sudah dihapus di B2, lihat K-11.)
 2. Tidak ada teks yang "hilang" (putih di atas putih / hitam di atas hitam).
-3. Kontras: teks utama & teks di tombol aksen minimal 4.5:1 (cek dengan DevTools → ikon
-   kontras di color picker, atau plugin kontras Figma pakai screenshot).
-4. Fokus keyboard (Tab) selalu terlihat cincin biru 2px.
-5. Radius sesuai tabel DESIGN.md bagian 5 (ukur di DevTools).
+3. Kontras: teks utama & teks di tombol aksen minimal 4.5:1.
+4. Fokus keyboard (Tab) terlihat cincin biru 2px. Cincin **hanya muncul saat navigasi
+   keyboard**, tidak saat klik mouse. Pengecualian: input nama proyek (tanda fokusnya latar +
+   kursor ketik, DESIGN.md bagian 8).
+5. Radius sesuai tabel DESIGN.md bagian 5, termasuk aturan sudut bersarang.
 6. Ganti tema saat modal/popover terbuka → ikut berganti tanpa kedip.
-7. **Mode terang saat OS gelap** (U-7): Windows Settings → Personalization → Colors → Dark,
-   lalu pilih mode terang di Monotion → semua tetap terang.
+7. **Mode terang saat OS gelap** (U-7): pilih mode terang di Monotion → semua tetap terang.
 8. Background karakter (warna pilihan user) **tidak** ikut berubah saat ganti tema.
-9. `prefers-reduced-motion` aktif (Windows: Settings → Accessibility → Visual effects →
-   Animation effects off) → modal/popover hanya fade.
+9. `prefers-reduced-motion` aktif → modal/popover hanya fade, tanpa skala/geser.
+
+**Hasil tes otomatis (`npm run test:e2e`):**
+
+| Cek | File tes | Hasil |
+|---|---|---|
+| 1. Semua layar | `screenshot.spec.js`: utama, color picker, jendela Export × terang/gelap di `docs/reference/fase-2/` | Lulus. Dropdown mood & toast tidak difoto (dicek mata) |
+| 2–3. Kontras | `kontras.spec.js`: teks utama 14–19:1, tombol Export 4.86:1, link Reset 5.00:1 (terang) / 5.12:1 (gelap) | Lulus |
+| 4. Fokus keyboard | `keyboard.spec.js`: semua elemen di urutan Tab punya cincin biru ≥ 2px; Tab & Shift+Tab tidak keluar dari jendela Export | Lulus setelah perbaikan (temuan 1) |
+| 5. Radius | `popover.spec.js`: semua popover 12px, isi popover lebih kecil (sudut bersarang) | Lulus setelah perbaikan (temuan 4). Radius panel, tombol & modal dicek mata |
+| 6. Ganti tema saat modal/popover terbuka | Tidak dites otomatis: tombol tema ada di belakang modal, dan klik di luar menutup popover | Cek mata |
+| 7. OS gelap + Monotion terang | `emulasi.spec.js` (juga setelah refresh) | Lulus |
+| 8. Background karakter | `emulasi.spec.js` (`#FFFFFF` & `#EF4444`, gelap → terang → gelap) | Lulus |
+| 9. Reduced-motion | `emulasi.spec.js`: tanpa skala/geser, modal & popover tetap fade; pembanding tanpa reduced-motion 0.95 / 0.97 | Lulus setelah perbaikan (temuan 2) |
+| Fitur A2–A6 | `fitur.spec.js`, `export.spec.js`: undo color picker = 1 langkah, refresh menyimpan pengaturan, nama file `kopi-pagi`, GIF/WebM/SVG × background/transparan (cek piksel pojok), klik Export dua kali = 1 file | Lulus |
+
+**Temuan B3 (semua sudah diperbaiki):**
+
+| # | Temuan | Perbaikan |
+|---|---|---|
+| 1 | Tombol Reset (Background & Color) `<button>` biasa, cincin fokus bawaan browser | `Button` HeroUI + class `link-button` di `globals.css` |
+| 2 | Jendela Export muncul seketika saat reduced-motion (HeroUI mematikan semua animasi modal dengan selector yang lebih kuat) | Aturan fade dipindah ke `@layer utilities` di `globals.css` |
+| 3 | Popover color picker berlatar `surface`, beda dengan dropdown mood | Class `bg-surface` dibuang; semua popover `surface-raised` |
+| 4 | Isian di dalam popover menyatu dengan latar popover; sudut popover color picker 16px | Aturan umum "isian di dalam popover = `surface`"; popover 12px, isi 8px |
+| 5 | Popover color picker melompat 5px setelah klik preset (patokan posisi pindah ke tombol acak) | Patokan dikunci ke kolom warna (`triggerRef`), jarak tetap 8px (`offset`) |
+| 6 | Kolom hex di popover: jarak kiri 21px & kotak→teks 4px (padding dobel) | Sama dengan kolom sidebar: 13px & 12px |
 
 **Selesai kalau:** semua cek lulus di kedua mode, dan screenshot terang + gelap tiap layar
-disimpan di `docs/reference/fase-2/` sebagai bukti.
+disimpan di `docs/reference/fase-2/` sebagai bukti. ✔ Tercapai.
 
 ---
 
