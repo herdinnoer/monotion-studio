@@ -81,6 +81,8 @@ ExportModal.jsx  (pilih format, resolusi, fps)
 | P-15 | **SVG bisa beda pose dengan layar.** Pembersih teks menghapus **seluruh** atribut `style` yang berisi `transform-origin`, termasuk posisi gerakan dari Framer Motion. SVG juga selalu 400×400 dan kotak background = viewBox persegi | `exportUtils.js:364`, `:340–345`, `:350–358` |
 | P-16 | Daftar resolusi ditulis 3× dan hanya persegi. GIF tidak punya 1080p | `exportUtils.js:188–193`, `:528–534`, `:786–792`; `ExportModal.jsx:156–159` |
 | P-17 | Tes export hanya mengecek ukuran file + **satu piksel pojok**, tidak mengecek pose, durasi, atau jumlah frame. Hanya jalan di Chromium | `e2e/export.spec.js:36–56`, `playwright.config.js` (`projects`) |
+| P-18 | **Mata berkedip acak di hasil export** (ditemukan saat analisis F2). Kedip hanya dimatikan saat pause, bukan saat export, jadi beberapa frame GIF/WebM matanya terpejam di posisi acak. Kalau export mulai tepat saat mata terpejam, timer "buka mata" tidak ikut dibatalkan dan kedip jalan terus. **Diperbaiki di F1c** | `_core/useBlink.js:11`, `:17–20` |
+| P-19 | **Dugaan: napas badan Mochi Greeting 4,8× lebih cepat di export.** Saat diputar, napas pakai siklus sendiri 3,6 detik; saat pause/export, napas dihitung dari durasi mood Greeting (0,75 detik). Dibuktikan oleh tes play-vs-pause F2 (`test.fail`), perbaikan di **F2b** | `MochiMaster.jsx:96–97` |
 
 ---
 
@@ -94,7 +96,9 @@ batas 60 detik per tes, 10 menit per jalan).
 |---|---|---|
 | F1 | Hapus Lottie & React + kode mati | Ringan (hanya menghapus) |
 | F1b | Kecepatan GIF (setelan `quality` `gif.js`) | Kecil (tidak mengubah pose, waktu, atau ukuran file) |
+| F1c | Kedip mati selama export (P-18) | Kecil |
 | F2 | Tes otomatis "export = preview" | Ringan (hanya menambah tes) |
+| F2b | Napas mood pendek (P-19): pilihan perbaikan + contoh GIF | Belum diketahui (dianalisis setelah F2) |
 | F3 | Tes export di Chrome, Edge, Firefox, WebKit | Ringan (tes), tapi bisa memunculkan temuan |
 | F4 | Durasi WebM berlatar (frame terakhir) | Kecil |
 | F5 | GIF: waktu, memori, evaluasi `gif.js`, ukuran file | Sedang |
@@ -265,6 +269,45 @@ jadi bukan akibat `quality` (dicatat di F5). **Keputusan: `quality` 10.**
 Tes GIF turun dari ±40–55 dtk (sebelum F1b) ke ±17 dtk. Batas waktu tidak dilonggarkan.
 Warna pojok tetap dalam toleransi. **F1b selesai.**
 
+### F1c. Kedip mati selama export (P-18, keputusan Herdin saat analisis F2)
+
+Kenapa sebelum F2: kedip muncul acak (tiap 2,5–5 detik), sedangkan export butuh ±13 detik.
+Tes pose F2 akan gagal secara acak (±5% per tes) kalau frame yang dicek kebetulan terpejam.
+Tes yang kadang gagal tanpa sebab lama-lama diabaikan.
+
+**Keputusan:**
+- **Hasil export tidak pernah berkedip.** Kedip hanya ada di preview saat diputar. Pose export
+  = pose preview yang di-pause (yang memang tidak berkedip).
+- Kedip **terjadwal** (waktu pasti, bagian dari gerakan mood, jadi bisa ikut export) dicatat
+  sebagai ide Fase 4 (bagian 5).
+
+**Isi:**
+- `_core/useBlink.js`: kedip jalan hanya kalau `isPlaying` dan bukan export. Timer "buka mata"
+  ikut disimpan & dibatalkan, dan mata dibuka saat berhenti (sebelumnya bisa tertinggal
+  terpejam / kedip jalan terus kalau berhenti tepat di tengah kedip).
+- Tes baru `e2e/kedip.spec.js`: jam halaman dikendalikan Playwright (`page.clock`). Preview
+  diputar sampai kedip pertama → tepat saat mata terpejam, sinyal export dikirim (sama dengan
+  `exportUtils.js`) → 15 detik kemudian: mata terbuka, 0 kedip.
+
+**Hasil:**
+- Tes kedip dengan **kode lama**: gagal, **6 kedip** selama 15 detik export (masalah terbukti).
+- Tes kedip dengan kode baru: lulus (4,6 dtk).
+- `npm run test:e2e`: **30/30 lulus** (4,1 menit). `npm test`: 32/32 lulus. Lint kode: 0 error.
+
+**Perubahan alat tes (disetujui Herdin, ikut F1c):**
+- `npm run lint` sempat ikut memeriksa `playwright-report/` (laporan buatan Playwright, berisi
+  kode rekaman kalau ada tes gagal) → ratusan error palsu. `eslint.config.mjs` sekarang
+  mengecualikan `playwright-report/` dan `test-results/`.
+- `e2e/screenshot.spec.js` menimpa foto `docs/reference/fase-2/*.png` setiap `test:e2e` jalan.
+  Sekarang dipisah: **`npm run test:screenshot`** (`playwright.screenshot.config.js`, batas
+  waktu sama), dijalankan hanya kalau foto referensi memang ingin diperbarui.
+  `npm run test:e2e` jadi **28 tes**.
+- Hasil setelah perubahan: `npm run test:e2e` **28/28 lulus** (4,7 menit), foto referensi
+  tidak berubah; `npm run lint` 0 error (1 peringatan lama `<img>` di `TopBar.jsx`);
+  `npm test` 32/32 lulus.
+
+**F1c selesai.**
+
 ### F2. Tes otomatis "export = preview" (Mochi & Capybara)
 
 Analogi Figma: menumpuk hasil export di atas desain asli dengan opacity 50% dan melihat
@@ -289,6 +332,36 @@ apakah ada yang "geser". Bedanya, ini dilakukan komputer, angka demi angka.
    - WebM: durasi video = durasi mood, jumlah frame = durasi × fps.
    - Tes yang **sudah pasti gagal sekarang** (GIF P-7, WebM P-10) ditandai "diketahui gagal"
      (`test.fail`) dengan catatan nomor masalahnya, lalu tandanya dicabut di F4/F5.
+
+**Keputusan Herdin (analisis F2):**
+
+| # | Keputusan |
+|---|---|
+| F2-1 | Mood tes pose: **Mochi Dancing & Greeting, Capybara Sleeping & Proud** (gerakan paling besar: lompat/miring, tangan, telinga + partikel, pose `puffed`). Mood napas biasa tidak dipakai (naik-turun 6px tinggal < 1px di file 240p) |
+| F2-2 | Kedip acak (P-18) dimatikan saat export, dikerjakan dulu sebagai **F1c** |
+| F2-3 | Resolusi tes: **WebM 480p, GIF 240p**, keduanya 30 fps |
+| F2-4 | **SVG ikut dites sekarang**, ditandai `test.fail` (P-15), dicabut di F9 |
+| F2-5 | P-19 (napas Greeting) **tidak diperbaiki di F2**: dibuktikan tes play-vs-pause (`test.fail`). Setelah terbukti → langkah **F2b**: susun pilihan perbaikan (misalnya export diperpanjang sampai satu napas utuh muat, napas dikecilkan/dimatikan untuk mood pendek, atau lainnya) + dampak ke ukuran file + **contoh GIF tiap pilihan** untuk dinilai mata Herdin |
+| F2-6 | Daftar mood di tes **dibaca dari registry**, bukan angka tulis manual |
+
+**Rancangan tes (disetujui):**
+- Titik waktu: frame `i = round(N × k/4)`, k = 0..3 (N = jumlah frame); preview dibekukan di
+  progress `i/N` lewat sinyal timeline (sama dengan slider player), difoto apa adanya
+  (screenshot browser), dikecilkan dengan aturan yang sama dengan export ("contain" + latar).
+  Aturan ini diganti ke cara FRAME di F8.
+- Frame file: GIF lewat `ImageDecoder`, WebM lewat `<video>` dimajukan ke tengah frame.
+  Durasi & jumlah frame dibaca langsung dari isi file di Node.
+- Ukuran beda: selisih rata-rata (0–255) **dan** persentase piksel beda besar (> 48). Batas
+  awal WebM/SVG ≤ 4 & ≤ 1,5%, GIF ≤ 6 & ≤ 2,5%; angka final = selisih terbesar dari 3 kali
+  jalan × 1,5. Sudut bulat 12px (P-4) dikecualikan.
+- Pengaman "tes buta": frame ¼ file vs preview ½ wajib beda ≥ 2× batas.
+- Play-vs-pause semua mood (dari registry), jam dikendalikan `page.clock`.
+- Export: WebM 4 mood, GIF 2 mood (Mochi Dancing, Capybara Sleeping), SVG 2.
+  Perkiraan tambahan ±3 menit; kalau total `test:e2e` > 7,5 menit, play-vs-pause dipindah ke
+  perintah terpisah.
+- **Jumlah mood:** Mochi **22 mood** (sesuai Fase 1 B8, `mochi.moods.js`). Angka "21" di
+  analisis F2 adalah salah hitung saat analisis, bukan selisih di kode. Karena itu tes tidak
+  menulis angka sendiri.
 
 **Selesai kalau:**
 - Tes jalan di Chromium dalam batas waktu (per tes < 60 detik).
@@ -711,4 +784,5 @@ beda). **Rekomendasi:** terima hasil WebKit untuk Fase 3, lalu catat "uji di Saf
 | Ide | Asal |
 |---|---|
 | Geser & perbesar karakter di dalam frame | Keputusan **b** |
+| **Fase 4: kedip terjadwal.** Kedip di waktu pasti sebagai bagian gerakan mood (dihitung dari progress seperti gerakan lain), supaya bisa ikut export. Sejak F1c, export tidak pernah berkedip | F1c (P-18), keputusan Herdin |
 | **Tugas Fase 5:** uji export di Safari asli (pinjam Mac/iPhone atau layanan uji browser) sebelum rilis | **e8**, disetujui |

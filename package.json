@@ -10,7 +10,8 @@
     "test": "node --test --disable-warning=MODULE_TYPELESS_PACKAGE_JSON \"src/**/*.test.js\"",
     "postinstall": "cp node_modules/gif.js/dist/gif.worker.js public/ || copy node_modules\\gif.js\\dist\\gif.worker.js public\\",
     "test:e2e": "playwright test",
-    "ukur:gif": "playwright test -c playwright.ukur.config.js"
+    "ukur:gif": "playwright test -c playwright.ukur.config.js",
+    "test:screenshot": "playwright test -c playwright.screenshot.config.js"
   },
   "dependencies": {
     "@heroui/react": "^3.2.6",

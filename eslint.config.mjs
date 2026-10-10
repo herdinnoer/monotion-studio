@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Folder kerja server tes Playwright (lihat next.config.mjs)
     ".next-e2e/**",
+    // Laporan & hasil buatan Playwright (berisi kode rekaman, bukan kode kita)
+    "playwright-report/**",
+    "test-results/**",
   ]),
 ]);
 

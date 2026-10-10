@@ -9,7 +9,9 @@
 // pernah memakai server yang sudah jalan. Jadi selalu jelas kode mana yang dites, dan
 // `npm run dev` biasa (port 3000) boleh tetap menyala.
 //
-// Tes ukur (e2e/ukur-*.spec.js) tidak ikut di sini; jalankan terpisah: npm run ukur:gif
+// Tidak ikut di sini, jalankan terpisah:
+//   - tes ukur (e2e/ukur-*.spec.js): npm run ukur:gif
+//   - foto referensi (e2e/screenshot.spec.js, menimpa docs/reference/fase-2/): npm run test:screenshot
 
 import { defineConfig, devices } from "@playwright/test";
 
@@ -17,7 +19,7 @@ const PORT = 3100;
 
 export default defineConfig({
   testDir: "./e2e",
-  testIgnore: "**/ukur-*.spec.js",
+  testIgnore: ["**/ukur-*.spec.js", "**/screenshot.spec.js"],
   timeout: 60_000,
   globalTimeout: 10 * 60_000,
   expect: { timeout: 10_000 },
