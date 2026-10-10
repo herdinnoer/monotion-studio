@@ -148,7 +148,7 @@ export default function EditorPage() {
   return (
     <div
       className={cn(
-        "h-screen w-screen p-2 flex flex-col gap-2 overflow-hidden transition-colors duration-200",
+        "h-screen w-screen p-2 flex flex-col gap-2 overflow-hidden transition-colors duration-150 ease-out",
         "bg-background text-foreground font-sans select-none",
       )}
     >

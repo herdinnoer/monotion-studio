@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { cn } from "@/lib/utils";
+import { ToggleButton } from "@heroui/react";
 
 export const LeftSidebar = ({ selectedCharacterId, onSelectCharacter, characters }) => {
   return (
@@ -14,37 +14,31 @@ export const LeftSidebar = ({ selectedCharacterId, onSelectCharacter, characters
 
       {/* Grid 2 Kolom */}
       <div className="p-3 flex-1 overflow-y-auto custom-scrollbar grid grid-cols-2 gap-2.5 content-start">
-        {characters.map((char) => {
-          const isSelected = selectedCharacterId === char.id;
+        {characters.map((char) => (
+          // Tampilan kartu diatur class "character-card" di globals.css (DESIGN.md bagian 8)
+          <ToggleButton
+            key={char.id}
+            className="character-card"
+            isSelected={selectedCharacterId === char.id}
+            // Kartu yang sudah terpilih tidak bisa "dimatikan": klik ulang diabaikan
+            onChange={(isSelected) => isSelected && onSelectCharacter(char.id)}
+          >
+            {/* Preview Karakter */}
+            <div className="w-full aspect-square rounded-xl flex items-center justify-center overflow-hidden p-1">
+              <char.Component state={char.defaultMood} size={200} />
+            </div>
 
-          return (
-            <button
-              key={char.id}
-              onClick={() => onSelectCharacter(char.id)}
-              className={cn(
-                "flex flex-col p-2.5 rounded-xl transition-all text-left cursor-pointer focus:outline-none",
-                isSelected
-                  ? "bg-surface-secondary border-2 border-transparent dark:border-border shadow-sm"
-                  : "hover:bg-surface-hover border-2 border-transparent"
-              )}
-            >
-              {/* Preview Karakter */}
-              <div className="w-full aspect-square rounded-xl flex items-center justify-center overflow-hidden p-1">
-                <char.Component state={char.defaultMood} size={200} />
+            {/* Label Nama & Mood di Dalam Kartu */}
+            <div className="mt-2 w-full">
+              <div className="font-semibold text-xs text-foreground truncate">
+                {char.name}
               </div>
-
-              {/* Label Nama & Mood di Dalam Kartu */}
-              <div className="mt-2 w-full">
-                <div className="font-semibold text-xs text-foreground truncate">
-                  {char.name}
-                </div>
-                <div className="text-[11px] text-subtle">
-                  {char.moods.length} moods
-                </div>
+              <div className="text-[11px] font-medium text-subtle">
+                {char.moods.length} moods
               </div>
-            </button>
-          );
-        })}
+            </div>
+          </ToggleButton>
+        ))}
       </div>
     </aside>
   );

@@ -27,7 +27,7 @@ export const TopBar = ({
   return (
     <header
       className={cn(
-        "w-full h-16 px-4 transition-colors duration-200",
+        "w-full h-16 px-4 transition-colors duration-150 ease-out",
         "bg-surface rounded-2xl border border-border",
         "grid grid-cols-3 items-center",
         "text-sm text-foreground",
@@ -39,7 +39,7 @@ export const TopBar = ({
           <img
             src="/logo-monotion.png"
             alt="Monotion Logo"
-            className="w-full h-10 object-contain rounded transition-all duration-200 dark:invert-0 invert"
+            className="w-full h-10 object-contain rounded transition-[filter] duration-150 ease-out dark:invert-0 invert"
           />
         </div>
 

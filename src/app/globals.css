@@ -26,6 +26,7 @@
     --segment: var(--surface); /* item terpilih di grup segmented */
     --segment-foreground: var(--foreground);
     --border: rgba(0, 0, 0, 0.1);
+    --border-selected: rgba(0, 0, 0, 0.16); /* garis kartu karakter terpilih */
     --separator: var(--border);
 
     /* Input & select */
@@ -85,6 +86,7 @@
     --segment: var(--surface);
     --segment-foreground: var(--foreground);
     --border: rgba(255, 255, 255, 0.08);
+    --border-selected: rgba(255, 255, 255, 0.16);
     --separator: var(--border);
 
     /* Input & select */
@@ -124,6 +126,7 @@
 @theme inline {
   --color-subtle: var(--subtle); /* text-subtle */
   --color-accent-pressed: var(--accent-pressed); /* bg-accent-pressed */
+  --color-border-selected: var(--border-selected); /* border-border-selected */
 
   --font-sans: var(--font-plus-jakarta), sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace; /* penghitung waktu/frame */
@@ -202,6 +205,32 @@
   }
   .toggle-button-group.segmented .toggle-button.toggle-button--icon-only {
     @apply size-8 p-0;
+  }
+
+  /* Kartu karakter (DESIGN.md bagian 8): ToggleButton + class "character-card".
+     12px, garis tepi 1px selalu ada (transparan) supaya ukuran kartu tidak loncat saat dipilih.
+     Terpilih: surface-raised + garis abu tipis border-selected. Tanpa efek mengecil saat ditekan.
+     Cincin fokus biru dari HeroUI hanya muncul saat navigasi keyboard (data-focus-visible). */
+  .toggle-button.character-card {
+    @apply h-auto w-full flex-col items-stretch justify-start gap-0 rounded-xl border border-transparent p-2.5 text-left whitespace-normal;
+    --toggle-button-bg: transparent;
+    --toggle-button-bg-hover: var(--surface-hover);
+    --toggle-button-bg-pressed: var(--surface-hover);
+    --toggle-button-fg: var(--foreground);
+    --toggle-button-bg-selected: var(--surface-secondary);
+    --toggle-button-bg-selected-hover: var(--surface-secondary);
+    --toggle-button-bg-selected-pressed: var(--surface-secondary);
+    --toggle-button-fg-selected: var(--foreground);
+    transition:
+      background-color 150ms var(--ease-out),
+      border-color 150ms var(--ease-out);
+  }
+  .toggle-button.character-card:active,
+  .toggle-button.character-card[data-pressed="true"] {
+    transform: none;
+  }
+  .toggle-button.character-card[data-selected="true"] {
+    @apply border-border-selected;
   }
 
   /* Input "inline" (nama proyek, DESIGN.md bagian 8): Input HeroUI + class "inline-field".
@@ -296,6 +325,55 @@
       --tw-enter-scale: 1;
     }
   }
+  /* Popover, dropdown, select, tooltip, color picker muncul 150ms ease-out,
+     fade + skala 0.97→1 (DESIGN.md bagian 7). Bawaan HeroUI membesar dari 0.90. */
+  .popover[data-entering="true"],
+  .tooltip[data-entering="true"],
+  .dropdown__popover[data-entering="true"],
+  .select__popover[data-entering="true"],
+  .color-picker__popover[data-entering="true"] {
+    @apply ease-out zoom-in-97;
+  }
+  .popover[data-exiting="true"],
+  .tooltip[data-exiting="true"],
+  .dropdown__popover[data-exiting="true"],
+  .select__popover[data-exiting="true"],
+  .color-picker__popover[data-exiting="true"] {
+    @apply ease-out zoom-out-97;
+  }
+  /* Gerakan dikurangi: lapisan melayang hanya fade (tanpa skala & geser),
+     tombol tidak mengecil saat ditekan. */
+  @media (prefers-reduced-motion: reduce) {
+    /* [data-placement] ikut ditulis supaya menang dari aturan geser HeroUI per arah */
+    .popover[data-entering="true"][data-placement],
+    .tooltip[data-entering="true"][data-placement],
+    .dropdown__popover[data-entering="true"][data-placement],
+    .select__popover[data-entering="true"][data-placement],
+    .color-picker__popover[data-entering="true"][data-placement],
+    .popover[data-entering="true"],
+    .tooltip[data-entering="true"],
+    .dropdown__popover[data-entering="true"],
+    .select__popover[data-entering="true"],
+    .color-picker__popover[data-entering="true"] {
+      --tw-enter-scale: 1;
+      --tw-enter-translate-x: 0;
+      --tw-enter-translate-y: 0;
+    }
+    .popover[data-exiting="true"],
+    .tooltip[data-exiting="true"],
+    .dropdown__popover[data-exiting="true"],
+    .select__popover[data-exiting="true"],
+    .color-picker__popover[data-exiting="true"] {
+      --tw-exit-scale: 1;
+    }
+    .button:active,
+    .button[data-pressed="true"],
+    .toggle-button:active,
+    .toggle-button[data-pressed="true"] {
+      transform: none;
+    }
+  }
+
   /* Toast = lapisan melayang seperti popover: 12px */
   .toast {
     @apply rounded-xl;

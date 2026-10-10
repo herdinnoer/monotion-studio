@@ -76,7 +76,7 @@ export function ColorInput({ value = DEFAULT_BACKGROUND, onChange, onChangeEnd, 
     <ColorPicker value={colorValue} onChange={handleChange} className="w-full" isDisabled={isDisabled}>
       <div
         className={cn(
-          "w-full h-11 flex items-center justify-between rounded-xl border border-border transition-all",
+          "w-full h-11 flex items-center justify-between rounded-xl border border-border transition-colors duration-150 ease-out",
           "bg-surface-secondary",
           isDisabled && "opacity-40 pointer-events-none select-none cursor-not-allowed",
           className
@@ -116,7 +116,7 @@ export function ColorInput({ value = DEFAULT_BACKGROUND, onChange, onChangeEnd, 
           <ColorSwatchPicker className="justify-center pt-1 gap-1.5" size="xs" onChange={handleChangeEnd}>
             {colorPresets.map((preset) => (
               <ColorSwatchPicker.Item key={preset} color={preset}>
-                <ColorSwatchPicker.Swatch className="rounded-md cursor-pointer hover:scale-110 transition" />
+                <ColorSwatchPicker.Swatch className="rounded-md cursor-pointer transition-transform duration-150 ease-out hover:scale-110 motion-reduce:transition-none motion-reduce:hover:scale-100" />
               </ColorSwatchPicker.Item>
             ))}
           </ColorSwatchPicker>

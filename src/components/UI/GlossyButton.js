@@ -20,7 +20,7 @@ export function GlossyButton({
       // Menggunakan cn() agar kelas kustom dari props (seperti fontSize & borderRadius)
       // berhasil menimpa bawaan internal HeroUI
       className={cn(
-        "relative text-accent-foreground font-semibold h-9 px-4 min-w-0 transition-all duration-200 ease-in-out",
+        "relative text-accent-foreground font-semibold h-9 px-4 min-w-0 transition-[box-shadow,transform] duration-150 ease-out motion-reduce:transition-none",
         "shadow-(--glossy-shadow)",
         "active:shadow-(--glossy-shadow-pressed)",
         "border",

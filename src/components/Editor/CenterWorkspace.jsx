@@ -11,7 +11,7 @@ export const CenterWorkspace = ({ characterId, config }) => {
   return (
     <main
       className={cn(
-        "flex-1 flex flex-col items-center justify-center overflow-hidden relative rounded-2xl p-8 transition-colors duration-200",
+        "flex-1 flex flex-col items-center justify-center overflow-hidden relative rounded-2xl p-8 transition-colors duration-150 ease-out",
         "bg-[radial-gradient(var(--canvas-dot)_1px,transparent_1px)]",
         "[background-size:20px_20px]"
       )}
@@ -19,7 +19,7 @@ export const CenterWorkspace = ({ characterId, config }) => {
       {/* Remove Background aktif: area karakter transparan, pola titik kanvas terlihat (K-4) */}
       <div
         id="character-workspace"
-        className="w-full h-full flex items-center justify-center rounded-xl transition-colors duration-200"
+        className="w-full h-full flex items-center justify-center rounded-xl transition-colors duration-150 ease-out"
         style={{
           backgroundColor: config.isBgRemoved ? "transparent" : config.backgroundColor,
         }}

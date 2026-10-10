@@ -17,7 +17,7 @@ UI berperan seperti bingkai polos di galeri: rapi, tenang, dan tidak berebut per
 **Referensi rasa:** editor animos.app. Panel gelap yang tenang, kanvas bertitik, kontrol kecil dan padat.
 
 ### Prinsip
-1. **Netral dulu, warna belakangan.** UI memakai abu-abu netral. Warna aksen hanya untuk: satu tombol utama (Export), item yang sedang dipilih, dan fokus keyboard.
+1. **Netral dulu, warna belakangan.** UI memakai abu-abu netral. Warna aksen hanya untuk: satu tombol utama (Export), item yang sedang dipilih (kecuali kartu karakter, yang memakai garis abu `border-selected`), dan fokus keyboard.
 2. **Hierarki lewat permukaan, bukan dekorasi.** Lapisan dibedakan dengan warna permukaan dan garis tepi tipis, bukan bayangan tebal, gradient, atau ikon hiasan.
 3. **Padat tapi bernapas.** Kontrol kecil (teks 12px), jarak konsisten di kelipatan 4px.
 4. **Dua mode setara.** Setiap warna punya versi terang dan gelap. Tidak ada komponen yang "lupa" diberi versi gelap.
@@ -46,6 +46,7 @@ Nama token dipakai di CSS variable dan Tailwind. Nilai diambil dari editor sekar
 
 > Popover dan dropdown memakai `surface-raised`, modal memakai `surface`. HeroUI menyatukan keduanya di satu variabel (`--overlay`), jadi `--overlay` diisi `surface` (untuk modal) dan warna popover/dropdown ditimpa terpisah di `globals.css`.
 | `border` | Garis tepi & pemisah | `rgba(0,0,0,0.10)` | `rgba(255,255,255,0.08)` |
+| `border-selected` | Garis tepi kartu karakter terpilih | `rgba(0,0,0,0.16)` | `rgba(255,255,255,0.16)` |
 
 ### Teks
 | Token | Dipakai untuk | Terang | Gelap |
@@ -161,7 +162,7 @@ Gerakan UI harus nyaris tak terasa. Yang boleh "hidup" dan memantul hanya karakt
 | Tombol ikon | 32×32px, `rounded-lg` (8px), transparan, hover `surface-raised`. Nonaktif: opacity 40%. |
 | Select (mood) | Latar `surface-raised`, garis `border`, teks 12px/500, ikon chevron 14px. |
 | Segmented (format, resolusi, fps) | Grup `surface-raised` `rounded-xl` (12px) padding 4px, item `rounded-md` (6px). Item terpilih: `surface` + `shadow-sm`. |
-| Kartu karakter | `rounded-xl` (12px). Terpilih: latar `surface-raised` + garis tepi 2px `accent`. |
+| Kartu karakter | `rounded-xl` (12px), garis tepi 1px (transparan saat tidak terpilih). Terpilih: latar `surface-raised` + garis `border-selected`. Cincin fokus biru hanya saat navigasi keyboard. |
 | Input warna | Kotak warna 24px `rounded-md` (6px) + kode hex 12px kapital. |
 | Input nama proyek (top bar) | `Input` HeroUI + class `inline-field`, teks di tengah. Diam: tanpa latar, tanpa garis tepi. Hover: latar `surface-raised`. Fokus (sedang diketik): latar `surface-raised`, **tanpa ring fokus** (pengecualian dari aturan `focus-ring`; tanda fokusnya latar + kursor ketik). Supaya terbaca sebagai judul, bukan kolom isian. |
 | Modal | Lebar maks 480px, `surface`, `rounded-3xl` (24px), padding 24px, latar belakang `black/40` (terang) atau `black/60` (gelap) + blur. |

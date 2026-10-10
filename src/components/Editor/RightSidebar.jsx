@@ -150,7 +150,7 @@ export const RightSidebar = ({ characterId, config, onConfigChange, onConfigPrev
             <button
               type="button"
               onClick={handleResetBg}
-              className="text-xs font-semibold text-accent hover:text-accent-hover cursor-pointer transition-colors"
+              className="text-xs font-semibold text-accent hover:text-accent-hover cursor-pointer transition-colors duration-150 ease-out"
             >
               Reset
             </button>
@@ -192,7 +192,7 @@ export const RightSidebar = ({ characterId, config, onConfigChange, onConfigPrev
             <button
               type="button"
               onClick={handleResetColor}
-              className="text-xs font-semibold text-accent hover:text-accent-hover cursor-pointer transition-colors"
+              className="text-xs font-semibold text-accent hover:text-accent-hover cursor-pointer transition-colors duration-150 ease-out"
             >
               Reset
             </button>
