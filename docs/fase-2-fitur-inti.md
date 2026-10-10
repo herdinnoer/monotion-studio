@@ -478,7 +478,7 @@ Wajib baca `DESIGN.md` dan `.github/antislop.md` sebelum mulai tiap langkah.
 | Modal export | `div` buatan sendiri (`ExportModal.jsx:118`) | `Modal` (dapat fokus terkunci, Esc untuk tutup, animasi sesuai DESIGN.md) |
 | Progress export | `div` (`ExportModal.jsx:211–224`) | `ProgressBar` |
 | Notifikasi berhasil/gagal | `alert()` (`ExportModal.jsx:88`, `:97`) | `Toast` |
-| Menu kecepatan | Menu buatan (`AnimationPlayerBar.jsx:239–268`) | `Dropdown` |
+| Menu kecepatan | Menu buatan (`AnimationPlayerBar.jsx:239–268`) | **Dihapus** (K-11). Sempat diganti `Dropdown`, lalu dihapus karena tidak berfungsi |
 | Slider timeline | `<input type="range">` (`AnimationPlayerBar.jsx:217`) | `Slider` |
 | Tombol ikon (undo, redo, play, reset, loop, close) | `button` biasa | `Button isIconOnly` 32×32 + `Tooltip` + `aria-label` |
 | Pengalih tema | 2 tombol biasa (`TopBar.jsx:102–125`) | `ToggleButtonGroup` |
@@ -561,6 +561,17 @@ disimpan di `docs/reference/fase-2/` sebagai bukti.
 | K-8 | Hapus `tailwind.config.js` | **Ya**, di B1 setelah font pindah ke CSS, dan setelah minta izin | B1 |
 | K-9 | Simbol terlarang (`/ \ : * ? " < > \|`) & emoji di nama file | **Diganti strip** (bukan dibuang), strip berurutan digabung, strip di awal/akhir dibuang. Kalau hasilnya kosong → nama karakter + mood. Contoh: `"Kopi/Pagi?"` → `kopi-pagi.gif` | A2, A6 |
 | K-10 | Nama proyek dan undo/penyimpanan | **Tidak ikut undo/redo**, tapi **ikut disimpan di browser** | A2, A5 |
+| K-11 | Menu kecepatan (0.5x–2x) di player bar | **Dihapus.** Temuan di B2: kecepatan hanya mempercepat penghitung player bar, karakter tidak ikut karena saat play karakter memakai animasi bawaannya sendiri. Tombol yang tidak berfungsi dilarang DESIGN.md bagian 9. Ide penggantinya dicatat di bagian 6 | B2 |
 | — | Bug "klik karakter yang sudah dipilih mereset warna" (M-2) | Masuk **A2** | A2 |
 
-Semua keputusan K-1 sampai K-10 sudah dijawab.
+Semua keputusan K-1 sampai K-11 sudah dijawab.
+
+---
+
+## 6. Catatan untuk fase berikutnya
+
+Ide yang muncul selama Fase 2 tapi sengaja tidak dikerjakan di fase ini.
+
+| Ide | Asal | Catatan |
+|---|---|---|
+| **Kecepatan animasi yang ikut export** | K-11 (B2) | Pengganti menu kecepatan yang dihapus. Kecepatan harus jadi pengaturan karakter (mengubah `durationMs` mood yang dipakai), bukan hanya pemutar, supaya preview **dan** hasil export (GIF/SVG/WebM) sama-sama ikut berubah. Perlu diputuskan: ikut undo atau tidak, ikut disimpan di browser atau tidak, dan apakah animasi bawaan karakter (CSS & Framer Motion) bisa diatur kecepatannya tanpa mengubah tiap karakter |

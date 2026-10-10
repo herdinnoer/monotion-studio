@@ -251,6 +251,26 @@
   .menu-item {
     @apply rounded-lg;
   }
+  /* Isi popover 12px/500 (DESIGN.md bagian 4). Hover HeroUI memakai --default
+     (= surface-raised, sama dengan latar popover), jadi diganti surface-hover
+     supaya tetap terlihat. */
+  .select__popover .list-box-item,
+  .dropdown__popover .menu-item {
+    @apply min-h-8 text-xs font-medium;
+  }
+  @media (hover: hover) {
+    .select__popover .list-box-item:hover,
+    .select__popover .list-box-item[data-hovered="true"],
+    .dropdown__popover .menu-item:hover,
+    .dropdown__popover .menu-item[data-hovered="true"] {
+      @apply bg-surface-hover;
+    }
+  }
+  /* Select (mood): isi kontrol 12px/500 (DESIGN.md bagian 4) */
+  .select__trigger,
+  .select__value {
+    @apply text-xs font-medium;
+  }
   .tooltip {
     @apply rounded-lg;
   }

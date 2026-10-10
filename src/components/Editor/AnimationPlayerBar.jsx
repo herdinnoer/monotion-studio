@@ -1,22 +1,20 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Play, Pause, RotateCcw, Repeat, Gauge } from "lucide-react";
+import { Play, Pause, RotateCcw, Repeat } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { IconButton } from "@/components/UI/IconButton";
 import { isPressableTarget, isTypingTarget } from "@/lib/keyboard";
 import { TIMELINE_EVENT, dispatchTimeline } from "@/characters/_core/useTimeline";
+import { Slider } from "@heroui/react";
 
 export function AnimationPlayerBar({
   elementId = "character-workspace",
   durationMs,
-  totalFrames = 48,
 }) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
   const [isLooping, setIsLooping] = useState(true);
-  const [speed, setSpeed] = useState(1);
-  const [showSpeedMenu, setShowSpeedMenu] = useState(false);
 
   const requestRef = useRef(null);
   const lastTimeRef = useRef(null);
@@ -100,7 +98,7 @@ export function AnimationPlayerBar({
     lastTimeRef.current = currentTime;
 
     const prevProgress = progressRef.current;
-    let nextProgress = prevProgress + (deltaTime * speed) / durationMs;
+    let nextProgress = prevProgress + deltaTime / durationMs;
     let playing = true;
 
     if (nextProgress >= 1) {
@@ -124,7 +122,7 @@ export function AnimationPlayerBar({
     if (playing && !isExportingRef.current) {
       requestRef.current = requestAnimationFrame((t) => animateRef.current?.(t));
     }
-  }, [speed, durationMs, isLooping, broadcastTimelineState]);
+  }, [durationMs, isLooping, broadcastTimelineState]);
 
   useEffect(() => {
     animateRef.current = animate;
@@ -164,8 +162,7 @@ export function AnimationPlayerBar({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const handleSliderChange = (e) => {
-    const newProgress = parseFloat(e.target.value);
+  const handleSliderChange = (newProgress) => {
     setIsPlaying(false);
     progressRef.current = newProgress;
     setProgress(newProgress);
@@ -178,7 +175,6 @@ export function AnimationPlayerBar({
     broadcastTimelineState(0, isPlaying);
   };
 
-  const currentFrame = Math.min(Math.floor(progress * totalFrames) + 1, totalFrames);
   const currentTimeSec = (progress * (durationMs / 1000)).toFixed(1);
   const totalTimeSec = (durationMs / 1000).toFixed(1);
 
@@ -202,22 +198,26 @@ export function AnimationPlayerBar({
         <RotateCcw size={16} />
       </IconButton>
 
-      <div className="text-[11px] font-mono font-medium tabular-nums text-muted shrink-0 min-w-[70px] text-center">
-        <span>{currentTimeSec}s</span> / <span>{totalTimeSec}s</span>
-        <span className="text-[10px] opacity-60 block">{currentFrame}/{totalFrames}f</span>
+      <div className="text-[11px] font-mono font-medium tabular-nums text-muted shrink-0 whitespace-nowrap">
+        {currentTimeSec}s / {totalTimeSec}s
       </div>
 
-      <div className="flex-1 flex items-center relative">
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.001"
-          value={progress}
-          onChange={handleSliderChange}
-          className="w-full h-1.5 bg-surface-secondary rounded-lg appearance-none cursor-pointer accent-accent focus:outline-none"
-        />
-      </div>
+      {/* Slider HeroUI. Geser timeline hanya mengubah tampilan, tidak masuk undo. */}
+      <Slider
+        aria-label="Timeline"
+        minValue={0}
+        maxValue={1}
+        step={0.001}
+        formatOptions={{ style: "percent" }}
+        value={progress}
+        onChange={handleSliderChange}
+        className="flex-1"
+      >
+        <Slider.Track>
+          <Slider.Fill />
+          <Slider.Thumb />
+        </Slider.Track>
+      </Slider>
 
       <IconButton
         label="Loop"
@@ -231,38 +231,6 @@ export function AnimationPlayerBar({
       >
         <Repeat size={16} />
       </IconButton>
-
-      <div className="relative shrink-0">
-        <button
-          type="button"
-          onClick={() => setShowSpeedMenu(!showSpeedMenu)}
-          className="p-2 rounded-xl text-xs font-semibold text-muted hover:bg-surface-secondary flex items-center gap-1 cursor-pointer"
-        >
-          <Gauge size={14} />
-          <span>{speed}x</span>
-        </button>
-
-        {showSpeedMenu && (
-          <div className="absolute bottom-full mb-2 right-0 bg-surface dark:bg-surface-secondary border border-border rounded-xl p-1 shadow-lg flex flex-col gap-0.5 z-20 min-w-[70px]">
-            {[0.5, 1, 1.5, 2].map((sp) => (
-              <button
-                key={sp}
-                type="button"
-                onClick={() => {
-                  setSpeed(sp);
-                  setShowSpeedMenu(false);
-                }}
-                className={cn(
-                  "px-3 py-1 text-xs text-left rounded-lg transition-colors cursor-pointer",
-                  speed === sp ? "bg-accent text-accent-foreground font-bold" : "text-muted hover:bg-surface-secondary dark:hover:bg-surface-hover"
-                )}
-              >
-                {sp}x
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 }

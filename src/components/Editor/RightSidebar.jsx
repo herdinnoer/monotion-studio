@@ -6,7 +6,7 @@ import { ColorInput } from "@/components/UI/ColorInput";
 import { getCharacter, getDefaultShape } from "@/characters/registry";
 import { DEFAULT_BACKGROUND } from "@/lib/editorState";
 import { ChevronDown } from "lucide-react";
-import { Label, Switch, ToggleButton, ToggleButtonGroup } from "@heroui/react";
+import { Label, ListBox, Select, Switch, ToggleButton, ToggleButtonGroup } from "@heroui/react";
 
 // onConfigChange  = simpan satu langkah undo
 // onConfigPreview = ubah tampilan saja (dipakai selama color picker digeser)
@@ -103,28 +103,39 @@ export const RightSidebar = ({ characterId, config, onConfigChange, onConfigPrev
           <h3 className="text-[12px] font-semibold uppercase tracking-wide text-muted">
             Mood / State ({character.moods.length})
           </h3>
-          <div className="relative w-full">
-            <select
-              value={config.mood}
-              onChange={(e) => handleMoodChange(e.target.value)}
-              className={cn(
-                "w-full pl-3 pr-9 py-2.5 rounded-lg border border-border capitalize appearance-none",
-                "bg-surface-secondary text-foreground",
-                "text-xs font-medium focus:outline-none focus:ring-2 focus:ring-focus",
-                "transition-all cursor-pointer",
-              )}
-            >
-              {character.moods.map((mood) => (
-                <option key={mood.id} value={mood.id}>
-                  {mood.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown
-              size={14}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none"
-            />
-          </div>
+          {/* Select HeroUI. Pilih mood lain = satu langkah undo; mood yang sama
+              tidak menambah langkah (ditolak di editorHistory). */}
+          <Select
+            aria-label="Mood"
+            variant="secondary"
+            fullWidth
+            value={config.mood}
+            onChange={(next) => {
+              if (next) handleMoodChange(next);
+            }}
+          >
+            <Select.Trigger>
+              <Select.Value className="capitalize" />
+              <Select.Indicator>
+                <ChevronDown size={14} />
+              </Select.Indicator>
+            </Select.Trigger>
+            <Select.Popover>
+              <ListBox>
+                {character.moods.map((mood) => (
+                  <ListBox.Item
+                    key={mood.id}
+                    id={mood.id}
+                    textValue={mood.label}
+                    className="capitalize"
+                  >
+                    {mood.label}
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </Select.Popover>
+          </Select>
         </div>
 
         {/* Divider antara Mood & Color */}

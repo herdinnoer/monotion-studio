@@ -30,6 +30,8 @@ const PRESSABLE_ROLES = new Set([
   "radio",
   "option",
   "menuitem",
+  "menuitemradio",
+  "menuitemcheckbox",
   "tab",
   "combobox",
   "link",

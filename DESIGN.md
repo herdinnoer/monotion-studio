@@ -52,7 +52,7 @@ Nama token dipakai di CSS variable dan Tailwind. Nilai diambil dari editor sekar
 |---|---|---|---|
 | `text` | Teks utama | `#111113` | `#F4F4F5` |
 | `text-muted` | Label section, teks pendukung | `#52525B` | `#A1A1AA` |
-| `text-subtle` | Info kecil (jumlah mood, frame) | `#71717A` | `#71717A` |
+| `text-subtle` | Info kecil (jumlah mood) | `#71717A` | `#71717A` |
 
 ### Aksen (satu warna saja)
 | Token | Terang | Gelap | Catatan |
@@ -80,7 +80,7 @@ Nama token dipakai di CSS variable dan Tailwind. Nilai diambil dari editor sekar
 
 ## 4. Tipografi
 - **Font:** Plus Jakarta Sans (sudah terpasang lewat `next/font`).
-- **Angka waktu/frame:** font mono + `tabular-nums`, supaya angka tidak "goyang" saat berubah.
+- **Angka waktu (player bar):** font mono + `tabular-nums`, supaya angka tidak "goyang" saat berubah.
 
 | Peran | Ukuran | Tebal | Catatan |
 |---|---|---|---|
@@ -89,7 +89,6 @@ Nama token dipakai di CSS variable dan Tailwind. Nilai diambil dari editor sekar
 | Label section ("MOOD", "COLOR") | 12px | 600 | Huruf kapital, `tracking-wide`, warna `text-muted` |
 | Isi kontrol (select, input, segmented) | 12px | 500 | |
 | Info kecil (nama mood di kartu, jumlah mood) | 11px | 500 | Warna `text-subtle` |
-| Penghitung frame | 10px | 500 | Mono |
 
 Aturan: maksimal 3 ketebalan (500, 600, 700). Jangan pakai ukuran di luar tabel ini.
 
