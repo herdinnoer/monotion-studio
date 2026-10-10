@@ -112,7 +112,8 @@ export function ColorInput({ value = DEFAULT_BACKGROUND, onChange, onChangeEnd, 
       </div>
 
       {!isDisabled && (
-        <ColorPicker.Popover className="gap-2 p-3 bg-surface border border-border shadow-2xl rounded-2xl text-foreground z-50">
+        // Latar popover (surface-raised) diatur di globals.css, sama dengan dropdown mood
+        <ColorPicker.Popover className="gap-2 p-3 border border-border shadow-2xl rounded-2xl text-foreground z-50">
           <ColorSwatchPicker className="justify-center pt-1 gap-1.5" size="xs" onChange={handleChangeEnd}>
             {colorPresets.map((preset) => (
               <ColorSwatchPicker.Item key={preset} color={preset}>

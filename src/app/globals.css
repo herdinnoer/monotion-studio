@@ -164,6 +164,29 @@
   .button--icon-only[aria-disabled="true"] {
     opacity: 0.4;
   }
+  /* Link teks aksen ("Reset" di panel kanan): Button HeroUI ghost tanpa latar, teks accent
+     12px/600. Cincin fokus tetap dari HeroUI, jadi sama dengan tombol lain. Tanpa efek
+     mengecil saat ditekan karena tampil sebagai teks. -me-1: teks tetap rata kanan. */
+  .button.link-button {
+    @apply -me-1 h-auto min-w-0 px-1 py-0.5 text-xs font-semibold;
+    --button-bg: transparent;
+    --button-bg-hover: transparent;
+    --button-bg-pressed: transparent;
+    --button-fg: var(--accent);
+    transition:
+      color 150ms var(--ease-out),
+      box-shadow 100ms var(--ease-out);
+  }
+  @media (hover: hover) {
+    .button.link-button:hover,
+    .button.link-button[data-hovered="true"] {
+      --button-fg: var(--accent-hover);
+    }
+  }
+  .button.link-button:active,
+  .button.link-button[data-pressed="true"] {
+    transform: none;
+  }
   .toggle-button-group--horizontal .toggle-button:first-child {
     @apply rounded-s-button;
   }
@@ -316,15 +339,7 @@
   .modal__container[data-entering="true"] {
     @apply duration-200 ease-out zoom-in-95;
   }
-  /* Gerakan dikurangi: HeroUI mematikan semua animasi; DESIGN.md minta fade tetap ada,
-     hanya skalanya yang dimatikan. */
-  @media (prefers-reduced-motion: reduce) {
-    .modal__backdrop[data-entering="true"],
-    .modal__container[data-entering="true"] {
-      @apply animate-in fade-in-0;
-      --tw-enter-scale: 1;
-    }
-  }
+  /* Gerakan dikurangi untuk modal: lihat @layer utilities di bawah. */
   /* Popover, dropdown, select, tooltip, color picker muncul 150ms ease-out,
      fade + skala 0.97→1 (DESIGN.md bagian 7). Bawaan HeroUI membesar dari 0.90. */
   .popover[data-entering="true"],
@@ -412,6 +427,23 @@
   }
   .color-area {
     @apply rounded-lg;
+  }
+}
+
+/* Gerakan dikurangi untuk modal (DESIGN.md bagian 7): fade tetap ada, skala dimatikan.
+   HeroUI mematikan semua animasi modal dengan selector yang lebih kuat dari selector biasa
+   (ada tambahan :not(...)), jadi aturan ini tidak bisa ditaruh di @layer components.
+   Lapisan utilities selalu menang dari components tanpa perlu menebak kekuatan selector HeroUI.
+   Karena animasinya ada sejak modal dipasang, React Aria menunggu fade selesai. */
+@layer utilities {
+  @media (prefers-reduced-motion: reduce) {
+    .modal__backdrop[data-entering="true"],
+    .modal__container[data-entering="true"] {
+      @apply animate-in fade-in-0;
+      --tw-enter-scale: 1;
+      --tw-enter-translate-x: 0;
+      --tw-enter-translate-y: 0;
+    }
   }
 }
 

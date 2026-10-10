@@ -6,7 +6,7 @@ import { ColorInput } from "@/components/UI/ColorInput";
 import { getCharacter, getDefaultShape } from "@/characters/registry";
 import { DEFAULT_BACKGROUND } from "@/lib/editorState";
 import { ChevronDown } from "lucide-react";
-import { Label, ListBox, Select, Switch, ToggleButton, ToggleButtonGroup } from "@heroui/react";
+import { Button, Label, ListBox, Select, Switch, ToggleButton, ToggleButtonGroup } from "@heroui/react";
 
 // onConfigChange  = simpan satu langkah undo
 // onConfigPreview = ubah tampilan saja (dipakai selama color picker digeser)
@@ -147,13 +147,11 @@ export const RightSidebar = ({ characterId, config, onConfigChange, onConfigPrev
             <h3 className="text-[12px] font-semibold uppercase tracking-wide text-muted">
               Background
             </h3>
-            <button
-              type="button"
-              onClick={handleResetBg}
-              className="text-xs font-semibold text-accent hover:text-accent-hover cursor-pointer transition-colors duration-150 ease-out"
-            >
+            {/* Button HeroUI bergaya link teks aksen (class "link-button" di globals.css),
+                supaya dapat cincin fokus yang sama dengan tombol lain */}
+            <Button variant="ghost" className="link-button" onPress={handleResetBg}>
               Reset
-            </button>
+            </Button>
           </div>
 
           <ColorInput
@@ -189,13 +187,11 @@ export const RightSidebar = ({ characterId, config, onConfigChange, onConfigPrev
             <h3 className="text-[12px] font-semibold uppercase tracking-wide text-muted">
               Color
             </h3>
-            <button
-              type="button"
-              onClick={handleResetColor}
-              className="text-xs font-semibold text-accent hover:text-accent-hover cursor-pointer transition-colors duration-150 ease-out"
-            >
+            {/* Button HeroUI bergaya link teks aksen (class "link-button" di globals.css),
+                supaya dapat cincin fokus yang sama dengan tombol lain */}
+            <Button variant="ghost" className="link-button" onPress={handleResetColor}>
               Reset
-            </button>
+            </Button>
           </div>
           <ColorInput
             value={config.color || character.defaultColor}
